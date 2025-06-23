@@ -1,0 +1,15 @@
+[build]
+  # Run Nuxt’s static generate
+  command   = "npx nuxi generate"
+  # Publish the pre-rendered public directory
+  publish   = ".output/public"
+  # Point Netlify Functions to Nitro’s build
+  functions = ".output/server"
+
+# Redirect _all_ traffic to your server function, which
+# will serve static files when available and SSR otherwise
+[[redirects]]
+  from    = "/*"
+  to      = "/.netlify/functions/server"
+  status  = 200
+  force   = true

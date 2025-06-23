@@ -1,0 +1,83 @@
+@import "tailwindcss";
+
+/* dark‐mode variant helper */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── raw keyframes ─────────────────────────────────────────────────────────── */
+@keyframes hammer {
+  0%, 100% { transform: rotate(0deg); }
+  50%      { transform: rotate(-30deg); }
+}
+
+@keyframes arrowLoop {
+  0%   { transform: translateX(0%);  opacity: 1; }
+  45%  { transform: translateX(50%); opacity: 0; }
+  46%  { transform: translateX(-50%); opacity: 0; }
+  100% { transform: translateX(0%);  opacity: 1; }
+}
+
+/* ─── theme variables ───────────────────────────────────────────────────────── */
+@theme {
+  /* Colors */
+  --color-brand:                 #3e438c;
+  --color-accent:                #ffd700;
+  --color-secondary-accent:      #ffa500;
+  --color-background:            #ffffe7;
+  --color-background-dark:       #78716c;
+  --color-background-accent:     #fff5c5;
+  --color-background-accent-dark:#44403c;
+
+  /* Brand-blue scale */
+  --color-brand-blue-50:  #f3f5fb;
+  --color-brand-blue-100: #e3e8f6;
+  --color-brand-blue-200: #cdd7f0;
+  --color-brand-blue-300: #abbce5;
+  --color-brand-blue-400: #839bd7;
+  --color-brand-blue-500: #657acc;
+  --color-brand-blue-600: #5262be;
+  --color-brand-blue-700: #4750ae;
+  --color-brand-blue-800: #3e438c;
+  --color-brand-blue-900: #373c71;
+  --color-brand-blue-950: #252646;
+
+  /* Brand-gold scale */
+  --color-brand-gold-50:  #ffffe7;
+  --color-brand-gold-100: #feffc1;
+  --color-brand-gold-200: #fffd86;
+  --color-brand-gold-300: #fff441;
+  --color-brand-gold-400: #ffe60d;
+  --color-brand-gold-500: #ffd700;
+  --color-brand-gold-600: #d19e00;
+  --color-brand-gold-700: #a67102;
+  --color-brand-gold-800: #89580a;
+  --color-brand-gold-900: #74480f;
+  --color-brand-gold-950: #442604;
+
+  /* Brand-orange scale */
+  --color-brand-orange-50:  #fffcea;
+  --color-brand-orange-100: #fff5c5;
+  --color-brand-orange-200: #ffeb85;
+  --color-brand-orange-300: #ffda46;
+  --color-brand-orange-400: #ffc71b;
+  --color-brand-orange-500: #ffa500;
+  --color-brand-orange-600: #e27c00;
+  --color-brand-orange-700: #bb5502;
+  --color-brand-orange-800: #984208;
+  --color-brand-orange-900: #7c360b;
+  --color-brand-orange-950: #481a00;
+
+  /* Fonts */
+  --font-title: "Segoe UI", sans-serif;
+  --font-body:  "Quicksand", sans-serif;
+
+  /* Breakpoints */
+  --breakpoint-sm:  700px;
+  --breakpoint-md:  920px;
+  --breakpoint-lg: 1024px;
+  --breakpoint-xl: 1280px;
+
+  /* ─── Animations ───────────────────────────── */
+  /* you can then do: animation: var(--animation-hammer) */
+  --animate-hammer:     hammer 0.3s ease-in-out;
+  --animate-arrow-loop: arrowLoop 0.3s linear;
+}
