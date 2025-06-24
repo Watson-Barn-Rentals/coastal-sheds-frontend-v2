@@ -1,13 +1,9 @@
 import { defineEventHandler, getCookie } from 'h3'
 
-export default defineEventHandler(async (event) => {
+export default defineEventHandler((event) => {
   const token = getCookie(event, 'previewToken')
-  if (!token) {
-    // No preview token → let Nitro serve the pre-rendered static HTML
-    return
+  if (token) {
+    // Nitro will *not* serve prerendered HTML
+    event.node.res.setHeader('x-nitro-prerender', 'false')
   }
-
-
-  // Mark this request as a preview
-  event.context.previewToken = token
 })
