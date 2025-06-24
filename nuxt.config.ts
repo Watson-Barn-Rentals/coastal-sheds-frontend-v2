@@ -1,5 +1,4 @@
 import tailwindcss from "@tailwindcss/vite";
-import { getPrerenderPageList } from "./services/api/get-prerender-page-list";
 
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
@@ -7,15 +6,22 @@ export default defineNuxtConfig({
   ssr: true,
   dev: true,
   hooks: {
-    async "prerender:routes"(context) {
-      const pagesList = await getPrerenderPageList();
+    async 'prerender:routes'(context) {
+      const apiRoot = process.env.API_ROOT_URL
+      if (!apiRoot) {
+        throw new Error('Missing API_ROOT_URL environment variable')
+      }
 
-      //TODO - Add blog and other dynamic routes here
+      const pageListRequestResult = await fetch(`${apiRoot}/api/get-prerender-page-list`)
+      if (!pageListRequestResult.ok) {
+        throw new Error(`Failed to fetch page list: ${pageListRequestResult.status} ${pageListRequestResult.statusText}`)
+      }
+      const { data: pageList } = await pageListRequestResult.json() as { data: string[] }
 
-      const allPrerenderRoutes = [...pagesList]
+      const allRoutes = [...pageList]
 
-      for (const page of allPrerenderRoutes) {
-        context.routes.add(page);
+      for (const route of allRoutes) {
+        context.routes.add(route)
       }
     },
   },

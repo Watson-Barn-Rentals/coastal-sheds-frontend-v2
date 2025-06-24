@@ -1,6 +1,6 @@
 [build]
   # Run Nuxt’s static generate
-  command   = "npm run generate"
+  command   = "nuxt generate"
   # Publish the pre-rendered public directory
   publish   = ".output/public"
   # Point Netlify Functions to Nitro’s build
