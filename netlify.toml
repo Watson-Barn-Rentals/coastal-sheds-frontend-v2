@@ -1,15 +1,12 @@
 [build]
-  # Run Nuxt’s static generate
-  command   = "nuxt generate"
-  # Publish the pre-rendered public directory
-  publish   = ".output/public"
-  # Point Netlify Functions to Nitro’s build
-  functions = ".output/server"
+  # Run your generate script (make sure your package.json has "generate": "nuxt generate")
+  command   = "npm run generate"
+  # Point Netlify at the folder Nuxt spits out (your logs say “Generated public dist”)
+  publish   = "dist"
 
-# Redirect _all_ traffic to your server function, which
-# will serve static files when available and SSR otherwise
+# If you want all client-side navigation to fall back to index.html:
 [[redirects]]
   from    = "/*"
-  to      = "/.netlify/functions/server"
+  to      = "/index.html"
   status  = 200
   force   = true
