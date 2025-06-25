@@ -8,10 +8,8 @@ export const getHeaderSettings = async (): Promise<HeaderSettings> => {
 
 		
 		if (!isHeaderSettings(data)) {
-			console.log('error')
 			throw new Error('Invalid response from API')
 		}
-		console.log(data)
 
 		return data
 	} catch (err: any) {

@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { useRoute, useRouter, useCookie, onMounted } from '#imports'
+import { useRoute, useCookie, onMounted } from '#imports'
+import { navigateTo, reloadNuxtApp, useRuntimeConfig } from '#app'
 
 const route = useRoute()
-const router = useRouter()
-// Create a cookie named "previewToken" scoped to the entire site
 const previewCookie = useCookie('previewToken', { path: '/' })
 
-onMounted(() => {
+const config = useRuntimeConfig()
+
+onMounted(async () => {
   const token = route.query.token as string | undefined
 
-  if (token) {
-    // Set the cookie (expires when browser closes; adjust options if you like)
+  // only in preview build
+  if (token && config.public.previewMode === true) {
     previewCookie.value = token
+    // force Nuxt to re-init so your SSR middleware sees the new cookie
+    await reloadNuxtApp()
+    return navigateTo('/')
   }
 
-  reloadNuxtApp()
-
-  // Redirect to home
-  navigateTo('/')
-
+  navigateTo('/error')
 })
 </script>
 

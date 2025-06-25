@@ -33,7 +33,8 @@ export default defineNuxtConfig({
   },
   runtimeConfig: {
     public: {
-      apiRootUrl: process.env.API_ROOT_URL
+      apiRootUrl: process.env.API_ROOT_URL,
+      previewMode: process.env.PREVIEW_MODE === 'true',
     }
   },
   devtools: { enabled: true },
