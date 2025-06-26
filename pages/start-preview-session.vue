@@ -13,10 +13,8 @@ onMounted(() => {
   // only in preview build
   if (token && config.public.previewMode === true) {
     previewCookie.value = token
-    // force Nuxt to re-init so your SSR middleware sees the new cookie
-    reloadNuxtApp()
-
-    navigateTo('/')
+    
+    window.location.href = '/'
   } else {
     navigateTo('/error')
   }

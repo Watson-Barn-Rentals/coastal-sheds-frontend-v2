@@ -1,10 +1,9 @@
 // server/middleware/preview-check.ts
 import { defineEventHandler, getCookie, sendRedirect } from 'h3'
-import { useCookie } from 'nuxt/app'
 
 export default defineEventHandler(async (event) => {
   const { req } = event.node
-  const previewCookie = useCookie('previewToken', { path: '/' })
+  const token = getCookie(event, 'previewToken')
   const config = useRuntimeConfig()
 
   if (process.env.PREVIEW_MODE !== 'true') {
@@ -15,7 +14,7 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  if (!previewCookie && !process.dev) {
+  if (!token && !process.dev) {
     sendRedirect(event, `${config.public.mainSiteUrl}${req.url ?? '/'}`, 302)
     return
   }
