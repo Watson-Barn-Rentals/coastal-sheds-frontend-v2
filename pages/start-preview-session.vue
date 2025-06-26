@@ -12,8 +12,6 @@ onMounted(() => {
 
   // only in preview build
   if (token && config.public.previewMode === true) {
-    console.log('Starting preview session with token:', token)
-    console.log('Preview mode is enabled:', config.public.previewMode)
     previewCookie.value = token
     // force Nuxt to re-init so your SSR middleware sees the new cookie
     reloadNuxtApp()
