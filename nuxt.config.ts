@@ -35,6 +35,8 @@ export default defineNuxtConfig({
     public: {
       apiRootUrl: process.env.API_ROOT_URL,
       previewMode: process.env.PREVIEW_MODE === 'true',
+      mainSiteUrl: process.env.MAIN_SITE_URL || '',
+      previewSiteUrl: process.env.PREVIEW_SITE_URL || '',
     }
   },
   devtools: { enabled: true },

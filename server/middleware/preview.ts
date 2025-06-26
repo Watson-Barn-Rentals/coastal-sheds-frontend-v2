@@ -4,6 +4,7 @@ import { defineEventHandler, getCookie, sendRedirect } from 'h3'
 export default defineEventHandler(async (event) => {
   const { req } = event.node
   const token = getCookie(event, 'previewToken')
+  const config = useRuntimeConfig()
 
   if (process.env.PREVIEW_MODE !== 'true') {
     return
@@ -13,8 +14,8 @@ export default defineEventHandler(async (event) => {
     return
   }
 
-  if (!token) {
-    sendRedirect(event, `${process.env.PRODUCTION_SITE_URL}${req.url ?? '/'}`, 302)
+  if (!token && !process.dev) {
+    sendRedirect(event, `${config.public.mainSiteUrl}${req.url ?? '/'}`, 302)
     return
   }
 
