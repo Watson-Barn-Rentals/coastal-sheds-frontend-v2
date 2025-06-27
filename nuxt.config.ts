@@ -1,5 +1,7 @@
 import tailwindcss from "@tailwindcss/vite";
 
+console.log('🛠  BUILD – PREVIEW_MODE =', process.env.PREVIEW_MODE);
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
