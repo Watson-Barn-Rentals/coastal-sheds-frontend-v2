@@ -1,0 +1,7 @@
+[build]
+  # always run the same script, it'll branch on PREVIEW_MODE
+  command   = "npm run netlify-build"
+  # for SSR (preset=netlify) your static assets live here
+  publish   = ".output/public"
+  # for SSR, Netlify will detect server functions here
+  functions = ".output/functions"

@@ -3,8 +3,7 @@ import tailwindcss from "@tailwindcss/vite";
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  ssr: true,
-  dev: true,
+  ssr: process.env.PREVIEW_MODE === 'true',
   hooks: {
     async 'prerender:routes'(context) {
       const apiRoot = process.env.API_ROOT_URL
@@ -26,7 +25,7 @@ export default defineNuxtConfig({
     },
   },
   nitro: {
-    preset: 'netlify-static',
+    preset: process.env.PREVIEW_MODE === 'true' ? 'netlify' : 'netlify-static',
     prerender: {
       crawlLinks: false,
     },

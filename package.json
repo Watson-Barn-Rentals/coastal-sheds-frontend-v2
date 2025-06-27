@@ -6,6 +6,7 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
+    "netlify-build": "if [ \"$PREVIEW_MODE\" = \"true\" ]; then npm run build; else npm run generate; fi",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },
