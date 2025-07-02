@@ -5,7 +5,6 @@ console.log('🛠  BUILD – PREVIEW_MODE =', process.env.PREVIEW_MODE);
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-  ssr: process.env.PREVIEW_MODE === 'true',
   hooks: {
     async 'prerender:routes'(context) {
       const apiRoot = process.env.API_ROOT_URL
