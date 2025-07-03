@@ -13,13 +13,10 @@
 </script>
 <template>
   <UApp>
-    <PreviewModeBanner />
-    <div class="relative">
       <Header />
       <main class="bg-background dark:bg-background-dark font-body overflow-auto">
         <slot />
       </main>
       <Footer />
-    </div>
   </UApp>
 </template>

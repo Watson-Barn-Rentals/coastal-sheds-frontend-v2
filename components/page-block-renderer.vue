@@ -20,7 +20,7 @@ const isDevMode = ref<boolean>(import.meta.dev);
       :data="block.data"
     />
     <div v-else>
-      <div v-if="isDevMode" class="p-8 bg-gray-100">
+      <div class="p-8 bg-gray-100">
         <p class="text-red-500">
           Page block failed type check!
         </p>

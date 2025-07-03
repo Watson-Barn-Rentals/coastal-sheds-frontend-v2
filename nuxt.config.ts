@@ -10,11 +10,6 @@ export default defineNuxtConfig({
   // … and emit a fully static site
   nitro: {
     preset: 'static',
-    prerender: {
-      // disable link crawling if you only want your dynamic routes
-      // from the hook below
-      crawlLinks: false,
-    },
   },
 
   // prerender every route
