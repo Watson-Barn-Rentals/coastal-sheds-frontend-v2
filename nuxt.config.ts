@@ -7,11 +7,6 @@ export default defineNuxtConfig({
   // enable SSR so we can prerender …
   ssr: true,
 
-  // … and emit a fully static site
-  nitro: {
-    preset: 'static',
-  },
-
   // prerender every route
   routeRules: {
     '/**': { prerender: true },
