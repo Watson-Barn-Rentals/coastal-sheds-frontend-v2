@@ -4,28 +4,37 @@ console.log('🛠  BUILD – PREVIEW_MODE =', process.env.PREVIEW_MODE);
 
 const isPreview = process.env.PREVIEW_MODE === 'true';
 
-// https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
-  // enable SSR only in preview mode
+  // SSR only in preview
   ssr: isPreview,
 
-  // Nitro preset & prerender settings depend on preview mode
+  // Nitro preset & prerender (only when not preview)
   nitro: {
     preset: isPreview ? 'netlify' : 'netlify-static',
-    prerender: 
-    {
-      crawlLinks: false,
-    },
+    // spread in prerender config only when !isPreview
+    ...(isPreview
+      ? {}
+      : {
+          prerender: {
+            crawlLinks: false,
+          },
+        }),
   },
 
-  // only prerender routes when NOT in preview
+  // Only apply full-route prerender rules when not in preview
   routeRules: isPreview
     ? {}
     : {
         '/**': { prerender: true },
       },
+
+  // Global plugin to override useAsyncData
+  plugins: [
+    '~/plugins/asyncDataOverride.ts',
+    '~/plugins/vueuse-motion.ts',
+  ],
 
   hooks: {
     async 'prerender:routes'(context) {
@@ -54,11 +63,7 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
-
-  devServer: {
-    host: '0.0.0.0',
-    port: 3000,
-  },
+  devServer: { host: '0.0.0.0', port: 3000 },
 
   modules: [
     '@nuxt/ui-pro',
@@ -76,19 +81,13 @@ export default defineNuxtConfig({
     },
   },
 
-  plugins: [
-    '~/plugins/vueuse-motion.ts',
-  ],
-
   css: [
     '~/assets/css/main.css',
     '~/assets/css/theme.css',
   ],
 
   vite: {
-    plugins: [
-      tailwindcss(),
-    ],
+    plugins: [tailwindcss()],
   },
 
   colorMode: {
