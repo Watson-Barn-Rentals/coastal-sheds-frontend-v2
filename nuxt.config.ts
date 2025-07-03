@@ -1,16 +1,17 @@
 import { defineNuxtConfig } from 'nuxt/config'
 import tailwindcss from '@tailwindcss/vite'
 
+const isPreviewMode = process.env.PREVIEW_MODE === 'true'
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
   // enable SSR so we can prerender …
-  ssr: true,
+  ssr: isPreviewMode ? false : true,
 
   // prerender every route
   routeRules: {
-    '/**': { prerender: true },
-    '/**?token=**': { ssr: true },
+    '/**': { prerender: isPreviewMode ? false : true },
   },
 
   plugins: [
