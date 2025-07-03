@@ -1,3 +1,4 @@
+import { defineNuxtConfig } from 'nuxt/config'
 import tailwindcss from "@tailwindcss/vite";
 
 console.log('🛠  BUILD – PREVIEW_MODE =', process.env.PREVIEW_MODE);
@@ -10,34 +11,25 @@ export default defineNuxtConfig({
   // SSR only in preview
   ssr: isPreview,
 
-  // Nitro preset & prerender (only when not preview)
-  nitro: {
-    preset: isPreview ? 'netlify' : 'netlify-static',
-    // spread in prerender config only when !isPreview
-    ...(isPreview
-      ? {}
-      : {
-          prerender: {
-            crawlLinks: false,
-          },
-        }),
-  },
-
-  // Only apply full-route prerender rules when not in preview
-  routeRules: isPreview
-    ? {}
-    : {
-        '/**': { prerender: true },
+  // only prerender + routeRules in “normal” mode
+  ...(isPreview ? {} : {
+    nitro: {
+      prerender: {
+        crawlLinks: false,
       },
+    },
+    routeRules: {
+      '/**': { prerender: true },
+    },
+  }),
 
-  // Global plugin to override useAsyncData
   plugins: [
-    '~/plugins/async-data-override.ts',
     '~/plugins/vueuse-motion.ts',
   ],
 
   hooks: {
-    async 'prerender:routes'(context) {
+    // fetch dynamic routes at prerender time
+    'prerender:routes': async (context) => {
       const apiRoot = process.env.API_ROOT_URL;
       if (!apiRoot) {
         throw new Error('Missing API_ROOT_URL environment variable');
@@ -46,7 +38,7 @@ export default defineNuxtConfig({
       if (!res.ok) {
         throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`);
       }
-      const { data: pageList } = (await res.json()) as { data: string[] };
+      const { data: pageList } = await res.json() as { data: string[] };
       for (const route of pageList) {
         context.routes.add(route);
       }
@@ -87,7 +79,7 @@ export default defineNuxtConfig({
   ],
 
   vite: {
-    plugins: [tailwindcss()],
+    plugins: [ tailwindcss() ],
   },
 
   colorMode: {
