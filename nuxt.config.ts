@@ -32,7 +32,7 @@ export default defineNuxtConfig({
 
   // Global plugin to override useAsyncData
   plugins: [
-    '~/plugins/asyncDataOverride.ts',
+    '~/plugins/async-data-override.ts',
     '~/plugins/vueuse-motion.ts',
   ],
 
