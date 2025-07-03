@@ -6,7 +6,6 @@
     "build": "nuxt build",
     "dev": "nuxt dev",
     "generate": "nuxt generate",
-    "netlify-build": "nuxt build && [ \"$PREVIEW_MODE\" != \"true\" ] && nuxt generate || echo 'Skipping generate in preview mode'",
     "preview": "nuxt preview",
     "postinstall": "nuxt prepare"
   },

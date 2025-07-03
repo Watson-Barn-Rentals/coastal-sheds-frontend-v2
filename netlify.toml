@@ -1,3 +1,0 @@
-[build]
-  # always run the same script, it'll branch on PREVIEW_MODE
-  command   = "npm run netlify-build"
