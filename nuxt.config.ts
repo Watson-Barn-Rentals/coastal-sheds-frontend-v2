@@ -25,6 +25,7 @@ export default defineNuxtConfig({
       }
     },
   },
+  ssr: process.env.PREVIEW_MODE === 'true',
   nitro: {
     preset: process.env.PREVIEW_MODE === 'true' ? 'netlify' : 'netlify-static',
     prerender: {

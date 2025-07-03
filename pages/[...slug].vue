@@ -7,7 +7,6 @@ import { useRoute, useCookie, useRequestEvent } from '#imports'
 //    static files when available, or SSR when not.
 definePageMeta({
   layout: 'default',
-  ssr: true,
 })
 
 const route = useRoute()
