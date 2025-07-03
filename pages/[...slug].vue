@@ -11,24 +11,11 @@ definePageMeta({
 
 const route = useRoute()
 
-// 2) Figure out previewToken both server- and client-side
-const previewToken = import.meta.server
-  ? (useRequestEvent()?.context.previewToken as string | null)
-  : useCookie('previewToken', { path: '/' }).value ?? null
+const dataKey = `pageData-${route.fullPath}`
 
-// 3) Build a unique data key:
-//    - no token  => "pageData-/about-us"
-//    - with token => "pageData-/about-us-preview"
-const dataKey = `pageData-${route.fullPath}` + (previewToken ? '-preview' : '')
-
-// 4) Fetch or reuse the payload:
-//    - On SSG build (no cookie) Nitro sees key without "-preview" and
-//      serves the prerendered JSON.
-//    - On preview (cookie present) key includes "-preview", so Nitro
-//      cannot find prerendered JSON and will do SSR.
 const { data, refresh } = await useAsyncData<PageData>(
   () => dataKey,
-  () => getPageData(route.fullPath, previewToken),
+  () => getPageData(route.fullPath),
 )
 
 // 5) When navigating client-side, re-run the fetch

@@ -1,12 +1,9 @@
 import { isPageData, type PageData } from "~/types/page-data"
 
-export const getPageData = async (pageUrl: string, previewToken: string | null): Promise<PageData> => {
+export const getPageData = async (pageUrl: string): Promise<PageData> => {
 	const config = useRuntimeConfig()
 
 	const queries = new URLSearchParams()
-	if (previewToken) {
-		queries.append('previewToken', previewToken)
-	}
 
 	try {
 		const { data } = await $fetch<{ data: unknown }>(

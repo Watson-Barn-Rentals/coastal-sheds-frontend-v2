@@ -1,58 +1,51 @@
 import { defineNuxtConfig } from 'nuxt/config'
-import tailwindcss from "@tailwindcss/vite";
-
-console.log('🛠  BUILD – PREVIEW_MODE =', process.env.PREVIEW_MODE);
-
-const isPreview = process.env.PREVIEW_MODE === 'true';
+import tailwindcss from '@tailwindcss/vite'
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
+  // enable SSR so we can prerender …
   ssr: true,
 
-  // only prerender + routeRules in “normal” mode
-  ...(isPreview ? {} : {
-    nitro: {
-      prerender: {
-        crawlLinks: false,
-      },
+  // … and emit a fully static site
+  nitro: {
+    preset: 'static',
+    prerender: {
+      // disable link crawling if you only want your dynamic routes
+      // from the hook below
+      crawlLinks: false,
     },
-    routeRules: {
-      '/**': { prerender: true },
-    },
-  }),
+  },
+
+  // prerender every route
+  routeRules: {
+    '/**': { prerender: true },
+  },
 
   plugins: [
     '~/plugins/vueuse-motion.ts',
   ],
 
   hooks: {
-    // fetch dynamic routes at prerender time
-    'prerender:routes': async (context) => {
-      const apiRoot = process.env.API_ROOT_URL;
+    // fetch dynamic route list at build time
+    'prerender:routes': async (ctx) => {
+      const apiRoot = process.env.API_ROOT_URL
       if (!apiRoot) {
-        throw new Error('Missing API_ROOT_URL environment variable');
+        throw new Error('Missing API_ROOT_URL environment variable')
       }
-      const res = await fetch(`${apiRoot}/api/get-prerender-page-list`);
+      const res = await fetch(`${apiRoot}/api/get-prerender-page-list`)
       if (!res.ok) {
-        throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`);
+        throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`)
       }
-      const { data: pageList } = await res.json() as { data: string[] };
-      
-      if (isPreview) {
-        for (const route of pageList) {
-          context.routes.add(route);
-        }
-      }
+      const { data: pageList } = await res.json() as { data: string[] }
+      pageList.forEach(route => ctx.routes.add(route))
     },
   },
 
   runtimeConfig: {
     public: {
-      apiRootUrl: process.env.API_ROOT_URL,
-      previewMode: isPreview,
+      apiRootUrl: process.env.API_ROOT_URL!,
       mainSiteUrl: process.env.MAIN_SITE_URL || '',
-      previewSiteUrl: process.env.PREVIEW_SITE_URL || '',
     },
   },
 
@@ -81,11 +74,11 @@ export default defineNuxtConfig({
   ],
 
   vite: {
-    plugins: [ tailwindcss() ],
+    plugins: [tailwindcss()],
   },
 
   colorMode: {
     classSuffix: '',
     preference: 'system',
   },
-});
+})
