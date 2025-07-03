@@ -8,8 +8,7 @@ const isPreview = process.env.PREVIEW_MODE === 'true';
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
 
-  // SSR only in preview
-  ssr: isPreview,
+  ssr: true,
 
   // only prerender + routeRules in “normal” mode
   ...(isPreview ? {} : {
