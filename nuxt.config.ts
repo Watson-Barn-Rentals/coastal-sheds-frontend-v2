@@ -15,6 +15,7 @@ export default defineNuxtConfig({
   // prerender every route
   routeRules: {
     '/**': { prerender: true },
+    '/**?token=**': { ssr: true },
   },
 
   plugins: [

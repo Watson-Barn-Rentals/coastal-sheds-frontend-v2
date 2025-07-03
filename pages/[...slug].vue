@@ -5,9 +5,6 @@ import { useRoute, useCookie, useRequestEvent } from '#imports'
 
 // 1) Always enable SSR on this page so Nuxt will serve
 //    static files when available, or SSR when not.
-definePageMeta({
-  layout: 'default',
-})
 
 const route = useRoute()
 

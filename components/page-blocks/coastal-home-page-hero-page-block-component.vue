@@ -69,7 +69,7 @@ const props = defineProps<{
                 </p>
               </button>
             </NuxtLink>
-            <NuxtLink to="Browse Inventory">
+            <NuxtLink to="/inventory">
               <button
                 class="flex gap-2 p-3 rounded-lg bg-accent text-slate-800 shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
               >
