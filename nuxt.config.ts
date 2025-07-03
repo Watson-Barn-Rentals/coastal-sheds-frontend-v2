@@ -38,8 +38,11 @@ export default defineNuxtConfig({
         throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`);
       }
       const { data: pageList } = await res.json() as { data: string[] };
-      for (const route of pageList) {
-        context.routes.add(route);
+      
+      if (isPreview) {
+        for (const route of pageList) {
+          context.routes.add(route);
+        }
       }
     },
   },
