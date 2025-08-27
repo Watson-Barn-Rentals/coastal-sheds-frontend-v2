@@ -17,20 +17,27 @@ useHead({
 });
 
 /** Fetch + 404 handling */
-const { data, pending, error, refresh } =
-  await useAsyncData<BlogPostData | null>(
-    () => `blog-post:${slug.value}`,
-    async () => {
-      try {
-        return await getBlogPost(slug.value);
-      } catch (e: any) {
-        // If your API throws for 404s, treat as null so we can emit a real 404.
-        if (e?.response?.status === 404) return null;
-        throw e;
+const { data, pending, error, refresh } = await useAsyncData<BlogPostData | null>(
+  () => `blog-post:${slug.value}`,
+  async () => {
+    try {
+      const res = await getBlogPost(slug.value)
+      if (import.meta.server) {
+        console.log('[prerender:getBlogPost]', slug.value, '→',
+          res ? 'OK' : 'EMPTY')
       }
-    },
-    { watch: [slug] }
-  );
+      return res
+    } catch (e: any) {
+      if (import.meta.server) {
+        console.log('[prerender:getBlogPost:ERROR]', slug.value, e?.response?.status, e?.message)
+      }
+      if (e?.response?.status === 404) return null
+      throw e
+    }
+  },
+  { watch: [slug] }
+)
+
 
 if (import.meta.server && !pending.value && !data.value) {
   throw createError({ statusCode: 404, statusMessage: "Blog post not found" });
