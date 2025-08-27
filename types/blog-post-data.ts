@@ -7,6 +7,7 @@ export type BlogPostData = {
   title: string;
   short_description: string;
   published_at: string;
+  updated_at: string;
   blocks: PageBlock[];
   relatedBlogPosts?: BlogPostData[];
 };
@@ -23,6 +24,7 @@ export function isBlogPostData(obj: unknown): obj is BlogPostData {
     typeof o.title === "string" &&
     typeof o.short_description === "string" &&
     typeof o.published_at === "string" &&
+    typeof o.updated_at === "string" &&
     Array.isArray(o.blocks) &&
     o.blocks.every(isPageBlock)
   )) {
