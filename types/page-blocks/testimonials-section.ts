@@ -17,6 +17,7 @@ export type TestimonialsSectionBlockData = {
 
 export type TestimonialsSectionBlock = {
   type: typeof TESTIMONIALS_SECTION_BLOCK_TYPE;
+  spaceAfter: string
   data: TestimonialsSectionBlockData;
 };
 
@@ -25,6 +26,7 @@ export function isTestimonialsSectionBlock(x: any): x is TestimonialsSectionBloc
     x !== null &&
     typeof x === "object" &&
     x.type === TESTIMONIALS_SECTION_BLOCK_TYPE &&
+    typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     Array.isArray(x.data.testimonials) &&
     x.data.testimonials.every((testimonial: any) =>

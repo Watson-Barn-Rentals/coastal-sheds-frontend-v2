@@ -1,0 +1,21 @@
+@import "tailwindcss";
+
+/* dark‐mode variant helper */
+@custom-variant dark (&:where(.dark, .dark *));
+
+/* ─── theme variables ───────────────────────────────────────────────────────── */
+@theme {
+  /* Colors */
+  --color-brand:                 #3e438c;
+  --color-accent:                #ffd700;
+  --color-secondary-accent:      #ffa500;
+  --color-background:            #ffffe7;
+  --color-background-dark:       #78716c;
+  --color-background-accent:     #fff5c5;
+  --color-background-accent-dark:#44403c;
+  --color-hovered-link:          #1c398e;
+
+  /* Fonts */
+  --font-title: "Segoe UI", sans-serif;
+  --font-body:  "Quicksand", sans-serif;
+}

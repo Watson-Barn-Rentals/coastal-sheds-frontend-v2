@@ -1,6 +1,8 @@
 export type SubMenuItem = {
   text: string
   icon: string | null
+  column_number: number
+  column_span: number
   url: string
 }
 
@@ -20,6 +22,27 @@ export type HeaderSettings = {
   show_display_mode_toggle: boolean
   menu: MenuItem[]
 }
+
+export function normalizeHeaderSettings(data: unknown): unknown {
+	if (
+		typeof data === 'object' &&
+		data !== null &&
+		Array.isArray((data as any).menu)
+	) {
+		for (const item of (data as any).menu) {
+			if (Array.isArray(item.children)) {
+				for (const child of item.children) {
+					if (child && typeof child === 'object' && 'column_number' in child) {
+						child.column_number = Number(child.column_number)
+            child.column_span = Number(child.column_span)
+					}
+				}
+			}
+		}
+	}
+	return data
+}
+
 
 export function isHeaderSettings(data: unknown): data is HeaderSettings {
   if (typeof data !== 'object' || data === null) {
@@ -57,6 +80,8 @@ export function isHeaderSettings(data: unknown): data is HeaderSettings {
 
       if (typeof child.text !== 'string') return false
       if (child.icon != null && typeof child.icon !== 'string') return false
+      if (typeof child.column_number !== 'number') return false
+      if (typeof child.column_span !== 'number') return false
       if (typeof child.url !== 'string') return false
     }
   }

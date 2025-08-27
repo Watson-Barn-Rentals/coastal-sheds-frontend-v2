@@ -1,3 +1,4 @@
+// types/image-media-item.ts
 export type ImageMediaItem = {
     original_url: string;
     srcset: string;

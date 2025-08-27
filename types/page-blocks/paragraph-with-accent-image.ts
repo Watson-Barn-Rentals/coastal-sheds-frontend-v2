@@ -1,5 +1,6 @@
 // types/blocks/paragraph-with-accent-image.ts
 
+import { isCustomCssStyling, type CustomCssStyling } from "../custom-css-styling";
 import { isImageMediaItem, type ImageMediaItem } from "../image-media-item";
 
 export const PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE = "paragraph-with-accent-image" as const;
@@ -15,11 +16,12 @@ export type ParagraphWithAccentImageBlockData = {
   verticalImageOffset: string;
   imageRotation: string;
   imagePadding: string;
-  imageStyling: string;
+  customImageStyling: CustomCssStyling;
 };
 
 export type ParagraphWithAccentImageBlock = {
   type: typeof PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE;
+  spaceAfter: string
   data: ParagraphWithAccentImageBlockData;
 };
 
@@ -28,6 +30,7 @@ export function isParagraphWithAccentImageBlock(x: any): x is ParagraphWithAccen
     x !== null &&
     typeof x === "object" &&
     x.type === PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE &&
+    typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.title === "string" &&
     typeof x.data.text === "string" &&
@@ -40,6 +43,6 @@ export function isParagraphWithAccentImageBlock(x: any): x is ParagraphWithAccen
     typeof x.data.verticalImageOffset === "string" &&
     typeof x.data.imageRotation === "string" &&
     typeof x.data.imagePadding === "string" &&
-    typeof x.data.imageStyling === "string"
+    isCustomCssStyling(x.data.customImageStyling)
   );
 }

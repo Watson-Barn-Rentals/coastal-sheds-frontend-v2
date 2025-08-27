@@ -16,13 +16,15 @@ const { data } = await useAsyncData<HeaderSettings>(
   () => getHeaderSettings()
 )
 
+
+
 </script>
 
 <template>
     <div 
         v-if="data"
         :class="[
-            'absolute top-0 left-0 w-full z-[100] flex px-4 py-2',
+            'fixed top-0 left-0 w-full z-[100] flex px-4 py-2',
             'sm:justify-center justify-end'
         ]"
     >
@@ -43,7 +45,7 @@ const { data } = await useAsyncData<HeaderSettings>(
                         v-for="(item, index) in data.menu"
                         :key="`navbar-item-${index}`"
                         :menu-item="item"
-                        class="text-xs md:text-sm lg:text-base"
+                        class="text-xs md:text-sm lg:text-base hover:text-hovered-link"
                     />
                     <NuxtLink
                         v-if="data.show_phone_call_to_action"

@@ -1,5 +1,5 @@
 <template>
-    <footer class="bg-background-accent dark:bg-background-accent-dark flex flex-col">
+    <footer class="bg-background-accent dark:bg-background-accent-dark flex flex-col h-40">
         <div class="grow flex">
             <div>
                 

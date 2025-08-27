@@ -1,11 +1,12 @@
-import { isHeaderSettings, type HeaderSettings } from "~/types/header-settings"
+import { isHeaderSettings, normalizeHeaderSettings, type HeaderSettings } from "~/types/header-settings"
 
 export const getHeaderSettings = async (): Promise<HeaderSettings> => {
 	const config = useRuntimeConfig()
 
 	try {
-		const { data } = await $fetch<{ data: unknown }>(`${config.public.apiRootUrl}/api/get-header-settings`)
+		let { data } = await $fetch<{ data: unknown }>(`${config.public.apiRootUrl}/api/get-header-settings`)
 
+		data = normalizeHeaderSettings(data)
 		
 		if (!isHeaderSettings(data)) {
 			throw new Error('Invalid response from API')
@@ -13,7 +14,18 @@ export const getHeaderSettings = async (): Promise<HeaderSettings> => {
 
 		return data
 	} catch (err: any) {
-		await navigateTo('/error')
-		throw new Error('An error occurred while fetching header settings')
+		const statusCode =
+		  err?.response?.status ??
+		  err?.statusCode ??
+		  err?.status ??
+		  err?.data?.statusCode ??
+		  500
+
+		const statusMessage =
+		  err?.data?.message ??
+		  err?.message ??
+		  'An error occurred while fetching header settings'
+
+		throw createError({ statusCode, statusMessage })
 	}
 }

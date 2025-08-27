@@ -8,6 +8,12 @@ import { INFINITE_IMAGE_CAROUSEL_BLOCK_TYPE, isInfiniteImageCarouselBlock, type 
 import InfiniteImageCarouselPageBlockComponent from "~/components/page-blocks/infinite-image-carousel-page-block-component.vue";
 import { isTestimonialsSectionBlock, TESTIMONIALS_SECTION_BLOCK_TYPE, type TestimonialsSectionBlock } from "./testimonials-section";
 import TestimonialsSectionPageBlockComponent from "~/components/page-blocks/testimonials-section-page-block-component.vue";
+import { HEADING_BLOCK_TYPE, isHeadingBlock, type HeadingBlock } from "./heading";
+import HeadingBlockComponent from "~/components/page-blocks/heading-block-component.vue";
+import { COLUMNS_SECTION_PAGE_BLOCK_TYPE, isColumnsSectionBlock } from "./columns-section";
+import ColumnsSectionPageBlockComponent from "~/components/page-blocks/columns-section-page-block-component.vue";
+import { HIGHLIGHTED_BLOG_POSTS_BLOCK_TYPE, isHighlightedBlogPostsBlock, type HighlightedBlogPostsBlock } from "./highlighted-blog-posts";
+import HighlightedBlogPostsBlockComponent from "~/components/page-blocks/highlighted-blog-posts-block-component.vue";
 
 /**
  * 1) Build a mapping object: each key is the “type” string,
@@ -16,6 +22,11 @@ import TestimonialsSectionPageBlockComponent from "~/components/page-blocks/test
  *      • component: the actual imported Vue component
  */
 export const blockMap = {
+  [COLUMNS_SECTION_PAGE_BLOCK_TYPE]: {
+    guard: isColumnsSectionBlock,
+    component: ColumnsSectionPageBlockComponent,
+  },
+
   [COASTAL_HOME_PAGE_HERO_BLOCK_TYPE]: {
     guard: isCoastalHomePageHeroBlock,
     component: CoastalHomePageHeroPageBlockComponent,
@@ -31,7 +42,15 @@ export const blockMap = {
   [TESTIMONIALS_SECTION_BLOCK_TYPE]: {
     guard: isTestimonialsSectionBlock,
     component: TestimonialsSectionPageBlockComponent
-  }
+  },
+  [HEADING_BLOCK_TYPE]: {
+    guard: isHeadingBlock,
+    component: HeadingBlockComponent
+  },
+  [HIGHLIGHTED_BLOG_POSTS_BLOCK_TYPE]: {
+    guard: isHighlightedBlogPostsBlock,
+    component: HighlightedBlogPostsBlockComponent
+  },
 
   // When you add “MyNewBlock”:
   //
@@ -49,6 +68,8 @@ export type PageBlock =
   | ParagraphWithAccentImageBlock 
   | InfiniteImageCarouselBlock
   | TestimonialsSectionBlock
+  | HeadingBlock
+  | HighlightedBlogPostsBlock
 // (add “| MyNewBlock” on a new line below whenever you create a new block file)
 
 /**

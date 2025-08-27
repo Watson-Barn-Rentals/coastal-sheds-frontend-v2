@@ -1,0 +1,107 @@
+<script lang="ts" setup>
+import CardGallery from '~/components/card-gallery.vue'
+import { getProductCategoryItem } from '~/services/api/get-product-category-item'
+import type { ImageMediaItem } from '~/types/image-media-item'
+import type { ProductCategoryItem } from '~/types/product-category-item'
+
+definePageMeta({
+  key: route => route.fullPath, // remount on path change
+  layout: 'default',
+})
+
+const route = useRoute()
+const slug = computed(() => route.params.slug as string)
+
+const { data, pending, error } = await useAsyncData<ProductCategoryItem>(
+  () => `product-category-${slug.value}`,     // key depends on slug
+  () => getProductCategoryItem(slug.value),   // fetch depends on slug
+  { watch: [slug] }                           // re-fetch when slug changes
+)
+
+// Set SEO reactively based on fetched data
+useSeoMeta({
+  title: () =>
+    data.value?.title
+      ? `${data.value.title} Product Category Details`
+      : 'Product Category Details',
+  description: () => data.value?.short_description ?? '',
+})
+
+const images = computed<ImageMediaItem[]>(() => {
+  const imageArray = []
+  if (data.value) {
+    if (data.value.heroImage) {
+      imageArray.push(data.value.heroImage)
+    }
+    if (data.value.additionalImages) {
+      imageArray.push(...data.value.additionalImages)
+    }
+  }
+  return imageArray
+})
+
+</script>
+
+<template>
+    <Heading 
+      :text="data?.title ?? ''" 
+      heading-level="h1"
+      text-alignment="center"
+      class="mt-12 md:mt-24"
+    />
+    <p class="text-center italic">Scroll down to view product lines</p>
+    <MaxWidthContentWrapper>
+      <div class="flex flex-col md:flex-row gap-8 my-8">
+        <ImageCarousel 
+          :images="images" 
+          class="w-full md:w-1/2"
+          :show-thumbnails="true" 
+          :loop="true"
+          image-classes="rounded-2xl overflow-hidden"
+        />
+        <WysiwygRenderer v-if="data" :content="data.long_description" class="w-full md:w-1/2" />
+      </div>
+    </MaxWidthContentWrapper>
+
+    <Heading 
+      text="Product Lines" 
+      heading-level="h2"
+      text-alignment="center"
+      class="mt-10 mb-6" 
+    />
+    <MaxWidthContentWrapper v-if="data">
+      <CardGallery class="my-8">
+        <ProductCard
+          v-for="productLine in data.product_lines"
+          :key="productLine.slug"
+          class="h-full"
+          :heroImage="productLine.heroImage"
+          :title="productLine.title"
+          :description="productLine.short_description"
+          :link="productLine.override_page_url ? productLine.override_page_url : `/product-lines/${productLine.slug}`"
+        />
+      </CardGallery>
+    </MaxWidthContentWrapper>
+    <div class="flex justify-center gap-10 mx-10 my-20">
+      <NuxtLink to="/products" class="shrink-0">
+        <button
+          class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
+        >
+          <UIcon
+            name="icon-park-outline:back"
+            dynamic
+            class="h-6 w-6 my-auto sm:h-8 sm:w-8 text-white"
+          />
+          <p
+            class="font-title select-none text-white font-semibold text-sm sm:text-base my-auto shrink-0"
+          >
+            Back to All Products
+          </p>
+        </button>
+      </NuxtLink>
+      <div class="flex flex-col">
+        <p class="font-semibold text-center">Didn't find what you are looking for?</p>
+        <p class="text-sm">Explore our other products and services, or give us a call and speak to our customer support team!</p>
+      </div>
+    </div>
+</template>

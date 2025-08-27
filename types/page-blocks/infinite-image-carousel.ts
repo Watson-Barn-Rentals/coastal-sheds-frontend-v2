@@ -11,6 +11,7 @@ export type InfiniteImageCarouselBlockData = {
 
 export type InfiniteImageCarouselBlock = {
   type: typeof INFINITE_IMAGE_CAROUSEL_BLOCK_TYPE;
+  spaceAfter: string
   data: InfiniteImageCarouselBlockData;
 };
 
@@ -19,6 +20,7 @@ export function isInfiniteImageCarouselBlock(x: any): x is InfiniteImageCarousel
     x !== null &&
     typeof x === "object" &&
     x.type === INFINITE_IMAGE_CAROUSEL_BLOCK_TYPE &&
+    typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     Array.isArray(x.data.images) &&
     x.data.images.every(isImageMediaItem) &&

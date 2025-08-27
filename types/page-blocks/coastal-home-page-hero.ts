@@ -13,6 +13,7 @@ export type CoastalHomePageHeroBlockData = {
 
 export type CoastalHomePageHeroBlock = {
   type: typeof COASTAL_HOME_PAGE_HERO_BLOCK_TYPE;
+  spaceAfter: string
   data: CoastalHomePageHeroBlockData;
 };
 
@@ -21,6 +22,7 @@ export function isCoastalHomePageHeroBlock(x: any): x is CoastalHomePageHeroBloc
     x !== null &&
     typeof x === "object" &&
     x.type === COASTAL_HOME_PAGE_HERO_BLOCK_TYPE &&
+    typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.backgroundImage === "object" &&
     isImageMediaItem(x.data.backgroundImage) &&
