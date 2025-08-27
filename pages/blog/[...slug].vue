@@ -24,10 +24,12 @@ useSeoMeta({
 })
 
 useBlogPostSchema({
-  title: computed(() => data.value!.title),
-  description: computed(() => data.value!.short_description),
-  slug: computed(() => data.value!.slug),
-  publishedAt: computed(() => new Date(data.value!.published_at).toISOString()),
+  title: computed(() => data.value?.title ?? ''),
+  description: computed(() => data.value?.short_description ?? ''),
+  slug, // from route
+  publishedAt: computed(() =>
+    data.value?.published_at ? new Date(data.value.published_at).toISOString() : ''
+  ),
 })
 
 </script>
