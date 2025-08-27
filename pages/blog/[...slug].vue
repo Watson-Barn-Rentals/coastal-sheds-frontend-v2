@@ -19,7 +19,7 @@ const { data, pending, error, refresh } = await useAsyncData<BlogPostData>(
 )
 
 useSeoMeta({
-  title: () => `${data.value?.title ?? ''}${ data.value?.published_at ? ` (${new Date(data.value.published_at).toLocaleDateString()})` : ''} - ${config.public.siteName}`,
+  title: () => `${data.value?.title ?? ''}${ data.value?.published_at ? ` (${new Date(data.value.published_at).toLocaleDateString()})` : ''} - ${config.public.pageTitleSiteName}`,
   description: () => data.value?.short_description ?? '',
 })
 

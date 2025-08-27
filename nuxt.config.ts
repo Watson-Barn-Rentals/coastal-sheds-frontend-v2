@@ -84,7 +84,7 @@ export default defineNuxtConfig({
       previewMode: isPreviewMode,
       fallbackTitle: '',
       fallbackDescription: '',
-      siteName: process.env.SITE_NAME || '',
+      pageTitleSiteName: process.env.PAGE_TITLE_SITE_NAME || '',
       siteRootUrl: process.env.SITE_ROOT_URL || '',
     },
   },

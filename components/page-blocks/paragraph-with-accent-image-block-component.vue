@@ -45,7 +45,7 @@ useCustomCss(props.data.customImageStyling.css);
       <WysiwygRenderer class="p-8" :content="props.data.text" />
 
       <!-- Ensure float is cleared on desktop -->
-      <div class="hidden md:block clear-both"></div>
+      <!-- <div class="hidden md:block clear-both"></div> -->
     </div>
   </MaxWidthContentWrapper>
 </template>

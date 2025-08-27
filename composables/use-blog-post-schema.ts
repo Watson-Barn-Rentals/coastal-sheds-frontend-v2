@@ -17,7 +17,7 @@ export function useBlogPostSchema(opts: {
   publishedAt: MaybeRef<string>
 }) {
   const {
-    public: { siteRootUrl, siteName, siteLogoUrl },
+    public: { siteRootUrl, pageTitleSiteName, siteLogoUrl },
   } = useRuntimeConfig()
 
   const normalizeSlug = (s: string) => s.replace(/^\/+|\/+$/g, '')
@@ -39,7 +39,7 @@ export function useBlogPostSchema(opts: {
 
   // Minimal, clean graph for a blog post page
   useSchemaOrg([
-    defineWebSite({ name: siteName }),
+    defineWebSite({ name: pageTitleSiteName }),
     defineWebPage({
       '@type': 'WebPage',
       name: headline,
@@ -62,7 +62,7 @@ export function useBlogPostSchema(opts: {
       // No author, keywords, or dateModified (per request)
       publisher: {
         '@type': 'Organization',
-        name: siteName,
+        name: pageTitleSiteName,
         ...(siteLogoUrl
           ? { logo: { '@type': 'ImageObject', url: siteLogoUrl } }
           : {}),
