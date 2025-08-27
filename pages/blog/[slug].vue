@@ -19,18 +19,21 @@ const { data, pending, error, refresh } = await useAsyncData<BlogPostData>(
 )
 
 useSeoMeta({
-  title: () => `${data.value?.title ?? ''}${ data.value?.published_at ? ` (${new Date(data.value.published_at).toLocaleDateString()})` : ''} - ${config.public.pageTitleSiteName}`,
+  title: () => `${data.value?.title ?? ''}${ data.value?.published_at ? ` (${new Date(data.value.published_at).toLocaleDateString()})` : ''} - ${config.public.siteName}`,
   description: () => data.value?.short_description ?? '',
 })
 
 useBlogPostSchema({
   title: computed(() => data.value?.title ?? ''),
   description: computed(() => data.value?.short_description ?? ''),
-  slug, // from route
+  slug: computed(() => data.value?.slug ?? slug.value),
   publishedAt: computed(() =>
-    data.value?.published_at ? new Date(data.value.published_at).toISOString() : ''
+    data.value?.published_at
+      ? new Date(data.value.published_at).toISOString()
+      : ''
   ),
 })
+
 
 </script>
 
