@@ -98,12 +98,6 @@ export default defineNuxtConfig({
 
   vite: {
     plugins: [tailwindcss()],
-    server: {
-      https: {
-        key: fs.readFileSync('/home/development/certs/dev/key.pem'),
-        cert: fs.readFileSync('/home/development/certs/dev/cert.pem'),
-      },
-    },
   },
 
   modules: [
