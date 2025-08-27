@@ -21,15 +21,8 @@ defineProps<{
         :is="resolvePageBlockComponent(block.type)"
         :data="block.data"
       />
-      <div v-else>
-        <div class="p-8 bg-gray-100">
-          <p class="text-red-500">
-            Page block failed type check!
-          </p>
-          <pre class="bg-gray-100 rounded text-xs p-4">
-            {{ block }}
-          </pre>
-        </div>
+      <div v-else class="h-48 flex flex-col justify-center">
+        <p class="text-center text-2xl">Something went wrong when displaying this component!</p>
       </div>
     </div>
   </div>

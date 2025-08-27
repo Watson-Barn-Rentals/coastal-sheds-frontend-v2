@@ -38,6 +38,7 @@ const { data } = await useAsyncData<ProductCategoryItem[]>(
           :description="productCategory.short_description"
           :link="productCategory.override_page_url ? productCategory.override_page_url : `/product-categories/${productCategory.slug}`"
         />
+        <NoItemsCard v-if="data!.length === 0" message="No Products to Display" />
       </CardGallery>
     </MaxWidthContentWrapper>
 </template>

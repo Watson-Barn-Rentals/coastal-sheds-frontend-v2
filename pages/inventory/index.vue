@@ -215,13 +215,7 @@ const hiddenByFilters = computed(() => Math.max(0, totalCount.value - filtered.v
         />
 
         <!-- Empty state -->
-        <div
-          v-if="filtered.length === 0"
-          class="group flex h-full flex-col gap-8 overflow-hidden rounded-2xl bg-background-accent shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:bg-background-accent-dark p-8 justify-center"
-        >
-          <p class="text-center text-[4rem]">😞</p>
-          <p class="text-center text-xl">No Inventory to Display</p>
-        </div>
+        <NoItemsCard v-if="filtered.length === 0" message="No Inventory to Display" />
 
         <!-- Hidden-by-filters notice (no direct `data` access needed) -->
         <div

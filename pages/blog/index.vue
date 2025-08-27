@@ -34,6 +34,7 @@ useSeoMeta({
           :description="blogPost.short_description"
           :date-published="new Date(blogPost.published_at)"
         />
+        <NoItemsCard v-if="data!.length === 0" message="No Blog Posts to Display" />
       </CardGallery>
     </MaxWidthContentWrapper>
 </template>

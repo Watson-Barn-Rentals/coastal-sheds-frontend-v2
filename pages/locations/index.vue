@@ -216,6 +216,7 @@ const handleFindNearestClick = async () => {
           :estimated-driving-time="travel[location.slug]?.durationText || ''"
           :closest-location="hasETAs && locationIndex === 0"
         />
+        <NoItemsCard v-if="sortedLocations.length === 0" message="No Locations to Display" />
       </CardGallery>
     </div>
   </MaxWidthContentWrapper>
