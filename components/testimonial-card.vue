@@ -50,7 +50,7 @@ defineEmits([
                 />
               </svg>
             </div>
-            <p class="text-sm text-center mb-2">
+            <p v-if="testimonial.date" class="text-sm text-center mb-2">
               {{ new Date(testimonial.date).toLocaleDateString() }}
             </p>
           </div>

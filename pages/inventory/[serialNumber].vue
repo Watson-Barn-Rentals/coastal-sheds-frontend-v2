@@ -15,6 +15,8 @@ const { data, pending, error, refresh } = await useAsyncData<InventoryItem>(
   { watch: [serialNumber] }
 )
 
+const isTextInventoryItemSlideoverOpen = ref(false)
+
 const seoDescription = computed(() => {
   const item = data.value
   if (!item) return ''
@@ -78,30 +80,88 @@ const images = computed<ImageMediaItem[]>(() => {
 </script>
 <template>
     <PageDataGate :sources="[{ data, pending, error, refresh }]">
-      <Heading 
-          class="mt-12 md:mt-24" 
-          :text="`${data!.usedBuilding ? 'Used' : 'New'} ${data!.size} ${data!.product.title} Shed`" 
-          heading-level="h1"
-          text-alignment="center"
-      />
-      <MaxWidthContentWrapper>
-        <div class="flex flex-col md:flex-row gap-10 my-8">
-          <ImageCarousel 
-            :images="images" 
-            class="w-full md:w-1/2"
-            :show-thumbnails="true" 
-            :loop="true"
-            image-classes="rounded-2xl overflow-hidden"
-          />
-          <div class="w-full md:w-1/2 flex flex-col">
-          <h3 class="font-bold font-title text-lg">Building Details</h3>
-          <div class="flex gap-2">
-              <span class="font-bold">Size:</span>
-              <span>{{ data!.size }}</span>
+      <div v-if=data>
+        <Heading 
+            class="mt-12 md:mt-24" 
+            :text="`${data.usedBuilding ? 'Used' : 'New'} ${data.size} ${data.product.title}`" 
+            heading-level="h1"
+            text-alignment="center"
+        />
+        <MaxWidthContentWrapper>
+          <div class="flex flex-col md:flex-row gap-8 my-8">
+            <ImageCarousel 
+              :images="images" 
+              class="w-full md:w-1/2"
+              :show-thumbnails="true" 
+              :loop="true"
+              image-classes="rounded-2xl overflow-hidden"
+            />
+            <div class="w-full md:w-1/2 flex flex-col">
+              <div class="flex justify-center mb-4">
+                  <button
+                    class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
+                    @click="isTextInventoryItemSlideoverOpen = true"
+                  >
+                    <UIcon
+                      name="eva:message-square-outline"
+                      dynamic
+                      class="h-6 w-6 my-auto sm:h-8 sm:w-8 text-white"
+                    />
+                    <p
+                      class="font-title select-none text-white font-semibold text-sm sm:text-base my-auto shrink-0"
+                    >
+                      Send to my phone
+                    </p>
+                  </button>
+              </div>
+              <h3 class="font-bold font-title text-lg mb-2">Building Details</h3>
+              <div class="flex flex-col gap-1 ml-4">
+                <div class="flex gap-2">
+                    <span class="font-bold">Price:</span>
+                    <span :class="{ 'line-through': data.discountAmount }">{{ formatPrice(data.cashPrice) }}</span>
+                    <span v-if="data.discountAmount" class="text-red-500">{{ formatPrice(data.cashPrice - data.discountAmount) }}</span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="font-bold">Status:</span>
+                    <span>{{ data.usedBuilding ? 'Used' : 'New' }}</span>
+                    <span v-if="data.usedBuilding" class="italic">**Used Buildings are sold in AS IS condition</span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="font-bold">Size:</span>
+                    <span>{{ data.size }}</span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="font-bold">Product:</span>
+                    <NuxtLink :to="`/products/${data.product.slug}`" class="text-hovered-link hover:underline">{{ data.product.title }}</NuxtLink>
+                </div>
+                <div class="flex gap-2">
+                    <span class="font-bold">Product Line:</span>
+                    <NuxtLink :to="`/product-lines/${data.product.product_line_slug}`" class="text-hovered-link hover:underline">{{ data.product.product_line_title }} {{ data.product.product_category_title }}</NuxtLink>
+                </div>
+                <div class="flex gap-2">
+                    <span class="font-bold">Location:</span>
+                    <NuxtLink :to="`/locations/${data.location.slug}`" class="text-hovered-link hover:underline">{{ data.location.title }} ({{ data.location.city }}, {{ data.location.state }})</NuxtLink>
+                </div>
+                <div class="flex gap-2">
+                    <span class="font-bold">Serial Number:</span>
+                    <span>{{ data.serialNumber }}</span>
+                </div>
+                <div class="flex gap-2">
+                    <span class="font-bold">Lot Number:</span>
+                    <span>{{ data.lotNumber ?? 'N/A' }}</span>
+                </div>
+              </div>
+              <div>
+                <h3 class="font-bold font-title text-lg mt-4 mb-2">Building Description</h3>
+                <WysiwygRenderer :content="data.description" class="ml-4" />
+              </div>
+            </div>
           </div>
-            <WysiwygRenderer :content="data!.description" class="mt-4" />
-          </div>
-        </div>
-      </MaxWidthContentWrapper>
+        </MaxWidthContentWrapper>
+        <TextInventoryItemSlideover
+          v-model:isMenuOpen="isTextInventoryItemSlideoverOpen"
+          :serial-number="data.serialNumber"
+        />
+      </div>
     </PageDataGate>
 </template>

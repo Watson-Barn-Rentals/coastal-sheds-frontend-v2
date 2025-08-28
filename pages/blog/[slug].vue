@@ -168,6 +168,7 @@ useSchemaOrg([
       "@type": "Organization",
       name: config.public.pageTitleSiteName ?? "",
       image: { "@type": "ImageObject", url: config.public.siteLogoUrl },
+      url: config.public.siteRootUrl,
     },
     publisher: {
       "@type": "Organization",

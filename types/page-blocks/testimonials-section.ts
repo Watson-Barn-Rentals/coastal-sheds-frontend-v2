@@ -2,7 +2,7 @@ export const TESTIMONIALS_SECTION_BLOCK_TYPE = "testimonials-section" as const;
 
 type Testimonial = {
   authorsName: string;
-  date: string;
+  date?: string;
   text: string;
   source: string;
   starRating: number;

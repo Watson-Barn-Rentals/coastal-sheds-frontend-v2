@@ -90,30 +90,32 @@ useSchemaOrg([
 
 <template>
   <PageDataGate :sources="[{ data, pending, error, refresh }]">
-    <Heading
-      text="Browse All Blog Posts"
-      heading-level="h1"
-      text-alignment="center"
-      class="mt-12 md:mt-24"
-    />
-
-    <MaxWidthContentWrapper>
-      <CardGallery class="my-8">
-        <BlogPostCard
-          v-for="blogPost in data || []"
-          :key="blogPost.slug"
-          :hero-image="blogPost.heroImage"
-          :slug="blogPost.slug"
-          :title="blogPost.title"
-          :description="blogPost.short_description"
-          :date-published="new Date(blogPost.published_at)"
-          loading="lazy"
-        />
-        <NoItemsCard
-          v-if="data && data.length === 0"
-          message="No Blog Posts to Display"
-        />
-      </CardGallery>
-    </MaxWidthContentWrapper>
+    <div v-if="data">
+      <Heading
+        text="Browse All Blog Posts"
+        heading-level="h1"
+        text-alignment="center"
+        class="mt-12 md:mt-24"
+      />
+  
+      <MaxWidthContentWrapper>
+        <CardGallery class="my-8">
+          <BlogPostCard
+            v-for="blogPost in data || []"
+            :key="blogPost.slug"
+            :hero-image="blogPost.heroImage"
+            :slug="blogPost.slug"
+            :title="blogPost.title"
+            :description="blogPost.short_description"
+            :date-published="new Date(blogPost.published_at)"
+            loading="lazy"
+          />
+          <NoItemsCard
+            v-if="data.length === 0"
+            message="No Blog Posts to Display"
+          />
+        </CardGallery>
+      </MaxWidthContentWrapper>
+    </div>
   </PageDataGate>
 </template>
