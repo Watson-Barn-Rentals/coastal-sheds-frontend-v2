@@ -6,6 +6,7 @@ export const INFINITE_IMAGE_CAROUSEL_BLOCK_TYPE = "infinite-image-carousel" as c
 
 export type InfiniteImageCarouselBlockData = {
   images: ImageMediaItem[];
+  loopTimeInSeconds: number;
   maxImageRotation: string;
 };
 
@@ -24,6 +25,7 @@ export function isInfiniteImageCarouselBlock(x: any): x is InfiniteImageCarousel
     typeof x.data === "object" &&
     Array.isArray(x.data.images) &&
     x.data.images.every(isImageMediaItem) &&
+    typeof x.data.loopTimeInSeconds === "number" &&
     typeof x.data.maxImageRotation === "string"
   );
 }

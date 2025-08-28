@@ -32,6 +32,9 @@ defineProps<{
         dark:after:via-[var(--color-background-dark)] 
         after:to-transparent
     "
+    :style="{
+      '--duration': `${data.loopTimeInSeconds}s`
+    }"
   >
     <Motion
       v-for="(img, index) in data.images"
