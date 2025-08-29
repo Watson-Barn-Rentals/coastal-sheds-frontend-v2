@@ -6,6 +6,9 @@ export const HEADING_COLUMN_SECTION_TYPE = "heading-column-section" as const;
 
 export type HeadingColumnSectionData = {
   text: string
+  headingFont: string
+  headingTextSize: string
+  headingTextColor: string
   headingLevel: 'h1' | 'h2' | 'h3' | 'p'
   textAlignment: 'center' | 'left'
   customTextStyling: CustomCssStyling
@@ -27,6 +30,9 @@ export function isHeadingColumnSection(x: any): x is HeadingColumnSection {
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.text === "string" &&
+    typeof x.data.headingFont === "string" &&
+    typeof x.data.headingTextSize === "string" &&
+    typeof x.data.headingTextColor === "string" &&
     (x.data.headingLevel === "h1" ||
       x.data.headingLevel === "h2" ||
       x.data.headingLevel === "h3" ||

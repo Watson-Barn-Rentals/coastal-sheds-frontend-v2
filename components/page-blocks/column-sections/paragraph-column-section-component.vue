@@ -1,9 +1,11 @@
 <script setup lang="ts">
-import type { ParagraphColumnSection, ParagraphColumnSectionData } from '~/types/page-blocks/column-sections/paragraph-column-section';
+import type { ParagraphColumnSectionData } from '~/types/page-blocks/column-sections/paragraph-column-section';
 
 const props = defineProps<{
   data: ParagraphColumnSectionData;
 }>();
+
+useCustomCss(props.data.bodyCustomStyling.css)
 </script>
 
 <template>
@@ -11,6 +13,10 @@ const props = defineProps<{
     :content="data.text" 
     :style="{
       textAlign: data.textAlignment,
+      fontFamily: data.bodyFont,
+      fontSize: data.bodyTextSize,
+      color: data.bodyTextColor
     }"
+    :class="data.bodyCustomStyling.classNames.join(' ')"
   />
 </template>

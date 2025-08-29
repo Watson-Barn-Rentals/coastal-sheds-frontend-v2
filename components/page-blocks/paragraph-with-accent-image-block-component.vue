@@ -6,6 +6,8 @@ const props = defineProps<{
   data: ParagraphWithAccentImageBlockData;
 }>();
 
+useCustomCss(props.data.titleCustomStyling.css);
+useCustomCss(props.data.bodyCustomStyling.css);
 useCustomCss(props.data.customImageStyling.css);
 
 </script>
@@ -36,13 +38,27 @@ useCustomCss(props.data.customImageStyling.css);
       </div>
 
       <Heading
+        v-if="props.data.title"
         :text="props.data.title"
         heading-level="h2"
         text-alignment="center"
-        class="pt-8"
+        :style="{
+          fontFamily: data.titleFont,
+          fontSize: data.titleTextSize,
+          color: data.titleTextColor
+        }"
+        :class="twMerge('pt-8', props.data.titleCustomStyling.classNames.join(' '))"
       />
 
-      <WysiwygRenderer class="p-8" :content="props.data.text" />
+      <WysiwygRenderer 
+        :content="props.data.text" 
+        :style="{
+          fontFamily: data.bodyFont,
+          fontSize: data.bodyTextSize,
+          color: data.bodyTextColor
+        }"
+        :class="twMerge('p-8', props.data.bodyCustomStyling.classNames.join(' '))"
+      />
 
       <!-- Ensure float is cleared on desktop -->
       <!-- <div class="hidden md:block clear-both"></div> -->

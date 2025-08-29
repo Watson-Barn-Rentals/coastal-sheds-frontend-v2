@@ -12,5 +12,10 @@ const props = defineProps<{
     :textAlignment="data.textAlignment"
     :headingLevel="data.headingLevel"
     :customStyling="data.customTextStyling"
+    :style="{
+      fontFamily: data.headingFont,
+      fontSize: data.headingTextSize,
+      color: data.headingTextColor
+    }"
   />
 </template>

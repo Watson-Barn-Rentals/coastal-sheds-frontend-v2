@@ -19,9 +19,7 @@ export default defineNuxtPlugin(async (nuxtApp) => {
       font_import_links: string[]
     } }>(`${apiRoot}/api/get-theme-settings`),
 
-    $fetch<{ data: {
-      favicon_url: string
-    } }>(`${apiRoot}/api/get-general-site-settings`),
+    $fetch<{ data: { favicon_url: string } }>(`${apiRoot}/api/get-general-site-settings`),
   ])
 
   const theme = themeRes.data
@@ -29,17 +27,6 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 
   // Provide all settings for convenient injection
   nuxtApp.provide('siteSettings', { theme, general })
-
-  // Set favicon dynamically
-  useHead({
-    link: [
-      {
-        rel: 'icon',
-        type: 'image/x-icon',
-        href: general.favicon_url,
-      },
-    ],
-  })
 
   // Build CSS variables (light + dark). Keep light vars on :root; override in .dark.
   const css = `
@@ -60,15 +47,51 @@ export default defineNuxtPlugin(async (nuxtApp) => {
 }
 `
 
-  // Inject the CSS variables into <head> (SSR + CSR safe)
+  // Normalize & dedupe font links
+  const rawFontLinks = Array.isArray(theme.font_import_links) ? theme.font_import_links : []
+  const uniqFontHrefs = [...new Set(
+    rawFontLinks
+      .filter((u): u is string => typeof u === 'string' && /^https?:\/\//.test(u))
+  )]
+
+  // Preconnects for Google Fonts if used
+  const usesGfCss = uniqFontHrefs.some(h => h.includes('fonts.googleapis.com'))
+  const usesGfStatic = uniqFontHrefs.some(h => h.includes('fonts.gstatic.com'))
+
+  const preconnectLinks: Array<Record<string, any>> = []
+  if (usesGfCss) {
+    preconnectLinks.push({
+      rel: 'preconnect',
+      href: 'https://fonts.googleapis.com',
+      key: 'gf-preconnect-css',
+    })
+  }
+  if (usesGfStatic) {
+    preconnectLinks.push({
+      rel: 'preconnect',
+      href: 'https://fonts.gstatic.com',
+      crossorigin: true,
+      key: 'gf-preconnect-static',
+    })
+  }
+
+  // Font CSS <link rel="stylesheet"> entries
+  const fontCssLinks = uniqFontHrefs.map((href, i) => ({
+    rel: 'stylesheet',
+    href,
+    // key ensures no duplicates on hydration
+    key: `font-css-${i}`,
+  }))
+
+  // Inject favicon, preconnects, font CSS, and theme vars
   useHead({
+    link: [
+      { rel: 'icon', type: 'image/x-icon', href: general.favicon_url, key: 'favicon' },
+      ...preconnectLinks,
+      ...fontCssLinks,
+    ],
     style: [
-      {
-        // key to avoid duplicates on client hydration
-        key: 'site-theme-vars',
-        // Nuxt 3: put CSS as the "children" property
-        children: css,
-      },
+      { key: 'site-theme-vars', children: css },
     ],
   })
 })

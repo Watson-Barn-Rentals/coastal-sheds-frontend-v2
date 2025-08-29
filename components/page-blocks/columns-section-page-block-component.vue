@@ -67,7 +67,7 @@ const contentAreaStyling = computed(() => {
   >
     <!-- Mobile Layout (all sections flattened & ordered by mobileOrder) -->
     <div
-      class="block md:hidden mx-8"
+      class="block md:hidden"
       :class="props.data.contentAreaCustomStyling.classNames.join(' ')"
       :style="contentAreaStyling"
     >
@@ -75,7 +75,7 @@ const contentAreaStyling = computed(() => {
     </div>
 
     <!-- Desktop Layout: render each column group stacked vertically -->
-    <div class="hidden md:block mx-8">
+    <div class="hidden md:block">
       <div
         class="flex flex-col mx-auto"
         :class="props.data.contentAreaCustomStyling.classNames.join(' ')"

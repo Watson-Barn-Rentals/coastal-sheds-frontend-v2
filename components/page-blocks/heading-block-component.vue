@@ -13,7 +13,10 @@ defineProps<{
     :headingLevel="data.headingLevel"
     :customStyling="data.customTextStyling"
     :style="{
-      marginTop: data.topMargin
+      marginTop: data.topMargin,
+      fontFamily: data.headingFont,
+      fontSize: data.headingTextSize,
+      color: data.headingTextColor
     }"
   />
 </template>
