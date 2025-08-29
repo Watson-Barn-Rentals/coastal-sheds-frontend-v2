@@ -29,9 +29,9 @@ export function isHeadingBlock(x: any): x is HeadingBlock {
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.content === "string" &&
-    x.data.headingTextSize === "string" &&
-    x.data.headingFont === "string" &&
-    x.data.headingTextColor === "string" &&
+    typeof x.data.headingTextSize === "string" &&
+    typeof x.data.headingFont === "string" &&
+    typeof x.data.headingTextColor === "string" &&
     (x.data.headingLevel === "h1" || x.data.headingLevel === "h2" || x.data.headingLevel === "h3" || x.data.headingLevel === "p") &&
     typeof x.data.topMargin === "string" &&
     isCustomCssStyling(x.data.customTextStyling) &&

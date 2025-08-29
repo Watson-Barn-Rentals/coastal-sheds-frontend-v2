@@ -24,7 +24,7 @@ useCustomCss(props.customStyling?.css ?? '');
     </h1>
     <h2
         v-else-if="headingLevel === 'h2'"
-        :class="twMerge('ont-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
+        :class="twMerge('font-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
         :style="{
             textAlign: textAlignment
         }"
@@ -33,7 +33,7 @@ useCustomCss(props.customStyling?.css ?? '');
     </h2>
     <h3
         v-else-if="headingLevel === 'h3'"
-        :class="twMerge('ont-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
+        :class="twMerge('font-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
         :style="{
             textAlign: textAlignment
         }"
@@ -42,7 +42,7 @@ useCustomCss(props.customStyling?.css ?? '');
     </h3>
     <p
         v-else-if="headingLevel === 'p'"
-        :class="twMerge('ont-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
+        :class="twMerge('font-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
         :style="{
             textAlign: textAlignment
         }"
@@ -51,7 +51,7 @@ useCustomCss(props.customStyling?.css ?? '');
     </p>
     <p
         v-else
-        :class="twMerge('ont-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
+        :class="twMerge('font-title font-bold text-2xl sm:text-3xl md:text-4xl select-none', customStyling?.classNames.join(' ') ?? '')"
         :style="{
             textAlign: textAlignment
         }"
