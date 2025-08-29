@@ -11,6 +11,7 @@ export type SpacerColumnSectionData = {
 export type SpacerColumnSection = {
   type: typeof SPACER_COLUMN_SECTION_TYPE;
   mobileOrder: number | null
+  mobileOnly: boolean
   spaceAfter: string
   data: SpacerColumnSectionData;
 };
@@ -21,6 +22,7 @@ export function isSpacerColumnSection(x: any): x is SpacerColumnSection {
     typeof x === "object" &&
     x.type === SPACER_COLUMN_SECTION_TYPE &&
     (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
+    typeof x.mobileOnly === "boolean" &&
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.height === "string"

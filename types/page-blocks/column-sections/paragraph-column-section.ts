@@ -16,6 +16,7 @@ export type ParagraphColumnSectionData = {
 export type ParagraphColumnSection = {
   type: typeof PARAGRAPH_COLUMN_SECTION_TYPE;
   mobileOrder: number | null
+  mobileOnly: boolean
   spaceAfter: string
   data: ParagraphColumnSectionData;
 };
@@ -26,6 +27,7 @@ export function isParagraphColumnSection(x: any): x is ParagraphColumnSection {
     typeof x === "object" &&
     x.type === PARAGRAPH_COLUMN_SECTION_TYPE &&
     (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
+    typeof x.mobileOnly === "boolean" &&
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.text === "string" &&

@@ -16,6 +16,7 @@ export type YoutubeEmbedColumnSectionData = {
 export type YoutubeEmbedColumnSection = {
   type: typeof YOUTUBE_EMBED_COLUMN_SECTION_TYPE;
   mobileOrder: number | null
+  mobileOnly: boolean
   spaceAfter: string
   data: YoutubeEmbedColumnSectionData;
 };
@@ -26,6 +27,7 @@ export function isYoutubeEmbedColumnSection(x: any): x is YoutubeEmbedColumnSect
     typeof x === "object" &&
     x.type === YOUTUBE_EMBED_COLUMN_SECTION_TYPE &&
     (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
+    typeof x.mobileOnly === "boolean" &&
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.youtubeVideoId === "string" &&

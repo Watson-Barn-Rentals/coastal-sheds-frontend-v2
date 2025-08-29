@@ -22,6 +22,7 @@ export type LinkButtonsColumnSectionData = {
 export type LinkButtonsColumnSection = {
   type: typeof LINK_BUTTONS_COLUMN_SECTION_TYPE;
   mobileOrder: number | null
+  mobileOnly: boolean
   spaceAfter: string
   data: LinkButtonsColumnSectionData;
 };
@@ -46,6 +47,7 @@ export const isLinkButtonsColumnSection = (x: any): x is LinkButtonsColumnSectio
     typeof x === "object" &&
     x.type === LINK_BUTTONS_COLUMN_SECTION_TYPE &&
     (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
+    typeof x.mobileOnly === "boolean" &&
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     (x.data.buttonSpacing === "center" ||

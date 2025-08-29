@@ -22,6 +22,7 @@ export type ParagraphWithFloatedImageColumnSectionData = {
 export type ParagraphWithFloatedImageColumnSection = {
   type: typeof PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE;
   mobileOrder: number | null
+  mobileOnly: boolean
   spaceAfter: string
   data: ParagraphWithFloatedImageColumnSectionData;
 };
@@ -32,6 +33,7 @@ export function isParagraphWithFloatedImageColumnSection(x: any): x is Paragraph
     typeof x === "object" &&
     x.type === PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE &&
     (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
+    typeof x.mobileOnly === "boolean" &&
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.text === "string" &&

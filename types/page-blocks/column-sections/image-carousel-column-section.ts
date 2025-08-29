@@ -18,6 +18,7 @@ export type ImageCarouselColumnSectionData = {
 export type ImageCarouselColumnSection = {
   type: typeof IMAGE_CAROUSEL_COLUMN_SECTION_TYPE;
   mobileOrder: number | null
+  mobileOnly: boolean
   spaceAfter: string
   data: ImageCarouselColumnSectionData;
 };
@@ -28,6 +29,7 @@ export function isImageCarouselColumnSection(x: any): x is ImageCarouselColumnSe
     typeof x === "object" &&
     x.type === IMAGE_CAROUSEL_COLUMN_SECTION_TYPE &&
     (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
+    typeof x.mobileOnly === "boolean" &&
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     Array.isArray(x.data.images) &&

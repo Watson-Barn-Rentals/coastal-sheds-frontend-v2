@@ -17,6 +17,7 @@ export type HeadingColumnSectionData = {
 export type HeadingColumnSection = {
   type: typeof HEADING_COLUMN_SECTION_TYPE;
   mobileOrder: number | null
+  mobileOnly: boolean
   spaceAfter: string
   data: HeadingColumnSectionData;
 };
@@ -27,6 +28,7 @@ export function isHeadingColumnSection(x: any): x is HeadingColumnSection {
     typeof x === "object" &&
     x.type === HEADING_COLUMN_SECTION_TYPE &&
     (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
+    typeof x.mobileOnly === "boolean" &&
     typeof x.spaceAfter === "string" &&
     typeof x.data === "object" &&
     typeof x.data.text === "string" &&

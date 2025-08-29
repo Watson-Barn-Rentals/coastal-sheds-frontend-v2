@@ -100,7 +100,7 @@ const contentAreaStyling = computed(() => {
             :class="column.columnCustomStyling.classNames.join(' ')"
           >
             <div>
-              <ColumnSectionRenderer :column-sections="column.columnSections" />
+              <ColumnSectionRenderer :column-sections="column.columnSections.filter(section => ! section.mobileOnly)" />
             </div>
           </div>
         </div>
