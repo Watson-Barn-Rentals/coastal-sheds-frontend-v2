@@ -8,14 +8,14 @@ export const TestimonialSchema = z.object({
   date: z.string().optional(),
   text: z.string(),
   source: z.string(),
-  starRating: z.number().finite(), // e.g., 0–5; add .min(0).max(5) if you want bounds
+  starRating: z.string(), // e.g., 0–5; add .min(0).max(5) if you want bounds
 }).strict()
 export type Testimonial = z.infer<typeof TestimonialSchema>
 
 export const TestimonialsSectionBlockDataSchema = z.object({
   heading: z.string(),
-  averageRating: z.number().finite(),
-  totalReviewsCount: z.number().int().nonnegative(),
+  averageRating: z.string(),
+  totalReviewsCount: z.string(),
   testimonials: z.array(TestimonialSchema),
 }).strict()
 export type TestimonialsSectionBlockData = z.infer<typeof TestimonialsSectionBlockDataSchema>

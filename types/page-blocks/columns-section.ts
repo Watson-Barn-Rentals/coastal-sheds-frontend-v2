@@ -69,3 +69,42 @@ export const isColumnsSectionPageBlockData = (item: unknown): item is ColumnsSec
 
 export const isColumnsSectionBlock = (x: unknown): x is ColumnsSectionPageBlock =>
   ColumnsSectionPageBlockSchema.safeParse(x).success
+
+/* ---------- Assert helpers with detailed logging ---------- */
+
+const formatIssues = (issues: z.ZodIssue[]) =>
+  issues
+    .map(i => {
+      const path = i.path.length ? i.path.map(String).join('.') : '(root)'
+      return `• ${path}: ${i.message}`
+    })
+    .join('\n')
+
+function logAndThrow(name: string, value: unknown, issues: z.ZodIssue[]): never {
+  const details = formatIssues(issues)
+  // Log full details for debugging; keep thrown error concise but informative
+  // You can tailor how much of `value` you log if it’s large/sensitive.
+  // eslint-disable-next-line no-console
+  console.error(`${name} validation failed:\n${details}`, { value })
+  throw new Error(`${name} validation failed:\n${details}`)
+}
+
+export function assertColumn(item: unknown): asserts item is Column {
+  const r = ColumnSchema.safeParse(item)
+  if (!r.success) logAndThrow('Column', item, r.error.issues)
+}
+
+export function assertColumnGroup(item: unknown): asserts item is ColumnGroup {
+  const r = ColumnGroupSchema.safeParse(item)
+  if (!r.success) logAndThrow('ColumnGroup', item, r.error.issues)
+}
+
+export function assertColumnsSectionPageBlockData(item: unknown): asserts item is ColumnsSectionPageBlockData {
+  const r = ColumnsSectionPageBlockDataSchema.safeParse(item)
+  if (!r.success) logAndThrow('ColumnsSectionPageBlockData', item, r.error.issues)
+}
+
+export function assertColumnsSectionBlock(x: unknown): asserts x is ColumnsSectionPageBlock {
+  const r = ColumnsSectionPageBlockSchema.safeParse(x)
+  if (!r.success) logAndThrow('ColumnsSectionPageBlock', x, r.error.issues)
+}

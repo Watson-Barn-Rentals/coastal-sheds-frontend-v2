@@ -49,15 +49,18 @@ defineProps<{
       appear
       class="inline-block flex-none"
     >
-      <ResponsiveImage
-        :image-media-item="img"
-        class="rounded-lg transform"
-        :style="{
-          rotate: index % 2 === 0 ? `-${data.maxImageRotation}` : data.maxImageRotation,
-          width: '20rem',
-          maxWidth: '90vw',
-        }"
-      />
+      <div
+          class="rounded-lg transform overflow-hidden"
+          :style="{
+            rotate: index % 2 === 0 ? `-${data.maxImageRotation}` : data.maxImageRotation,
+            width: '20rem',
+            maxWidth: '90vw',
+          }"
+      >
+        <ResponsiveImage
+          :image-media-item="img"
+        />
+      </div>
     </Motion>
   </UPageMarquee>
 </template>
