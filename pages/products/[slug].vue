@@ -197,7 +197,7 @@ const images = computed<ImageMediaItem[]>(() => {
             <WysiwygRenderer :content="data.long_description" />
 
             <div v-if="data.designer_link" class="flex justify-center mt-10">
-              <NuxtLink :to="data.designer_link" class="shrink-0">
+              <NuxtLink :to="data.designer_link" target="_blank" class="shrink-0">
                 <button
                   class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
                 >
@@ -225,10 +225,10 @@ const images = computed<ImageMediaItem[]>(() => {
                   <UIcon
                     name="material-symbols:event-list-rounded"
                     dynamic
-                    class="h-6 w-6 my-auto sm:h-8 sm:w-8 text-white"
+                    class="h-6 w-6 my-auto sm:h-8 sm:w-8"
                   />
                   <p
-                    class="font-title select-none text-white font-semibold text-sm sm:text-base my-auto shrink-0"
+                    class="font-title select-none font-semibold text-sm sm:text-base my-auto shrink-0"
                   >
                     View In Stock Items
                   </p>

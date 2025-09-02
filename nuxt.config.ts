@@ -39,43 +39,17 @@ export default defineNuxtConfig({
   ],
 
   hooks: {
-    /**
-     * Collect all non-dynamic file-based routes (no :param or * wildcards).
-     * These will be prerendered (unless preview mode).
-     */
-    'pages:extend': (pages) => {
-      for (const p of pages) {
-        // Treat routes like '/', '/about', '/contact' as static
-        if (!p.path.includes(':') && !p.path.includes('*')) {
-          staticPageRoutes.add(p.path)
-        }
-      }
-    },
-
-    /**
-     * Seed the prerenderer with:
-     *  - static file-based routes from pages:extend
-     *  - routes returned by your API
-     */
     'prerender:routes': async (ctx) => {
-      if (isPreviewMode) return // no prerendering in preview/CSR mode
-
+      if (isPreviewMode) return
+    
       const apiRoot = process.env.API_ROOT_URL
-      if (!apiRoot) {
-        throw new Error('Missing API_ROOT_URL environment variable')
-      }
+      if (!apiRoot) throw new Error('Missing API_ROOT_URL')
 
-      // Add static (non-dynamic) pages
-      for (const r of staticPageRoutes) ctx.routes.add(r)
-
-      // Fetch additional routes to prerender
       const res = await fetch(`${apiRoot}/api/get-prerender-page-list`)
-      if (!res.ok) {
-        throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`)
-      }
+      if (!res.ok) throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`)
       const { data: pageList } = (await res.json()) as { data: string[] }
       pageList.forEach(route => ctx.routes.add(route))
-    },
+    }
   },
 
   runtimeConfig: {
