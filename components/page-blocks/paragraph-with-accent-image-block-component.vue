@@ -30,11 +30,16 @@ useCustomCss(props.data.customImageStyling.css);
       } as any"
     >
       <div class="image-wrap" :class="props.data.alignment">
-        <ResponsiveImage
-          :imageMediaItem="props.data.image"
-          :dont-use-placeholder="props.data.disableImagePlaceholder"
-          :class="twMerge('block w-full h-auto md:rotate-[var(--img-rotate)]', props.data.customImageStyling.classNames.join(' '))"
-        />
+        <div
+          :class="twMerge('block w-full h-auto md:rotate-[var(--img-rotate)] overflow-hidden', props.data.customImageStyling.classNames.join(' '))"
+        >
+          <ResponsiveImage
+            :imageMediaItem="props.data.image"
+            :dont-use-placeholder="props.data.disableImagePlaceholder"
+            
+          />
+        </div
+       >
       </div>
 
       <Heading

@@ -18,10 +18,11 @@ defineProps<{
   >
     <!-- Forced 5:1 aspect -->
     <div v-if="heroImage" class="relative w-full overflow-hidden [aspect-ratio:5/1]">
-      <ResponsiveImage
-        :image-media-item="heroImage"
-        class="absolute inset-0 size-full object-contain"
-      />
+      <div class="absolute inset-0 size-full object-contain">
+        <ResponsiveImage
+          :image-media-item="heroImage"
+        />
+      </div>
     </div>
 
     <div class="flex min-h-0 flex-1 flex-col gap-2 px-4 py-4">

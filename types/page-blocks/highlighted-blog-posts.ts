@@ -4,7 +4,8 @@ import { BlogPostDataSchema, type BlogPostData } from '../blog-post-data'
 export const HIGHLIGHTED_BLOG_POSTS_BLOCK_TYPE = 'highlighted-blog-posts' as const
 
 export const HighlightedBlogPostsDataSchema = z.object({
-  blogPosts: z.array(BlogPostDataSchema),
+  // ⬅ defer access to BlogPostDataSchema to break the cycle
+  blogPosts: z.array(z.lazy(() => BlogPostDataSchema)),
 }).strict()
 export type HighlightedBlogPostsData = z.infer<typeof HighlightedBlogPostsDataSchema>
 
@@ -15,11 +16,11 @@ export const HighlightedBlogPostsBlockSchema = z.object({
 }).strict()
 export type HighlightedBlogPostsBlock = z.infer<typeof HighlightedBlogPostsBlockSchema>
 
-// Boolean guard (same API)
+// Boolean guard
 export const isHighlightedBlogPostsBlock = (x: unknown): x is HighlightedBlogPostsBlock =>
   HighlightedBlogPostsBlockSchema.safeParse(x).success
 
-// Optional: assertion with readable errors
+// Assertion with readable errors
 export function assertHighlightedBlogPostsBlock(x: unknown): asserts x is HighlightedBlogPostsBlock {
   const r = HighlightedBlogPostsBlockSchema.safeParse(x)
   if (!r.success) {
