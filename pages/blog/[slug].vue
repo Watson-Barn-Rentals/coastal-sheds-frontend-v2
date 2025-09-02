@@ -96,7 +96,7 @@ useSeoMeta({
             day: "numeric",
           })})`
         : ""
-    } - ${config.public.siteName}`,
+    } - ${config.public.pageTitleSiteName}`,
   description: () => data.value?.short_description ?? "",
 
   // Robots: keep future-dated posts out of the index

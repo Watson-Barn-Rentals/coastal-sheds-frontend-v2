@@ -1,59 +1,56 @@
-// types/blocks/coastal-home-page-hero.ts
+import { z } from 'zod'
+import { CustomCssStylingSchema, type CustomCssStyling } from '~/types/custom-css-styling'
 
-import { isCustomCssStyling, type CustomCssStyling } from "~/types/custom-css-styling";
+export const LINK_BUTTONS_COLUMN_SECTION_TYPE = 'link-buttons-column-section' as const
 
-export const LINK_BUTTONS_COLUMN_SECTION_TYPE = "link-buttons-column-section" as const;
+// Single button
+export const LinkButtonDataSchema = z.object({
+  destination: z.string(), // keep as string since it may be a route, not a full URL
+  label: z.string(),
+  iconPresets: z.enum(['custom-icon', 'animated-right-side-arrow']),
+  iconName: z.string().nullable(),
+  customIconStyling: CustomCssStylingSchema,
+  buttonStyling: z.string(),
+  trackingEventName: z.string(),
+}).strict()
+export type LinkButtonData = z.infer<typeof LinkButtonDataSchema>
 
-export type LinkButtonData = {
-  destination: string
-  label: string
-  iconPresets: 'custom-icon' | 'animated-right-side-arrow'
-  iconName: string | null
-  customIconStyling: CustomCssStyling
-  buttonStyling: string
-  trackingEventName: string
+// Data for the whole buttons section
+export const LinkButtonsColumnSectionDataSchema = z.object({
+  buttonSpacing: z.enum(['center', 'space-between', 'space-around']),
+  buttons: z.array(LinkButtonDataSchema),
+}).strict()
+export type LinkButtonsColumnSectionData = z.infer<typeof LinkButtonsColumnSectionDataSchema>
+
+// Section wrapper
+export const LinkButtonsColumnSectionSchema = z.object({
+  type: z.literal(LINK_BUTTONS_COLUMN_SECTION_TYPE),
+  mobileOrder: z.number().nullable(),
+  mobileOnly: z.boolean(),
+  spaceAfter: z.string(),
+  data: LinkButtonsColumnSectionDataSchema,
+}).strict()
+export type LinkButtonsColumnSection = z.infer<typeof LinkButtonsColumnSectionSchema>
+
+/** Boolean guards (keep existing API names) */
+export const isLinkButtonData = (x: unknown): x is LinkButtonData =>
+  LinkButtonDataSchema.safeParse(x).success
+
+export const isLinkButtonsColumnSection = (x: unknown): x is LinkButtonsColumnSection =>
+  LinkButtonsColumnSectionSchema.safeParse(x).success
+
+/** Optional: assertion helpers with readable errors */
+export function assertLinkButtonData(x: unknown): asserts x is LinkButtonData {
+  const r = LinkButtonDataSchema.safeParse(x)
+  if (!r.success) {
+    const msg = r.error.issues.map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`).join('\n')
+    throw new Error(`LinkButtonData validation failed:\n${msg}`)
+  }
 }
-
-export type LinkButtonsColumnSectionData = {
-  buttonSpacing: 'center' | 'space-between' | 'space-around';
-  buttons: LinkButtonData[];
-};
-
-export type LinkButtonsColumnSection = {
-  type: typeof LINK_BUTTONS_COLUMN_SECTION_TYPE;
-  mobileOrder: number | null
-  mobileOnly: boolean
-  spaceAfter: string
-  data: LinkButtonsColumnSectionData;
-};
-
-export const isLinkButtonData = (x: any): x is LinkButtonData => {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    typeof x.destination === "string" &&
-    typeof x.label === "string" &&
-    (x.iconPresets === "custom-icon" || x.iconPresets === "animated-right-side-arrow") &&
-    (x.iconName === null || typeof x.iconName === "string") &&
-    isCustomCssStyling(x.customIconStyling) &&
-    typeof x.buttonStyling === "string" &&
-    typeof x.trackingEventName === "string"
-  );
-};
-
-export const isLinkButtonsColumnSection = (x: any): x is LinkButtonsColumnSection => {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === LINK_BUTTONS_COLUMN_SECTION_TYPE &&
-    (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
-    typeof x.mobileOnly === "boolean" &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    (x.data.buttonSpacing === "center" ||
-      x.data.buttonSpacing === "space-between" ||
-      x.data.buttonSpacing === "space-around") &&
-    Array.isArray(x.data.buttons) &&
-    x.data.buttons.every(isLinkButtonData)
-  );
-};
+export function assertLinkButtonsColumnSection(x: unknown): asserts x is LinkButtonsColumnSection {
+  const r = LinkButtonsColumnSectionSchema.safeParse(x)
+  if (!r.success) {
+    const msg = r.error.issues.map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`).join('\n')
+    throw new Error(`LinkButtonsColumnSection validation failed:\n${msg}`)
+  }
+}

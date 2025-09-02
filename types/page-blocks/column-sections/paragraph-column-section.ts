@@ -1,40 +1,40 @@
-// types/blocks/coastal-home-page-hero.ts
+import { z } from 'zod'
+import { CustomCssStylingSchema, type CustomCssStyling } from '~/types/custom-css-styling'
 
-import { isCustomCssStyling, type CustomCssStyling } from "~/types/custom-css-styling";
+export const PARAGRAPH_COLUMN_SECTION_TYPE = 'paragraph-column-section' as const
 
-export const PARAGRAPH_COLUMN_SECTION_TYPE = "paragraph-column-section" as const;
+export const ParagraphColumnSectionDataSchema = z.object({
+  text: z.string(),
+  bodyTextColor: z.string(),
+  bodyTextSize: z.string(),
+  bodyFont: z.string(),
+  bodyCustomStyling: CustomCssStylingSchema,
+  textAlignment: z.enum(['center', 'left']),
+}).strict()
 
-export type ParagraphColumnSectionData = {
-  text: string
-  bodyTextColor: string
-  bodyTextSize: string
-  bodyFont: string
-  bodyCustomStyling: CustomCssStyling
-  textAlignment: 'center' | 'left'
-};
+export type ParagraphColumnSectionData = z.infer<typeof ParagraphColumnSectionDataSchema>
 
-export type ParagraphColumnSection = {
-  type: typeof PARAGRAPH_COLUMN_SECTION_TYPE;
-  mobileOrder: number | null
-  mobileOnly: boolean
-  spaceAfter: string
-  data: ParagraphColumnSectionData;
-};
+export const ParagraphColumnSectionSchema = z.object({
+  type: z.literal(PARAGRAPH_COLUMN_SECTION_TYPE),
+  mobileOrder: z.number().nullable(),
+  mobileOnly: z.boolean(),
+  spaceAfter: z.string(),
+  data: ParagraphColumnSectionDataSchema,
+}).strict()
 
-export function isParagraphColumnSection(x: any): x is ParagraphColumnSection {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === PARAGRAPH_COLUMN_SECTION_TYPE &&
-    (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
-    typeof x.mobileOnly === "boolean" &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    typeof x.data.text === "string" &&
-    typeof x.data.bodyFont === "string" &&
-    typeof x.data.bodyTextSize === "string" &&
-    typeof x.data.bodyTextColor === "string" &&
-    isCustomCssStyling(x.data.bodyCustomStyling) &&
-    (x.data.textAlignment === "center" || x.data.textAlignment === "left")
-  );
+export type ParagraphColumnSection = z.infer<typeof ParagraphColumnSectionSchema>
+
+// Boolean guard (same API name)
+export const isParagraphColumnSection = (x: unknown): x is ParagraphColumnSection =>
+  ParagraphColumnSectionSchema.safeParse(x).success
+
+// Optional: assertion with readable error details
+export function assertParagraphColumnSection(x: unknown): asserts x is ParagraphColumnSection {
+  const r = ParagraphColumnSectionSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`ParagraphColumnSection validation failed:\n${details}`)
+  }
 }

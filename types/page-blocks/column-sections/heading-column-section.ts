@@ -1,45 +1,39 @@
-// types/blocks/coastal-home-page-hero.ts
+import { z } from 'zod'
+import { CustomCssStylingSchema, type CustomCssStyling } from '~/types/custom-css-styling'
 
-import { isCustomCssStyling, type CustomCssStyling } from "~/types/custom-css-styling";
+export const HEADING_COLUMN_SECTION_TYPE = 'heading-column-section' as const
 
-export const HEADING_COLUMN_SECTION_TYPE = "heading-column-section" as const;
+export const HeadingColumnSectionDataSchema = z.object({
+  text: z.string(),
+  headingFont: z.string(),
+  headingTextSize: z.string(),
+  headingTextColor: z.string(),
+  headingLevel: z.enum(['h1', 'h2', 'h3', 'p']),
+  textAlignment: z.enum(['center', 'left']),
+  customTextStyling: CustomCssStylingSchema,
+}).strict()
 
-export type HeadingColumnSectionData = {
-  text: string
-  headingFont: string
-  headingTextSize: string
-  headingTextColor: string
-  headingLevel: 'h1' | 'h2' | 'h3' | 'p'
-  textAlignment: 'center' | 'left'
-  customTextStyling: CustomCssStyling
-};
+export type HeadingColumnSectionData = z.infer<typeof HeadingColumnSectionDataSchema>
 
-export type HeadingColumnSection = {
-  type: typeof HEADING_COLUMN_SECTION_TYPE;
-  mobileOrder: number | null
-  mobileOnly: boolean
-  spaceAfter: string
-  data: HeadingColumnSectionData;
-};
+export const HeadingColumnSectionSchema = z.object({
+  type: z.literal(HEADING_COLUMN_SECTION_TYPE),
+  mobileOrder: z.number().nullable(),
+  mobileOnly: z.boolean(),
+  spaceAfter: z.string(),
+  data: HeadingColumnSectionDataSchema,
+}).strict()
 
-export function isHeadingColumnSection(x: any): x is HeadingColumnSection {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === HEADING_COLUMN_SECTION_TYPE &&
-    (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
-    typeof x.mobileOnly === "boolean" &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    typeof x.data.text === "string" &&
-    typeof x.data.headingFont === "string" &&
-    typeof x.data.headingTextSize === "string" &&
-    typeof x.data.headingTextColor === "string" &&
-    (x.data.headingLevel === "h1" ||
-      x.data.headingLevel === "h2" ||
-      x.data.headingLevel === "h3" ||
-      x.data.headingLevel === "p") &&
-    (x.data.textAlignment === "center" || x.data.textAlignment === "left") &&
-    isCustomCssStyling(x.data.customTextStyling)
-  );
+export type HeadingColumnSection = z.infer<typeof HeadingColumnSectionSchema>
+
+// Boolean type guard (same name as before)
+export const isHeadingColumnSection = (x: unknown): x is HeadingColumnSection =>
+  HeadingColumnSectionSchema.safeParse(x).success
+
+// (Optional) assertion with helpful error
+export function assertHeadingColumnSection(x: unknown): asserts x is HeadingColumnSection {
+  const r = HeadingColumnSectionSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues.map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`).join('\n')
+    throw new Error(`HeadingColumnSection validation failed:\n${details}`)
+  }
 }

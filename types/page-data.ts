@@ -1,19 +1,27 @@
-import { isPageBlock, type PageBlock } from "./page-blocks";
+import { z } from 'zod'
+import { PageBlockSchema, type PageBlock } from './page-blocks'
 
-export type PageData = {
-    url: string;
-    title: string;
-    short_description: string;
-    blocks: PageBlock[];
+export const PageDataSchema = z.object({
+  url: z.string(),
+  title: z.string(),
+  short_description: z.string(),
+  blocks: z.array(PageBlockSchema),
+}).strict()
 
-};
+export type PageData = z.infer<typeof PageDataSchema>
 
-export function isPageData(obj: any): obj is PageData {
-    return (
-        obj !== null &&
-        typeof obj === "object" &&
-        typeof obj.url === "string" &&
-        typeof obj.title === "string" &&
-        typeof obj.short_description === "string"
-    );
+// Boolean guard (same API name)
+export function isPageData(obj: unknown): obj is PageData {
+  return PageDataSchema.safeParse(obj).success
+}
+
+// Optional: assertion with readable errors
+export function assertPageData(obj: unknown): asserts obj is PageData {
+  const r = PageDataSchema.safeParse(obj)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`PageData validation failed:\n${details}`)
+  }
 }

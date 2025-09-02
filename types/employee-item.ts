@@ -1,19 +1,27 @@
-import { isImageMediaItem, type ImageMediaItem } from "./image-media-item";
+// types/employee-item.ts
+import { z } from 'zod'
+import { ImageMediaItemSchema, type ImageMediaItem } from './image-media-item'
 
-export type EmployeeItem = {
-    profilePicture: ImageMediaItem
-    name: string
-    title: string
-    bio: string
-}
+export const EmployeeItemSchema = z.object({
+  profilePicture: ImageMediaItemSchema,
+  name: z.string(),
+  title: z.string(),
+  bio: z.string(),
+}).strict()
 
-export function isEmployeeItem(x: any): x is EmployeeItem {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    isImageMediaItem(x.profilePicture) &&
-    typeof x.name === "string" &&
-    typeof x.title === "string" &&
-    typeof x.bio === "string"
-  );
+export type EmployeeItem = z.infer<typeof EmployeeItemSchema>
+
+// Boolean guard (same API name)
+export const isEmployeeItem = (x: unknown): x is EmployeeItem =>
+  EmployeeItemSchema.safeParse(x).success
+
+// Optional: assertion with readable errors
+export function assertEmployeeItem(x: unknown): asserts x is EmployeeItem {
+  const r = EmployeeItemSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`EmployeeItem validation failed:\n${details}`)
+  }
 }

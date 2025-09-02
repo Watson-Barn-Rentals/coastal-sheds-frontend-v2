@@ -35,6 +35,7 @@ export default defineNuxtConfig({
   plugins: [
     '~/plugins/vueuse-motion.ts',
     '~/plugins/site-settings.ts',
+    '~/plugins/fingerprint.client.ts',
   ],
 
   hooks: {

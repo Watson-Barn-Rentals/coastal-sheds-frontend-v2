@@ -7,6 +7,7 @@ const config = useRuntimeConfig();
 definePageMeta({ layout: "default", key: "blog-posts" });
 
 const canonicalUrl = computed(() => `${config.public.siteRootUrl}/blog`);
+
 useHead({
   link: [{ rel: "canonical", href: canonicalUrl.value }],
 });

@@ -1,34 +1,36 @@
-// types/blocks/coastal-home-page-hero.ts
+import { z } from 'zod'
+import { ImageMediaItemSchema, type ImageMediaItem } from '../image-media-item'
 
-import { isImageMediaItem, type ImageMediaItem } from "../image-media-item";
+export const COASTAL_HOME_PAGE_HERO_BLOCK_TYPE = 'coastal-home-page-hero' as const
 
-export const COASTAL_HOME_PAGE_HERO_BLOCK_TYPE = "coastal-home-page-hero" as const;
+export const CoastalHomePageHeroBlockDataSchema = z.object({
+  backgroundImage: ImageMediaItemSchema,
+  logoImage: ImageMediaItemSchema,
+  title: z.string(),
+  logoTopOffset: z.string(),
+}).strict()
 
-export type CoastalHomePageHeroBlockData = {
-  backgroundImage: ImageMediaItem;
-  logoImage: ImageMediaItem;
-  title: string;
-  logoTopOffset: string;
-};
+export type CoastalHomePageHeroBlockData = z.infer<typeof CoastalHomePageHeroBlockDataSchema>
 
-export type CoastalHomePageHeroBlock = {
-  type: typeof COASTAL_HOME_PAGE_HERO_BLOCK_TYPE;
-  spaceAfter: string
-  data: CoastalHomePageHeroBlockData;
-};
+export const CoastalHomePageHeroBlockSchema = z.object({
+  type: z.literal(COASTAL_HOME_PAGE_HERO_BLOCK_TYPE),
+  spaceAfter: z.string(),
+  data: CoastalHomePageHeroBlockDataSchema,
+}).strict()
 
-export function isCoastalHomePageHeroBlock(x: any): x is CoastalHomePageHeroBlock {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === COASTAL_HOME_PAGE_HERO_BLOCK_TYPE &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    typeof x.data.backgroundImage === "object" &&
-    isImageMediaItem(x.data.backgroundImage) &&
-    typeof x.data.logoImage === "object" &&
-    isImageMediaItem(x.data.logoImage) &&
-    typeof x.data.title === "string" &&
-    typeof x.data.logoTopOffset === "string"
-  );
+export type CoastalHomePageHeroBlock = z.infer<typeof CoastalHomePageHeroBlockSchema>
+
+// Boolean guard (same API name)
+export const isCoastalHomePageHeroBlock = (x: unknown): x is CoastalHomePageHeroBlock =>
+  CoastalHomePageHeroBlockSchema.safeParse(x).success
+
+// Optional: assertion with readable error details
+export function assertCoastalHomePageHeroBlock(x: unknown): asserts x is CoastalHomePageHeroBlock {
+  const r = CoastalHomePageHeroBlockSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`CoastalHomePageHeroBlock validation failed:\n${details}`)
+  }
 }

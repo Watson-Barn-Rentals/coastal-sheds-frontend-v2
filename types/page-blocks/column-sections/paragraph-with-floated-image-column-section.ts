@@ -1,51 +1,53 @@
-// types/blocks/coastal-home-page-hero.ts
+import { z } from 'zod'
+import { CustomCssStylingSchema, type CustomCssStyling } from '~/types/custom-css-styling'
+import { ImageMediaItemSchema, type ImageMediaItem } from '~/types/image-media-item'
 
-import { isCustomCssStyling, type CustomCssStyling } from "~/types/custom-css-styling";
-import { isImageMediaItem, type ImageMediaItem } from "~/types/image-media-item";
+export const PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE =
+  'paragraph-with-floated-image-column-section' as const
 
-export const PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE = "paragraph-with-floated-image-column-section" as const;
+export const ParagraphWithFloatedImageColumnSectionDataSchema = z.object({
+  text: z.string(),
+  image: ImageMediaItemSchema,
+  disableImagePlaceholder: z.boolean(),
+  imagePosition: z.enum(['left', 'right']),
+  imageWidth: z.string(),
+  marginTop: z.string(),
+  marginBottom: z.string(),
+  marginLeft: z.string(),
+  marginRight: z.string(),
+  imageRotation: z.string(),
+  customImageStyling: CustomCssStylingSchema,
+}).strict()
 
-export type ParagraphWithFloatedImageColumnSectionData = {
-  text: string
-  image: ImageMediaItem
-  disableImagePlaceholder: boolean
-  imagePosition: 'left' | 'right'
-  imageWidth: string
-  marginTop: string
-  marginBottom: string
-  marginLeft: string
-  marginRight: string
-  imageRotation: string
-  customImageStyling: CustomCssStyling
-};
+export type ParagraphWithFloatedImageColumnSectionData =
+  z.infer<typeof ParagraphWithFloatedImageColumnSectionDataSchema>
 
-export type ParagraphWithFloatedImageColumnSection = {
-  type: typeof PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE;
-  mobileOrder: number | null
-  mobileOnly: boolean
-  spaceAfter: string
-  data: ParagraphWithFloatedImageColumnSectionData;
-};
+export const ParagraphWithFloatedImageColumnSectionSchema = z.object({
+  type: z.literal(PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE),
+  mobileOrder: z.number().nullable(),
+  mobileOnly: z.boolean(),
+  spaceAfter: z.string(),
+  data: ParagraphWithFloatedImageColumnSectionDataSchema,
+}).strict()
 
-export function isParagraphWithFloatedImageColumnSection(x: any): x is ParagraphWithFloatedImageColumnSection {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE &&
-    (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
-    typeof x.mobileOnly === "boolean" &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    typeof x.data.text === "string" &&
-    typeof x.data.image === "object" &&
-    isImageMediaItem(x.data.image) &&
-    (x.data.imagePosition === "left" || x.data.imagePosition === "right") &&
-    typeof x.data.imageWidth === "string" &&
-    typeof x.data.marginTop === "string" &&
-    typeof x.data.marginBottom === "string" &&
-    typeof x.data.marginLeft === "string" &&
-    typeof x.data.marginRight === "string" &&
-    typeof x.data.imageRotation === "string" &&
-    isCustomCssStyling(x.data.customImageStyling)
-  );
+export type ParagraphWithFloatedImageColumnSection =
+  z.infer<typeof ParagraphWithFloatedImageColumnSectionSchema>
+
+// Boolean guard (same API name)
+export const isParagraphWithFloatedImageColumnSection = (
+  x: unknown
+): x is ParagraphWithFloatedImageColumnSection =>
+  ParagraphWithFloatedImageColumnSectionSchema.safeParse(x).success
+
+// Optional: assertion with readable errors
+export function assertParagraphWithFloatedImageColumnSection(
+  x: unknown
+): asserts x is ParagraphWithFloatedImageColumnSection {
+  const r = ParagraphWithFloatedImageColumnSectionSchema.safeParse(x)
+  if (!r.success) {
+    const msg = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`ParagraphWithFloatedImageColumnSection validation failed:\n${msg}`)
+  }
 }

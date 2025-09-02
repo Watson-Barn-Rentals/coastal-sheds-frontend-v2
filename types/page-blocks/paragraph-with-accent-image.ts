@@ -1,64 +1,56 @@
-// types/blocks/paragraph-with-accent-image.ts
+import { z } from 'zod'
+import { CustomCssStylingSchema, type CustomCssStyling } from '../custom-css-styling'
+import { ImageMediaItemSchema, type ImageMediaItem } from '../image-media-item'
 
-import { isCustomCssStyling, type CustomCssStyling } from "../custom-css-styling";
-import { isImageMediaItem, type ImageMediaItem } from "../image-media-item";
+export const PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE = 'paragraph-with-accent-image' as const
 
-export const PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE = "paragraph-with-accent-image" as const;
+export const ParagraphWithAccentImageBlockDataSchema = z.object({
+  title: z.string().nullable(),
+  titleTextSize: z.string(),
+  titleFont: z.string(),
+  titleTextColor: z.string(),
+  titleCustomStyling: CustomCssStylingSchema,
 
-export type ParagraphWithAccentImageBlockData = {
-  title: string | null;
-  titleTextSize: string;
-  titleFont: string;
-  titleTextColor: string;
-  titleCustomStyling: CustomCssStyling;
-  text: string;
-  bodyTextSize: string;
-  bodyFont: string;
-  bodyTextColor: string;
-  bodyCustomStyling: CustomCssStyling;
-  image: ImageMediaItem;
-  disableImagePlaceholder: boolean;
-  alignment: "left" | "right";
-  imageWidth: string;
-  horizontalImageOffset: string;
-  verticalImageOffset: string;
-  imageRotation: string;
-  imagePadding: string;
-  customImageStyling: CustomCssStyling;
-};
+  text: z.string(),
+  bodyTextSize: z.string(),
+  bodyFont: z.string(),
+  bodyTextColor: z.string(),
+  bodyCustomStyling: CustomCssStylingSchema,
 
-export type ParagraphWithAccentImageBlock = {
-  type: typeof PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE;
-  spaceAfter: string
-  data: ParagraphWithAccentImageBlockData;
-};
+  image: ImageMediaItemSchema,
+  disableImagePlaceholder: z.boolean(),
+  alignment: z.enum(['left', 'right']),
+  imageWidth: z.string(),
+  horizontalImageOffset: z.string(),
+  verticalImageOffset: z.string(),
+  imageRotation: z.string(),
+  imagePadding: z.string(),
+  customImageStyling: CustomCssStylingSchema,
+}).strict()
 
-export function isParagraphWithAccentImageBlock(x: any): x is ParagraphWithAccentImageBlock {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    (typeof x.data.title === "string" || x.data.title === null) &&
-    typeof x.data.titleTextSize === "string" &&
-    typeof x.data.titleFont === "string" &&
-    typeof x.data.titleTextColor === "string" &&
-    isCustomCssStyling(x.data.titleCustomStyling) &&
-    typeof x.data.text === "string" &&
-    typeof x.data.bodyTextSize === "string" &&
-    typeof x.data.bodyFont === "string" &&
-    typeof x.data.bodyTextColor === "string" &&
-    isCustomCssStyling(x.data.bodyCustomStyling) &&
-    typeof x.data.image === "object" &&
-    isImageMediaItem(x.data.image) &&
-    typeof x.data.disableImagePlaceholder === "boolean" &&
-    (x.data.alignment === "left" || x.data.alignment === "right") &&
-    typeof x.data.imageWidth === "string" &&
-    typeof x.data.horizontalImageOffset === "string" &&
-    typeof x.data.verticalImageOffset === "string" &&
-    typeof x.data.imageRotation === "string" &&
-    typeof x.data.imagePadding === "string" &&
-    isCustomCssStyling(x.data.customImageStyling)
-  );
+export type ParagraphWithAccentImageBlockData = z.infer<typeof ParagraphWithAccentImageBlockDataSchema>
+
+export const ParagraphWithAccentImageBlockSchema = z.object({
+  type: z.literal(PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE),
+  spaceAfter: z.string(),
+  data: ParagraphWithAccentImageBlockDataSchema,
+}).strict()
+
+export type ParagraphWithAccentImageBlock = z.infer<typeof ParagraphWithAccentImageBlockSchema>
+
+// Boolean guard (same API name)
+export const isParagraphWithAccentImageBlock = (x: unknown): x is ParagraphWithAccentImageBlock =>
+  ParagraphWithAccentImageBlockSchema.safeParse(x).success
+
+// Optional: assertion with readable errors
+export function assertParagraphWithAccentImageBlock(
+  x: unknown
+): asserts x is ParagraphWithAccentImageBlock {
+  const r = ParagraphWithAccentImageBlockSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`ParagraphWithAccentImageBlock validation failed:\n${details}`)
+  }
 }

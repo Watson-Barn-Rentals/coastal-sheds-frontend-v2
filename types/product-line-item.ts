@@ -1,36 +1,34 @@
-import { isImageMediaItem, type ImageMediaItem } from "./image-media-item"
-import { isProductCategoryItem, type ProductCategoryItem } from "./product-category-item"
-import { isProductItem, type ProductItem } from "./product-item"
+// types/product-line-item.ts
+import { z } from 'zod'
+import { ImageMediaItemSchema, type ImageMediaItem } from './image-media-item'
+import { ProductItemSchema, type ProductItem } from './product-item'
 
-export type ProductLineItem = {
-    heroImage: ImageMediaItem
-    additionalImages: ImageMediaItem[]
-    slug: string
-    title: string
-    short_description: string
-    long_description: string
-    override_page_url: string | null
-    products: ProductItem[]
-    product_category_slug: string
-    product_category_title: string
-}
+export const ProductLineItemSchema = z.object({
+  heroImage: ImageMediaItemSchema,
+  additionalImages: z.array(ImageMediaItemSchema),
+  slug: z.string(),
+  title: z.string(),
+  short_description: z.string(),
+  long_description: z.string(),
+  override_page_url: z.string().nullable(),
+  products: z.array(ProductItemSchema),
+  product_category_slug: z.string(),
+  product_category_title: z.string(),
+}).strict()
 
-export function isProductLineItem(x: any): x is ProductLineItem {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    typeof x.heroImage === "object" &&
-    isImageMediaItem(x.heroImage) &&
-    Array.isArray(x.additionalImages) &&
-    x.additionalImages.every(isImageMediaItem) &&
-    typeof x.slug === "string" &&
-    typeof x.title === "string" &&
-    typeof x.short_description === "string" &&
-    typeof x.long_description === "string" &&
-    (typeof x.override_page_url === "string" || x.override_page_url === null) &&
-    Array.isArray(x.products) &&
-    x.products.every(isProductItem) &&
-    typeof x.product_category_slug === "string" &&
-    typeof x.product_category_title === "string"
-  );
+export type ProductLineItem = z.infer<typeof ProductLineItemSchema>
+
+// Boolean guard (same API name)
+export const isProductLineItem = (x: unknown): x is ProductLineItem =>
+  ProductLineItemSchema.safeParse(x).success
+
+// Optional: assertion with readable errors
+export function assertProductLineItem(x: unknown): asserts x is ProductLineItem {
+  const r = ProductLineItemSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`ProductLineItem validation failed:\n${details}`)
+  }
 }

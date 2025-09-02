@@ -1,51 +1,43 @@
-import { isEmployeeItem, type EmployeeItem } from "./employee-item";
-import { isImageMediaItem, type ImageMediaItem } from "./image-media-item";
-import { isRegionItem, type RegionItem } from "./region-item";
+// types/location-item.ts
+import { z } from 'zod'
+import { ImageMediaItemSchema, type ImageMediaItem } from './image-media-item'
+import { RegionItemSchema, type RegionItem } from './region-item'
+import { EmployeeItemSchema, type EmployeeItem } from './employee-item'
 
-export type LocationItem = {
-    heroImage: ImageMediaItem
-    slug: string
-    title: string
-    shortDescription: string
-    longDescription: string
-    address: string
-    city: string
-    state: string
-    zip: string
-    latitude: string
-    longitude: string
-    phone: string
-    email: string
-    regions: RegionItem[]
-    salesReps: EmployeeItem[]
-    googleMapsEmbedUrl: string
-    facebookPageUrl: string
-    hours: Record<string, string>
-}
+export const LocationItemSchema = z.object({
+  heroImage: ImageMediaItemSchema,
+  slug: z.string(),
+  title: z.string(),
+  shortDescription: z.string(),
+  longDescription: z.string(),
+  address: z.string(),
+  city: z.string(),
+  state: z.string(),
+  zip: z.string(),
+  latitude: z.string(),
+  longitude: z.string(),
+  phone: z.string(),
+  email: z.string(),
+  regions: z.array(RegionItemSchema),
+  salesReps: z.array(EmployeeItemSchema),
+  googleMapsEmbedUrl: z.string(),
+  facebookPageUrl: z.string(),
+  hours: z.record(z.string()), // adjust to z.record(z.unknown()) if values aren't always strings
+}).strict()
 
-export function isLocationItem(x: any): x is LocationItem {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    isImageMediaItem(x.heroImage) &&
-    typeof x.slug === "string" &&
-    typeof x.title === "string" &&
-    typeof x.shortDescription === "string" &&
-    typeof x.longDescription === "string" &&
-    typeof x.address === "string" &&
-    typeof x.city === "string" &&
-    typeof x.state === "string" &&
-    typeof x.zip === "string" &&
-    typeof x.latitude === "string" &&
-    typeof x.longitude === "string" &&
-    typeof x.phone === "string" &&
-    typeof x.email === "string" &&
-    Array.isArray(x.regions) &&
-    x.regions.every(isRegionItem) &&
-    Array.isArray(x.salesReps) &&
-    x.salesReps.every(isEmployeeItem) &&
-    typeof x.googleMapsEmbedUrl === "string" &&
-    typeof x.facebookPageUrl === "string" &&
-    typeof x.hours === "object"
-  );
+export type LocationItem = z.infer<typeof LocationItemSchema>
+
+// Boolean guard (keeps the same API name)
+export const isLocationItem = (x: unknown): x is LocationItem =>
+  LocationItemSchema.safeParse(x).success
+
+// Optional: assertion with readable errors
+export function assertLocationItem(x: unknown): asserts x is LocationItem {
+  const r = LocationItemSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`LocationItem validation failed:\n${details}`)
+  }
 }

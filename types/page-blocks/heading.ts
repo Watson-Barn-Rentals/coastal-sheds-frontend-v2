@@ -1,40 +1,41 @@
 // types/blocks/heading.ts
+import { z } from 'zod'
+import { CustomCssStylingSchema, type CustomCssStyling } from '../custom-css-styling'
 
-import { isCustomCssStyling, type CustomCssStyling } from "../custom-css-styling";
+export const HEADING_BLOCK_TYPE = 'heading' as const
 
-export const HEADING_BLOCK_TYPE = "heading" as const;
+export const HeadingBlockDataSchema = z.object({
+  content: z.string(),
+  headingTextSize: z.string(),
+  headingFont: z.string(),
+  headingTextColor: z.string(),
+  headingLevel: z.enum(['h1', 'h2', 'h3', 'p']),
+  textAlignment: z.enum(['left', 'center']),
+  topMargin: z.string(),
+  customTextStyling: CustomCssStylingSchema,
+}).strict()
 
-export type HeadingBlockData = {
-  content: string
-  headingTextSize: string
-  headingFont: string
-  headingTextColor: string
-  headingLevel: 'h1' | 'h2' | 'h3' | 'p'
-  textAlignment: 'left' | 'center'
-  topMargin: string
-  customTextStyling: CustomCssStyling
-};
+export type HeadingBlockData = z.infer<typeof HeadingBlockDataSchema>
 
-export type HeadingBlock = {
-  type: typeof HEADING_BLOCK_TYPE;
-  spaceAfter: string
-  data: HeadingBlockData;
-};
+export const HeadingBlockSchema = z.object({
+  type: z.literal(HEADING_BLOCK_TYPE),
+  spaceAfter: z.string(),
+  data: HeadingBlockDataSchema,
+}).strict()
 
-export function isHeadingBlock(x: any): x is HeadingBlock {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === HEADING_BLOCK_TYPE &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    typeof x.data.content === "string" &&
-    typeof x.data.headingTextSize === "string" &&
-    typeof x.data.headingFont === "string" &&
-    typeof x.data.headingTextColor === "string" &&
-    (x.data.headingLevel === "h1" || x.data.headingLevel === "h2" || x.data.headingLevel === "h3" || x.data.headingLevel === "p") &&
-    typeof x.data.topMargin === "string" &&
-    isCustomCssStyling(x.data.customTextStyling) &&
-    (x.data.textAlignment === "left" || x.data.textAlignment === "center")
-  );
+export type HeadingBlock = z.infer<typeof HeadingBlockSchema>
+
+// Boolean guard (preserves existing API)
+export const isHeadingBlock = (x: unknown): x is HeadingBlock =>
+  HeadingBlockSchema.safeParse(x).success
+
+// Optional: assertion with readable error output
+export function assertHeadingBlock(x: unknown): asserts x is HeadingBlock {
+  const r = HeadingBlockSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`HeadingBlock validation failed:\n${details}`)
+  }
 }

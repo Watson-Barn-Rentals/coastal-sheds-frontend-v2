@@ -1,39 +1,48 @@
-import { isImageMediaItem, type ImageMediaItem } from "./image-media-item";
-import { isPageBlock, type PageBlock } from "./page-blocks";
+// types/blog-post-data.ts
+import { z } from 'zod'
+import { ImageMediaItemSchema, type ImageMediaItem } from './image-media-item'
+import { PageBlockSchema } from './page-blocks'
 
-export type BlogPostData = {
-  heroImage: ImageMediaItem | null;
-  slug: string;
-  title: string;
-  short_description: string;
-  published_at: string;
-  updated_at: string;
-  blocks: PageBlock[];
-  relatedBlogPosts?: BlogPostData[];
-};
+// Use an interface to avoid TS2456 cycles and give the lazy schema a concrete target type.
+export interface BlogPostData {
+  heroImage: ImageMediaItem | null
+  slug: string
+  title: string
+  short_description: string
+  published_at: string
+  updated_at: string
+  // Inline type import avoids tightening the cycle at the top level
+  blocks: import('./page-blocks').PageBlock[]
+  relatedBlogPosts?: BlogPostData[]
+}
 
+export const BlogPostDataSchema: z.ZodType<BlogPostData> = z.lazy(() =>
+  z
+    .object({
+      heroImage: ImageMediaItemSchema.nullable(),
+      slug: z.string(),
+      title: z.string(),
+      short_description: z.string(),
+      published_at: z.string(),
+      updated_at: z.string(),
+      blocks: z.array(PageBlockSchema),
+      relatedBlogPosts: z.array(BlogPostDataSchema).optional(),
+    })
+    .strict()
+)
+
+// Boolean guard (preserves existing API)
 export function isBlogPostData(obj: unknown): obj is BlogPostData {
-  if (obj === null || typeof obj !== "object") return false;
+  return BlogPostDataSchema.safeParse(obj).success
+}
 
-  const o = obj as Partial<BlogPostData>;
-
-  // basic fields
-  if (!(
-    (o.heroImage === null || isImageMediaItem(o.heroImage)) &&
-    typeof o.slug === "string" &&
-    typeof o.title === "string" &&
-    typeof o.short_description === "string" &&
-    typeof o.published_at === "string" &&
-    typeof o.updated_at === "string" &&
-    Array.isArray(o.blocks) &&
-    o.blocks.every(isPageBlock)
-  )) {
-    return false;
+// Optional: assertion with readable errors
+export function assertBlogPostData(obj: unknown): asserts obj is BlogPostData {
+  const r = BlogPostDataSchema.safeParse(obj)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`BlogPostData validation failed:\n${details}`)
   }
-
-  // relatedBlogPosts: optional, but if present must be an array of BlogPostData
-  if (o.relatedBlogPosts === undefined) return true;
-
-  return Array.isArray(o.relatedBlogPosts)
-    && o.relatedBlogPosts.every(isBlogPostData);
 }

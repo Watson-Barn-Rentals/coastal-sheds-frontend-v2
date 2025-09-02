@@ -1,31 +1,32 @@
-import { isImageMediaItem, type ImageMediaItem } from "./image-media-item"
-import { isProductLineItem, type ProductLineItem } from "./product-line-item"
+// types/product-category-item.ts
+import { z } from 'zod'
+import { ImageMediaItemSchema, type ImageMediaItem } from './image-media-item'
+import { ProductLineItemSchema, type ProductLineItem } from './product-line-item'
 
-export type ProductCategoryItem = {
-    heroImage: ImageMediaItem
-    additionalImages: ImageMediaItem[]
-    slug: string
-    title: string
-    short_description: string
-    long_description: string
-    override_page_url: string | null
-    product_lines: ProductLineItem[]
-}
+export const ProductCategoryItemSchema = z.object({
+  heroImage: ImageMediaItemSchema,
+  additionalImages: z.array(ImageMediaItemSchema),
+  slug: z.string(),
+  title: z.string(),
+  short_description: z.string(),
+  long_description: z.string(),
+  override_page_url: z.string().nullable(),
+  product_lines: z.array(ProductLineItemSchema),
+}).strict()
 
-export function isProductCategoryItem(x: any): x is ProductCategoryItem {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    typeof x.heroImage === "object" &&
-    isImageMediaItem(x.heroImage) &&
-    Array.isArray(x.additionalImages) &&
-    x.additionalImages.every(isImageMediaItem) &&
-    typeof x.slug === "string" &&
-    typeof x.title === "string" &&
-    typeof x.short_description === "string" &&
-    typeof x.long_description === "string" &&
-    (typeof x.override_page_url === "string" || x.override_page_url === null) &&
-    Array.isArray(x.product_lines) &&
-    x.product_lines.every(isProductLineItem)
-  );
+export type ProductCategoryItem = z.infer<typeof ProductCategoryItemSchema>
+
+// Boolean guard (same API name)
+export const isProductCategoryItem = (x: unknown): x is ProductCategoryItem =>
+  ProductCategoryItemSchema.safeParse(x).success
+
+// Optional: assertion with readable errors
+export function assertProductCategoryItem(x: unknown): asserts x is ProductCategoryItem {
+  const r = ProductCategoryItemSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`ProductCategoryItem validation failed:\n${details}`)
+  }
 }

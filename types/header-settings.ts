@@ -1,90 +1,66 @@
-export type SubMenuItem = {
-  text: string
-  icon: string | null
-  column_number: number
-  column_span: number
-  url: string
-}
+import { z } from 'zod'
 
-export type MenuItem = {
-  text: string
-  icon: string | null
-  has_children: boolean
-  url: string | null
-  children: SubMenuItem[]
-}
+/* ---------- Sub-menu item ---------- */
+export const SubMenuItemSchema = z.object({
+  text: z.string(),
+  icon: z.string().nullable(),
+  column_number: z.coerce.number().int(), // coerce "3" -> 3
+  column_span: z.coerce.number().int(),
+  url: z.string(),
+}).strict()
 
-export type HeaderSettings = {
-  logo_url: string
-  show_phone_call_to_action: boolean
-  phone_call_to_action_label: string
-  phone_call_to_action_phone_number: string
-  show_display_mode_toggle: boolean
-  menu: MenuItem[]
-}
+export type SubMenuItem = z.infer<typeof SubMenuItemSchema>
 
+/* ---------- Menu item (conditional url based on has_children) ---------- */
+const MenuItemBase = z.object({
+  text: z.string(),
+  icon: z.string().nullable(),
+  children: z.array(SubMenuItemSchema),
+})
+
+export const MenuItemSchema = z.discriminatedUnion('has_children', [
+  MenuItemBase.extend({
+    has_children: z.literal(true),
+    url: z.null(),
+  }),
+  MenuItemBase.extend({
+    has_children: z.literal(false),
+    url: z.string(),
+  }),
+])
+
+export type MenuItem = z.infer<typeof MenuItemSchema>
+
+/* ---------- Header settings ---------- */
+export const HeaderSettingsSchema = z.object({
+  logo_url: z.string(),
+  show_phone_call_to_action: z.boolean(),
+  phone_call_to_action_label: z.string(),
+  phone_call_to_action_phone_number: z.string(),
+  show_display_mode_toggle: z.boolean(),
+  menu: z.array(MenuItemSchema),
+}).strict()
+
+export type HeaderSettings = z.infer<typeof HeaderSettingsSchema>
+
+/* ---------- Normalizer (uses coercion) ---------- */
 export function normalizeHeaderSettings(data: unknown): unknown {
-	if (
-		typeof data === 'object' &&
-		data !== null &&
-		Array.isArray((data as any).menu)
-	) {
-		for (const item of (data as any).menu) {
-			if (Array.isArray(item.children)) {
-				for (const child of item.children) {
-					if (child && typeof child === 'object' && 'column_number' in child) {
-						child.column_number = Number(child.column_number)
-            child.column_span = Number(child.column_span)
-					}
-				}
-			}
-		}
-	}
-	return data
+  const r = HeaderSettingsSchema.safeParse(data)
+  return r.success ? r.data : data
 }
 
-
+/* ---------- Boolean guard (same API as before) ---------- */
 export function isHeaderSettings(data: unknown): data is HeaderSettings {
-  if (typeof data !== 'object' || data === null) {
-    return false
+  return HeaderSettingsSchema.safeParse(data).success
+}
+
+// Optional: assertion with readable error details
+export function assertHeaderSettings(data: unknown): asserts data is HeaderSettings {
+  const r = HeaderSettingsSchema.safeParse(data)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`HeaderSettings validation failed:\n${details}`)
   }
-  const d = data as Record<string, unknown>
-
-  if (typeof d.logo_url !== 'string') return false
-  if (typeof d.show_phone_call_to_action !== 'boolean') return false
-  if (typeof d.phone_call_to_action_label !== 'string') return false
-  if (typeof d.phone_call_to_action_phone_number !== 'string') return false
-  if (typeof d.show_display_mode_toggle !== 'boolean') return false
-
-  if (!Array.isArray(d.menu)) return false
-
-  for (const itemRaw of d.menu) {
-    if (typeof itemRaw !== 'object' || itemRaw === null) return false
-    const item = itemRaw as Record<string, unknown>
-
-    if (typeof item.text !== 'string') return false
-    if (item.icon != null && typeof item.icon !== 'string') return false
-    if (typeof item.has_children !== 'boolean') return false
-    if (item.has_children) {
-      // when has_children, url must be null
-      if (item.url != null) return false
-    } else {
-      if (typeof item.url !== 'string') return false
-    }
-
-    if (!Array.isArray(item.children)) return false
-
-    for (const childRaw of item.children) {
-      if (typeof childRaw !== 'object' || childRaw === null) return false
-      const child = childRaw as Record<string, unknown>
-
-      if (typeof child.text !== 'string') return false
-      if (child.icon != null && typeof child.icon !== 'string') return false
-      if (typeof child.column_number !== 'number') return false
-      if (typeof child.column_span !== 'number') return false
-      if (typeof child.url !== 'string') return false
-    }
-  }
-
-  return true
 }

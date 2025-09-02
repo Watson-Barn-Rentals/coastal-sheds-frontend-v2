@@ -1,28 +1,64 @@
-// types/blocks/index.ts
+import { z } from 'zod'
 
-import HeadingColumnSectionComponent from "~/components/page-blocks/column-sections/heading-column-section-component.vue";
-import { HEADING_COLUMN_SECTION_TYPE, isHeadingColumnSection, type HeadingColumnSection } from "./column-sections/heading-column-section";
-import { isParagraphColumnSection, PARAGRAPH_COLUMN_SECTION_TYPE, type ParagraphColumnSection } from "./column-sections/paragraph-column-section";
-import ParagraphColumnSectionComponent from "~/components/page-blocks/column-sections/paragraph-column-section-component.vue";
-import { IMAGE_COLUMN_SECTION_TYPE, isImageColumnSection, type ImageColumnSection } from "./column-sections/image-column-section";
-import ImageColumnSectionComponent from "~/components/page-blocks/column-sections/image-column-section-component.vue";
-import { isLinkButtonsColumnSection, LINK_BUTTONS_COLUMN_SECTION_TYPE, type LinkButtonsColumnSection } from "./column-sections/link-buttons-column-section";
-import LinkButtonsColumnSectionComponent from "~/components/page-blocks/column-sections/link-buttons-column-section-component.vue";
-import { isSpacerColumnSection, SPACER_COLUMN_SECTION_TYPE, type SpacerColumnSection } from "./column-sections/spacer-column-section";
-import SpacerColumnSectionComponent from "~/components/page-blocks/column-sections/spacer-column-section-component.vue";
-import { isYoutubeEmbedColumnSection, YOUTUBE_EMBED_COLUMN_SECTION_TYPE, type YoutubeEmbedColumnSection } from "./column-sections/youtube-embed-column-section";
-import YoutubeEmbedColumnSectionComponent from "~/components/page-blocks/column-sections/youtube-embed-column-section-component.vue";
-import { isParagraphWithFloatedImageColumnSection, PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE, type ParagraphWithFloatedImageColumnSection } from "./column-sections/paragraph-with-floated-image-column-section";
-import ParagraphWithFloatedImageColumnSectionComponent from "~/components/page-blocks/column-sections/paragraph-with-floated-image-column-section-component.vue";
-import { IMAGE_CAROUSEL_COLUMN_SECTION_TYPE, isImageCarouselColumnSection, type ImageCarouselColumnSection } from "./column-sections/image-carousel-column-section";
-import ImageCarouselColumnSectionComponent from "~/components/page-blocks/column-sections/image-carousel-column-section-component.vue";
+import HeadingColumnSectionComponent from '~/components/page-blocks/column-sections/heading-column-section-component.vue'
+import {
+  HEADING_COLUMN_SECTION_TYPE,
+  isHeadingColumnSection,
+  HeadingColumnSectionSchema,
+} from './column-sections/heading-column-section'
 
+import {
+  isParagraphColumnSection,
+  PARAGRAPH_COLUMN_SECTION_TYPE,
+  ParagraphColumnSectionSchema,
+} from './column-sections/paragraph-column-section'
+import ParagraphColumnSectionComponent from '~/components/page-blocks/column-sections/paragraph-column-section-component.vue'
+
+import {
+  IMAGE_COLUMN_SECTION_TYPE,
+  isImageColumnSection,
+  ImageColumnSectionSchema,
+} from './column-sections/image-column-section'
+import ImageColumnSectionComponent from '~/components/page-blocks/column-sections/image-column-section-component.vue'
+
+import {
+  isLinkButtonsColumnSection,
+  LINK_BUTTONS_COLUMN_SECTION_TYPE,
+  LinkButtonsColumnSectionSchema,
+} from './column-sections/link-buttons-column-section'
+import LinkButtonsColumnSectionComponent from '~/components/page-blocks/column-sections/link-buttons-column-section-component.vue'
+
+import {
+  isSpacerColumnSection,
+  SPACER_COLUMN_SECTION_TYPE,
+  SpacerColumnSectionSchema,
+} from './column-sections/spacer-column-section'
+import SpacerColumnSectionComponent from '~/components/page-blocks/column-sections/spacer-column-section-component.vue'
+
+import {
+  isYoutubeEmbedColumnSection,
+  YOUTUBE_EMBED_COLUMN_SECTION_TYPE,
+  YoutubeEmbedColumnSectionSchema,
+} from './column-sections/youtube-embed-column-section'
+import YoutubeEmbedColumnSectionComponent from '~/components/page-blocks/column-sections/youtube-embed-column-section-component.vue'
+
+import {
+  isParagraphWithFloatedImageColumnSection,
+  PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE,
+  ParagraphWithFloatedImageColumnSectionSchema,
+} from './column-sections/paragraph-with-floated-image-column-section'
+import ParagraphWithFloatedImageColumnSectionComponent from '~/components/page-blocks/column-sections/paragraph-with-floated-image-column-section-component.vue'
+
+import {
+  IMAGE_CAROUSEL_COLUMN_SECTION_TYPE,
+  isImageCarouselColumnSection,
+  ImageCarouselColumnSectionSchema,
+} from './column-sections/image-carousel-column-section'
+import ImageCarouselColumnSectionComponent from '~/components/page-blocks/column-sections/image-carousel-column-section-component.vue'
 
 /**
- * 1) Build a mapping object: each key is the “type” string,
- *    and each value tells us:
- *      • guard:  which function narrows to the correct TS interface
- *      • component: the actual imported Vue component
+ * 1) Mapping object from “type” → guard + component
+ *    (unchanged public API)
  */
 export const blockMap = {
   [HEADING_COLUMN_SECTION_TYPE]: {
@@ -57,46 +93,42 @@ export const blockMap = {
     guard: isImageCarouselColumnSection,
     component: ImageCarouselColumnSectionComponent,
   },
-
-  // When you add “MyNewColumnSection”:
-  //
-  // [MY_NEW_COLUMN_SECTION_TYPE]: {
-  //   guard: isMyNewColumnSection,
-  //   component: MyNewColumnSectionComponent,
-  // },
-} as const;
+  // Add new sections here as before.
+} as const
 
 /**
- * 2) Export a discriminated union of all column section interfaces.
+ * 2) Zod discriminated union for all Column Sections.
+ *    This gives you a single runtime schema for validation anywhere.
  */
-export type ColumnSection = 
-  | HeadingColumnSection
-  | ParagraphColumnSection
-  | ImageColumnSection
-  | LinkButtonsColumnSection
-  | SpacerColumnSection
-  | YoutubeEmbedColumnSection
-  | ParagraphWithFloatedImageColumnSection
-  | ImageCarouselColumnSection
-// (add “| MyNewColumnSection” on a new line below whenever you create a new column section file)
+export const ColumnSectionSchema = z.discriminatedUnion('type', [
+  HeadingColumnSectionSchema,
+  ParagraphColumnSectionSchema,
+  ImageColumnSectionSchema,
+  LinkButtonsColumnSectionSchema,
+  SpacerColumnSectionSchema,
+  YoutubeEmbedColumnSectionSchema,
+  ParagraphWithFloatedImageColumnSectionSchema,
+  ImageCarouselColumnSectionSchema,
+])
 
 /**
- * 3) Runtime guard: checks x.type and calls the matching guard.
- *    After this returns true, TS knows x is “ColumnSection”.
+ * 3) Export the union type inferred from the schema.
+ *    (Public type name stays the same.)
  */
-export function isColumnSection(x: any): x is ColumnSection {
-  if (x === null || typeof x !== "object") return false;
-  const t = (x as any).type as string;
-  const entry = (blockMap as Record<string, any>)[t];
-  if (!entry) return false;
-  return entry.guard(x);
+export type ColumnSection = z.infer<typeof ColumnSectionSchema>
+
+/**
+ * 4) Runtime guard: now uses the Zod union schema.
+ *    Signature and behavior remain the same (boolean return).
+ */
+export function isColumnSection(x: unknown): x is ColumnSection {
+  return ColumnSectionSchema.safeParse(x).success
 }
 
 /**
- * 4) Given a valid Column Section’s “type”, return its Vue component.
- *    (If someone passes an unknown type, you’ll get undefined.)
+ * 5) Resolve component by type (unchanged).
  */
-export function resolveColumnSectionComponent(type: ColumnSection["type"]) {
-  const entry = (blockMap as Record<string, any>)[type];
-  return entry ? entry.component : null;
+export function resolveColumnSectionComponent(type: ColumnSection['type']) {
+  const entry = (blockMap as Record<string, any>)[type]
+  return entry ? entry.component : null
 }

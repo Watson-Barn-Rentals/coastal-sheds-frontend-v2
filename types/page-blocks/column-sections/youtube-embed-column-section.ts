@@ -1,40 +1,39 @@
-// types/blocks/coastal-home-page-hero.ts
+import { z } from 'zod'
 
-import { isCustomCssStyling, type CustomCssStyling } from "~/types/custom-css-styling";
+export const YOUTUBE_EMBED_COLUMN_SECTION_TYPE = 'youtube-embed-column-section' as const
 
-export const YOUTUBE_EMBED_COLUMN_SECTION_TYPE = "youtube-embed-column-section" as const;
+export const YoutubeEmbedColumnSectionDataSchema = z.object({
+  youtubeVideoId: z.string(), // optionally: .regex(/^[\w-]{11}$/)
+  marginTop: z.string(),
+  marginBottom: z.string(),
+  marginLeft: z.string(),
+  marginRight: z.string(),
+  trackingEventName: z.string(),
+}).strict()
 
-export type YoutubeEmbedColumnSectionData = {
-  youtubeVideoId: string
-  marginTop: string
-  marginBottom: string
-  marginLeft: string
-  marginRight: string
-  trackingEventName: string
-};
+export type YoutubeEmbedColumnSectionData = z.infer<typeof YoutubeEmbedColumnSectionDataSchema>
 
-export type YoutubeEmbedColumnSection = {
-  type: typeof YOUTUBE_EMBED_COLUMN_SECTION_TYPE;
-  mobileOrder: number | null
-  mobileOnly: boolean
-  spaceAfter: string
-  data: YoutubeEmbedColumnSectionData;
-};
+export const YoutubeEmbedColumnSectionSchema = z.object({
+  type: z.literal(YOUTUBE_EMBED_COLUMN_SECTION_TYPE),
+  mobileOrder: z.number().nullable(),
+  mobileOnly: z.boolean(),
+  spaceAfter: z.string(),
+  data: YoutubeEmbedColumnSectionDataSchema,
+}).strict()
 
-export function isYoutubeEmbedColumnSection(x: any): x is YoutubeEmbedColumnSection {
-  return (
-    x !== null &&
-    typeof x === "object" &&
-    x.type === YOUTUBE_EMBED_COLUMN_SECTION_TYPE &&
-    (x.mobileOrder === null || typeof x.mobileOrder === "number") &&
-    typeof x.mobileOnly === "boolean" &&
-    typeof x.spaceAfter === "string" &&
-    typeof x.data === "object" &&
-    typeof x.data.youtubeVideoId === "string" &&
-    typeof x.data.marginTop === "string" &&
-    typeof x.data.marginBottom === "string" &&
-    typeof x.data.marginLeft === "string" &&
-    typeof x.data.marginRight === "string" &&
-    typeof x.data.trackingEventName === "string"
-  );
+export type YoutubeEmbedColumnSection = z.infer<typeof YoutubeEmbedColumnSectionSchema>
+
+// Boolean guard (same API name)
+export const isYoutubeEmbedColumnSection = (x: unknown): x is YoutubeEmbedColumnSection =>
+  YoutubeEmbedColumnSectionSchema.safeParse(x).success
+
+// Optional: assertion with readable error details
+export function assertYoutubeEmbedColumnSection(x: unknown): asserts x is YoutubeEmbedColumnSection {
+  const r = YoutubeEmbedColumnSectionSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`YoutubeEmbedColumnSection validation failed:\n${details}`)
+  }
 }

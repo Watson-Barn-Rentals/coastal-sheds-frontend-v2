@@ -1,5 +1,5 @@
 import { createError, useRuntimeConfig } from 'nuxt/app'
-import { isPageData, type PageData } from '~/types/page-data'
+import { assertPageData, type PageData } from '~/types/page-data'
 
 export const getPageData = async (pageUrl: string): Promise<PageData> => {
   const config = useRuntimeConfig()
@@ -13,14 +13,15 @@ export const getPageData = async (pageUrl: string): Promise<PageData> => {
       { method: 'POST', body: { url: pageUrl } }
     )
 
-    if (!isPageData(data)) {
-      throw createError({
-        statusCode: 502,
-        statusMessage: 'Invalid response from API',
-      })
+    // Assert with error logging
+    try {
+      assertPageData(data)
+    } catch (e: any) {
+      console.error(`[getPageData] Validation failed for url "${pageUrl}":`, e?.message ?? e, { data })
+      throw createError({ statusCode: 502, statusMessage: 'Invalid response from API' })
     }
 
-    return data
+    return data as PageData
   } catch (err: any) {
     const statusCode =
       err?.response?.status ??

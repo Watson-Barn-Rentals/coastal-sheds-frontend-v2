@@ -40,6 +40,28 @@ const discountedSelectValue = computed<string | null>({
     <p class="font-title text-center text-xl font-bold">Filters</p>
 
     <!-- Chips ... (unchanged) -->
+    <div class="flex flex-wrap gap-4">
+      <div
+        v-for="chip in props.chips"
+        :key="chip.key"
+        class="flex items-center gap-2 text-sm border-2 border-slate-600 dark:border-slate-400 rounded-full p-2"
+      >
+        <span class="my-auto">{{ chip.label }}</span>
+        <button @click="$emit('clear-chip', chip.key)" class="cursor-pointer h-4 w-4 hover:scale-150 transition-all duration-150">
+          <UIcon
+            name="material-symbols:close"
+          />
+        </button>
+      </div>
+      <div
+        v-if="props.chips.length > 0"
+        class="flex items-center gap-2 text-sm border-2 border-slate-600 dark:border-slate-400 rounded-full p-2"
+      >
+        <button @click="$emit('reset')" class="cursor-pointer">
+          <span class="italic shrink-0">Clear All Filters</span>
+        </button>
+      </div>
+    </div>
 
     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 md:gap-4 items-end">
       <!-- Search -->
