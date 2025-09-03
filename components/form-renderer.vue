@@ -41,7 +41,7 @@ const onSubmit = async (e: Event) => {
   status.value = 'submitting'
 
   try {
-    const target = typeof window !== 'undefined' && window.location?.pathname ? window.location.pathname : '/'
+    const target = '_netlify-forms.html'
     const params = new URLSearchParams()
     params.append('form-name', props.form.netlifyName)
 

@@ -80,50 +80,50 @@ export default defineNuxtConfig({
         }
 
         /* 2) Generate Netlify Forms registration (no file inputs) */
-        // try {
-        //   const res = await fetch(`${apiRoot}/api/list-forms`, { headers: { Accept: 'application/json' } })
-        //   if (!res.ok) throw new Error(`list-forms ${res.status} ${res.statusText}`)
-        //   const { data } = await res.json() as {
-        //     data: Array<{ netlifyName: string; fields: Array<{ key: string; type: string; options?: Array<{ value: string; label: string }> }> }>
-        //   }
+        try {
+          const res = await fetch(`${apiRoot}/api/list-forms`, { headers: { Accept: 'application/json' } })
+          if (!res.ok) throw new Error(`list-forms ${res.status} ${res.statusText}`)
+          const { data } = await res.json() as {
+            data: Array<{ netlifyName: string; fields: Array<{ key: string; type: string; options?: Array<{ value: string; label: string }> }> }>
+          }
 
-        //   const chunks: string[] = []
-        //   chunks.push(
-        //     '<!doctype html><html><head><meta charset="utf-8"><title>Netlify Forms Detection</title></head><body style="display:none;">'
-        //   )
+          const chunks: string[] = []
+          chunks.push(
+            '<!doctype html><html><head><meta charset="utf-8"><title>Netlify Forms Detection</title></head><body style="display:none;">'
+          )
 
-        //   for (const form of data ?? []) {
-        //     chunks.push(`<form name="${form.netlifyName}" data-netlify="true" netlify>`)
-        //     chunks.push(`<input type="text" name="bot-field" />`)
+          for (const form of data ?? []) {
+            chunks.push(`<form name="${form.netlifyName}" data-netlify="true" netlify>`)
+            chunks.push(`<input type="text" name="bot-field" />`)
 
-        //     for (const f of form.fields ?? []) {
-        //       const t = String(f.type || '').toLowerCase()
-        //       if (t === 'hidden') {
-        //         chunks.push(`<input type="hidden" name="${f.key}" value="">`)
-        //       } else if (t === 'checkbox' && (f.options?.length ?? 0) > 0) {
-        //         chunks.push(`<input type="checkbox" name="${f.key}[]" value="${f.options![0].value}">`)
-        //       } else if (t === 'radio' && (f.options?.length ?? 0) > 0) {
-        //         chunks.push(`<input type="radio" name="${f.key}" value="${f.options![0].value}">`)
-        //       } else if (t === 'select') {
-        //         const opt = f.options?.[0]?.value ?? ''
-        //         chunks.push(`<select name="${f.key}"><option value="${opt}">${opt}</option></select>`)
-        //       } else {
-        //         // text/email/tel/url/password/textarea -> just give Netlify a simple input
-        //         chunks.push(`<input type="text" name="${f.key}" value="">`)
-        //       }
-        //     }
+            for (const f of form.fields ?? []) {
+              const t = String(f.type || '').toLowerCase()
+              if (t === 'hidden') {
+                chunks.push(`<input type="hidden" name="${f.key}" value="">`)
+              } else if (t === 'checkbox' && (f.options?.length ?? 0) > 0) {
+                chunks.push(`<input type="checkbox" name="${f.key}[]" value="${f.options![0].value}">`)
+              } else if (t === 'radio' && (f.options?.length ?? 0) > 0) {
+                chunks.push(`<input type="radio" name="${f.key}" value="${f.options![0].value}">`)
+              } else if (t === 'select') {
+                const opt = f.options?.[0]?.value ?? ''
+                chunks.push(`<select name="${f.key}"><option value="${opt}">${opt}</option></select>`)
+              } else {
+                // text/email/tel/url/password/textarea -> just give Netlify a simple input
+                chunks.push(`<input type="text" name="${f.key}" value="">`)
+              }
+            }
 
-        //     chunks.push('</form>')
-        //   }
+            chunks.push('</form>')
+          }
 
-        //   chunks.push('</body></html>')
+          chunks.push('</body></html>')
 
-        //   const detectionPath = path.join(publishDir, '_netlify-forms.html')
-        //   fs.writeFileSync(detectionPath, chunks.join('\n'), 'utf8')
-        //   console.log(`Wrote Netlify detection file: ${detectionPath}`)
-        // } catch (e) {
-        //   console.warn('Skipping _netlify-forms.html generation:', e)
-        // }
+          const detectionPath = path.join(publishDir, '_netlify-forms.html')
+          fs.writeFileSync(detectionPath, chunks.join('\n'), 'utf8')
+          console.log(`Wrote Netlify detection file: ${detectionPath}`)
+        } catch (e) {
+          console.warn('Skipping _netlify-forms.html generation:', e)
+        }
       })
     },
   },
