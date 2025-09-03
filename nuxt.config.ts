@@ -86,39 +86,57 @@ export default defineNuxtConfig({
 
         /* ---------- 2) Generate Netlify Forms registration ---------- */
         try {
+          // 👉 build an endpoint that returns minimal detection data
+          // shape: { data: Array<{ netlifyName: string; fields: Array<{ key: string; type: string; options?: Array<{value:string;label:string}> }> }> }
           const res = await fetch(`${apiRoot}/api/list-forms`, { headers: { Accept: 'application/json' } })
-          if (!res.ok) {
-            console.warn(`Skipping forms registration: ${res.status} ${res.statusText}`)
-          } else {
-            const { data } = (await res.json()) as {
-              data: Array<{ netlifyName: string; fieldKeys?: string[] }>
+          if (!res.ok) throw new Error(`list-forms ${res.status} ${res.statusText}`)
+          const { data } = await res.json() as {
+            data: Array<{ netlifyName: string; fields: Array<{ key: string; type: string; options?: Array<{ value: string; label: string }> }> }>
+          }
+
+          const chunks: string[] = []
+          chunks.push(
+            '<!doctype html><html><head><meta charset="utf-8"><title>Netlify Forms Detection</title></head><body style="display:none;">'
+          )
+
+          for (const form of data ?? []) {
+            chunks.push(`<form name="${form.netlifyName}" data-netlify="true" netlify>`)
+            // include a honeypot so detection sees it:
+            chunks.push(`<input type="text" name="bot-field" />`)
+
+            for (const f of form.fields ?? []) {
+              const t = String(f.type || '').toLowerCase()
+              if (t === 'hidden') {
+                chunks.push(`<input type="hidden" name="${f.key}" value="">`)
+              } else if (t === 'checkbox' && (f.options?.length ?? 0) > 0) {
+                // ✅ IMPORTANT: use [] for multi-value names, matching your runtime submission
+                chunks.push(`<input type="checkbox" name="${f.key}[]" value="${f.options![0].value}">`)
+              } else if (t === 'radio' && (f.options?.length ?? 0) > 0) {
+                chunks.push(`<input type="radio" name="${f.key}" value="${f.options![0].value}">`)
+              } else if (t === 'select') {
+                const opt = f.options?.[0]?.value ?? ''
+                chunks.push(`<select name="${f.key}"><option value="${opt}">${opt}</option></select>`)
+              } else if (t === 'file') {
+                // Netlify only supports 1 file per field
+                chunks.push(`<input type="file" name="${f.key}">`)
+              } else {
+                // text/email/tel/url/password/textarea fallback as text
+                chunks.push(`<input type="text" name="${f.key}" value="">`)
+              }
             }
 
-            const stubs = (data ?? []).map((f) => {
-              // minimal inputs ensure detection; include honeypot and form-name
-              const keys = (f.fieldKeys && f.fieldKeys.length ? f.fieldKeys : ['name', 'email', 'message'])
-              const inputs = keys.map(k => `  <input name="${k}">`).join('\n')
-              return `<form name="${f.netlifyName}" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
-  <input type="hidden" name="form-name" value="${f.netlifyName}">
-  <input name="bot-field">
-${inputs}
-</form>`
-            }).join('\n\n')
-
-            const html = `<!doctype html>
-<html>
-<head><meta charset="utf-8"><title>Netlify Forms Registration</title></head>
-<body>
-${stubs}
-</body>
-</html>
-`
-            const formsPath = path.join(publishDir, 'netlify-forms.html')
-            fs.writeFileSync(formsPath, html, 'utf8')
-            console.log(`Wrote Netlify Forms registration for ${(data ?? []).length} forms to ${formsPath}`)
+            chunks.push('</form>')
           }
-        } catch (err) {
-          console.error('Failed to generate netlify-forms.html:', err)
+
+          chunks.push('</body></html>')
+
+          const out = chunks.join('\n')
+          const publishDir = nitro.options.output.publicDir
+          const detectionPath = path.join(publishDir, '_netlify-forms.html')
+          fs.writeFileSync(detectionPath, out, 'utf8')
+          console.log(`Wrote Netlify detection file: ${detectionPath}`)
+        } catch (e) {
+          console.warn('Skipping _netlify-forms.html generation:', e)
         }
       })
     },
