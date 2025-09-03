@@ -268,8 +268,8 @@ useSchemaOrg(() => {
                   >{{ data.email }}</NuxtLink
                 >
               </div>
-              <span class="font-bold underline" v-if="data.hours">Hours</span>
-              <div class="flex flex-col gap-2" v-if="data.hours">
+              <span class="font-bold underline" v-if="Object.keys(data.hours).length > 0">Hours</span>
+              <div class="flex flex-col gap-2" v-if="Object.keys(data.hours).length > 0">
                 <div
                   v-for="(hrs, day, i) in data.hours"
                   :key="day"
