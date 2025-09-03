@@ -86,7 +86,7 @@ export default defineNuxtConfig({
 
         /* ---------- 2) Generate Netlify Forms registration ---------- */
         try {
-          const res = await fetch(`${apiRoot}/api/forms`, { headers: { Accept: 'application/json' } })
+          const res = await fetch(`${apiRoot}/api/list-forms`, { headers: { Accept: 'application/json' } })
           if (!res.ok) {
             console.warn(`Skipping forms registration: ${res.status} ${res.statusText}`)
           } else {
