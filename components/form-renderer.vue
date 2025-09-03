@@ -48,7 +48,7 @@ const onSubmit = async (e: Event) => {
     for (const f of props.form.fields) {
       const key = f.key
       const v = values.value[key]
-      if (Array.isArray(v)) v.forEach((val: string) => params.append(`${key}[]`, String(val)))
+      if (Array.isArray(v)) v.forEach((val: string) => params.append(key, String(val)))
       else if (v != null) params.append(key, String(v))
     }
     if (values.value['bot-field']) params.append('bot-field', String(values.value['bot-field']))

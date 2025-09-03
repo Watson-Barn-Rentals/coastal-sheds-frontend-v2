@@ -59,6 +59,9 @@ export default defineNuxtConfig({
           }
 
           const lines: string[] = []
+
+          lines.push('/_netlify-forms.html  /_netlify-forms.html  200!') // force static
+
           for (const r of json.data ?? []) {
             if (r.enabled === false) continue
             const status = String(r.status ?? '301')
@@ -93,8 +96,13 @@ export default defineNuxtConfig({
           )
 
           for (const form of data ?? []) {
-            chunks.push(`<form name="${form.netlifyName}" data-netlify="true" netlify>`)
-            chunks.push(`<input type="text" name="bot-field" />`)
+              chunks.push(
+                `<form name="${form.netlifyName}" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" netlify>`
+              )
+              // form-name helps both bots and JS-only submissions
+              chunks.push(`<input type="hidden" name="form-name" value="${form.netlifyName}" />`)
+              // honeypot field Netlify expects (will be ignored if left empty)
+              chunks.push(`<input type="text" name="bot-field" />`)
 
             for (const f of form.fields ?? []) {
               const t = String(f.type || '').toLowerCase()
