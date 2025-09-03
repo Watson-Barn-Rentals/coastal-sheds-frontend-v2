@@ -30,8 +30,18 @@ export const getLocationsList = async (): Promise<LocationItem[]> => {
 
     return data as LocationItem[]
   } catch (err: any) {
-    console.error('[getLocationsList] Request failed:', err?.message ?? err)
-    await navigateTo('/error')
-    throw new Error('An error occurred while fetching location items')
+    const statusCode =
+      err?.response?.status ??
+      err?.statusCode ??
+      err?.status ??
+      err?.data?.statusCode ??
+      500
+
+    const statusMessage =
+      err?.data?.message ??
+      err?.message ??
+      `An error occurred while fetching location list`
+
+    throw createError({ statusCode, statusMessage })
   }
 }

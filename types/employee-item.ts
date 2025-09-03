@@ -6,7 +6,7 @@ export const EmployeeItemSchema = z.object({
   profilePicture: ImageMediaItemSchema,
   name: z.string(),
   title: z.string(),
-  bio: z.string(),
+  bio: z.string().nullable(),
 }).strict()
 
 export type EmployeeItem = z.infer<typeof EmployeeItemSchema>
