@@ -1,34 +1,22 @@
 // nuxt.config.ts
 import { defineNuxtConfig } from 'nuxt/config'
 import tailwindcss from '@tailwindcss/vite'
-import fs from 'fs'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const isPreviewMode = process.env.PREVIEW_MODE === 'true'
-
-const staticPageRoutes = new Set<string>() // collect non-dynamic pages
+const staticPageRoutes = new Set<string>()
 
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
-
-  // Preview mode = CSR (no SSR). Otherwise SSR on (Netlify Functions).
   ssr: !isPreviewMode,
 
-  /**
-   * IMPORTANT:
-   * Remove the global `/**: { prerender: true }`. We only prerender
-   * the exact routes we add in the hooks below.
-   */
-  routeRules: {
-    // (empty or add other rules as needed; do NOT set global prerender)
-  },
+  routeRules: {},
 
   nitro: {
-    // Use Netlify preset so un-prerendered routes are SSR'd by Functions
     preset: 'netlify',
     prerender: {
-      // We’ll explicitly add routes; avoid accidental crawling
       crawlLinks: false,
-      // routes: []  // filled by the hooks below
     },
   },
 
@@ -38,10 +26,16 @@ export default defineNuxtConfig({
     '~/plugins/fingerprint.client.ts',
   ],
 
+  /**
+   * ✅ Use Nuxt's top-level hooks:
+   *    1) 'prerender:routes' (your existing prerendering)
+   *    2) 'nitro:init' -> nitro.hooks.hook('compiled', ...) to write _redirects
+   */
   hooks: {
+    // keep your prerender logic
     'prerender:routes': async (ctx) => {
       if (isPreviewMode) return
-    
+
       const apiRoot = process.env.API_ROOT_URL
       if (!apiRoot) throw new Error('Missing API_ROOT_URL')
 
@@ -49,7 +43,60 @@ export default defineNuxtConfig({
       if (!res.ok) throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`)
       const { data: pageList } = (await res.json()) as { data: string[] }
       pageList.forEach(route => ctx.routes.add(route))
-    }
+    },
+
+    // ✅ Attach to Nitro's lifecycle after Nitro instance exists
+    'nitro:init': (nitro) => {
+      nitro.hooks.hook('compiled', async () => {
+        // Optionally skip in preview mode
+        if (isPreviewMode) return
+
+        const apiRoot = process.env.API_ROOT_URL
+        if (!apiRoot) {
+          console.warn('Missing API_ROOT_URL; skipping _redirects generation.')
+          return
+        }
+
+        try {
+          const res = await fetch(`${apiRoot}/api/redirects`, {
+            headers: { Accept: 'application/json' },
+          })
+          if (!res.ok) {
+            throw new Error(`Failed to fetch redirects: ${res.status} ${res.statusText}`)
+          }
+
+          const json = (await res.json()) as {
+            data: Array<{ from: string; to: string; status?: number | string; force?: boolean; enabled?: boolean }>
+          }
+
+          const lines: string[] = []
+          for (const r of json.data ?? []) {
+            if (r.enabled === false) continue
+            const status = String(r.status ?? '301')
+            const bang = r.force ? '!' : ''
+            // Netlify format: "<from>  <to>  <status[!]>"
+            lines.push(`${r.from}  ${r.to}  ${status}${bang}`)
+          }
+
+          // Merge with optional static /public/_redirects
+          const publishDir = nitro.options.output.publicDir
+          const redirectsPath = path.join(publishDir, '_redirects')
+
+          let baseline = ''
+          const baselinePath = path.join(process.cwd(), 'public', '_redirects')
+          if (fs.existsSync(baselinePath)) {
+            baseline = fs.readFileSync(baselinePath, 'utf8').trim()
+          }
+
+          const dynamicRules = lines.join('\n').trim()
+          const final = [baseline, dynamicRules].filter(Boolean).join('\n') + '\n'
+          fs.writeFileSync(redirectsPath, final, 'utf8')
+          console.log(`Wrote ${lines.length} redirect rules to ${redirectsPath}`)
+        } catch (err) {
+          console.error('Failed to build _redirects from CMS:', err)
+        }
+      })
+    },
   },
 
   runtimeConfig: {
@@ -88,8 +135,8 @@ export default defineNuxtConfig({
   scripts: {
     registry: {
       googleAnalytics: { id: 'G-L2JCGM5R9C' },
-      metaPixel:       { id: 'YOUR_ID' },
-      hotjar:          { id: 6439262 },
+      metaPixel: { id: 'YOUR_ID' },
+      hotjar: { id: 6439262 },
     },
   },
 
