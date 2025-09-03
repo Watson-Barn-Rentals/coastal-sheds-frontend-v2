@@ -252,7 +252,7 @@ useSchemaOrg(() => {
                   {{ data.zip }}</NuxtLink
                 >
               </div>
-              <div class="flex gap-2">
+              <div class="flex gap-2" v-if="data.phone">
                 <span class="font-bold">Phone Number:</span>
                 <NuxtLink
                   :to="`tel:${data.phone}`"
@@ -260,7 +260,7 @@ useSchemaOrg(() => {
                   >{{ getFormattedPhoneNumber(data.phone) }}</NuxtLink
                 >
               </div>
-              <div class="flex gap-2">
+              <div class="flex gap-2" v-if="data.email">
                 <span class="font-bold">Email:</span>
                 <NuxtLink
                   :to="`mailto:${data.email}`"
@@ -268,8 +268,8 @@ useSchemaOrg(() => {
                   >{{ data.email }}</NuxtLink
                 >
               </div>
-              <span class="font-bold underline">Hours</span>
-              <div class="flex flex-col gap-2">
+              <span class="font-bold underline" v-if="data.hours">Hours</span>
+              <div class="flex flex-col gap-2" v-if="data.hours">
                 <div
                   v-for="(hrs, day, i) in data.hours"
                   :key="day"

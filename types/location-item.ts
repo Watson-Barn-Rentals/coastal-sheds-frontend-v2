@@ -16,12 +16,12 @@ export const LocationItemSchema = z.object({
   zip: z.string(),
   latitude: z.string(),
   longitude: z.string(),
-  phone: z.string(),
-  email: z.string(),
+  phone: z.string().nullable(),
+  email: z.string().nullable(),
   regions: z.array(RegionItemSchema),
   salesReps: z.array(EmployeeItemSchema),
   googleMapsEmbedUrl: z.string(),
-  facebookPageUrl: z.string(),
+  facebookPageUrl: z.string().nullable(),
   hours: z.record(z.string()), // adjust to z.record(z.unknown()) if values aren't always strings
 }).strict()
 

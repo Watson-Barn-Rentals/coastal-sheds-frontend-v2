@@ -63,18 +63,36 @@ const hasETAs = computed(() =>
   Object.values(travel.value).some((v) => Number.isFinite(v?.durationSeconds))
 );
 
+const originalIndex = computed<Record<string, number>>(() => {
+  const out: Record<string, number> = {}
+  ;(data.value ?? []).forEach((loc, i) => { out[loc.slug] = i })
+  return out
+})
+
 // Sort locations by ETA (missing ETAs go last)
 const sortedLocations = computed<LocationItem[]>(() => {
-  const list = [...(data.value ?? [])];
-  return list.sort((a, b) => {
-    const aT =
-      travel.value[a.slug]?.durationSeconds ?? Number.POSITIVE_INFINITY;
-    const bT =
-      travel.value[b.slug]?.durationSeconds ?? Number.POSITIVE_INFINITY;
-    if (aT === bT) return a.title.localeCompare(b.title);
-    return aT - bT;
-  });
-});
+  const list = data.value ?? []
+
+  // ✅ Before "Find The Closest Location" is used (no ETAs), keep original order
+  if (!hasETAs.value) return list
+  
+  // ✅ After ETAs exist, sort by ETA; items without ETAs go to the end.
+  const idx = originalIndex.value
+  return [...list].sort((a, b) => {
+    const aT = travel.value[a.slug]?.durationSeconds
+    const bT = travel.value[b.slug]?.durationSeconds
+    const aHas = Number.isFinite(aT)
+    const bHas = Number.isFinite(bT)
+
+    if (aHas && bHas) {
+      if (aT === bT) return idx[a.slug] - idx[b.slug] // stable tie-break
+      return (aT as number) - (bT as number)
+    }
+    if (aHas && !bHas) return -1   // a first
+    if (!aHas && bHas) return 1    // b first
+    return idx[a.slug] - idx[b.slug] // neither has ETA → original order
+  })
+})
 
 const initMap = async () => {
   if (!mapEl.value || !mapSettings.value || initialized.value) return;
