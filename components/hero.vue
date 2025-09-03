@@ -108,12 +108,3 @@ const props = defineProps<{
 }
 </style>
 
-<!-- 
-        <div class="relative w-1/2">
-            <div class="absolute bottom-0 right-0 h-[18rem] px-4 pt-4 rounded-2xl">
-                <Logo />
-            </div>
-            <img src="./../assets/Cutout Building.png" alt="Building Cutout" class="absolute bottom-0 right-0 h-[25rem]">
-            <img src="./../assets/New Vector Coastal Logo.png" alt="Building Cutout" class="absolute bottom-20 right-0 h-[22rem] glow">
-        </div>
- -->
