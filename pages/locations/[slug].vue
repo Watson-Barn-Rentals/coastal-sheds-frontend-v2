@@ -298,7 +298,7 @@ useSchemaOrg(() => {
                 </NuxtLink>
               </div>
             </div>
-            <div class="w-full md:w-1/2 flex flex-col gap-4">
+            <div v-if="data.salesReps.length > 0" class="w-full md:w-1/2 flex flex-col gap-4">
               <p class="text-2xl text-center">Sales Reps</p>
               <div class="flex flex-wrap gap-8 justify-center">
                 <div
