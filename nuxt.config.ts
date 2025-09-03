@@ -15,9 +15,7 @@ export default defineNuxtConfig({
 
   nitro: {
     preset: 'netlify',
-    prerender: {
-      crawlLinks: false,
-    },
+    prerender: { crawlLinks: false },
   },
 
   plugins: [
@@ -29,7 +27,6 @@ export default defineNuxtConfig({
   hooks: {
     'prerender:routes': async (ctx) => {
       if (isPreviewMode) return
-
       const apiRoot = process.env.API_ROOT_URL
       if (!apiRoot) throw new Error('Missing API_ROOT_URL')
 
@@ -39,7 +36,7 @@ export default defineNuxtConfig({
       pageList.forEach(route => ctx.routes.add(route))
     },
 
-    // After Nitro compiles, emit _redirects and netlify-forms.html into the publish dir
+    // Emit _redirects and a hidden forms-detection HTML (no file inputs)
     'nitro:init': (nitro) => {
       nitro.hooks.hook('compiled', async () => {
         if (isPreviewMode) return
@@ -52,7 +49,7 @@ export default defineNuxtConfig({
 
         const publishDir = nitro.options.output.publicDir
 
-        /* ---------- 1) Build Netlify `_redirects` from CMS ---------- */
+        /* 1) Build Netlify `_redirects` from CMS */
         try {
           const res = await fetch(`${apiRoot}/api/redirects`, { headers: { Accept: 'application/json' } })
           if (!res.ok) throw new Error(`Failed to fetch redirects: ${res.status} ${res.statusText}`)
@@ -66,15 +63,13 @@ export default defineNuxtConfig({
             if (r.enabled === false) continue
             const status = String(r.status ?? '301')
             const bang = r.force ? '!' : ''
-            lines.push(`${r.from}  ${r.to}  ${status}${bang}`) // Netlify: "<from>  <to>  <status[!]>"
+            lines.push(`${r.from}  ${r.to}  ${status}${bang}`)
           }
 
           const redirectsPath = path.join(publishDir, '_redirects')
-          const baselinePath = path.join(process.cwd(), 'public', '_redirects')
+          const baselinePath  = path.join(process.cwd(), 'public', '_redirects')
           let baseline = ''
-          if (fs.existsSync(baselinePath)) {
-            baseline = fs.readFileSync(baselinePath, 'utf8').trim()
-          }
+          if (fs.existsSync(baselinePath)) baseline = fs.readFileSync(baselinePath, 'utf8').trim()
 
           const dynamicRules = lines.join('\n').trim()
           const final = [baseline, dynamicRules].filter(Boolean).join('\n') + '\n'
@@ -84,10 +79,8 @@ export default defineNuxtConfig({
           console.error('Failed to build _redirects from CMS:', err)
         }
 
-        /* ---------- 2) Generate Netlify Forms registration ---------- */
+        /* 2) Generate Netlify Forms registration (no file inputs) */
         try {
-          // 👉 build an endpoint that returns minimal detection data
-          // shape: { data: Array<{ netlifyName: string; fields: Array<{ key: string; type: string; options?: Array<{value:string;label:string}> }> }> }
           const res = await fetch(`${apiRoot}/api/list-forms`, { headers: { Accept: 'application/json' } })
           if (!res.ok) throw new Error(`list-forms ${res.status} ${res.statusText}`)
           const { data } = await res.json() as {
@@ -101,7 +94,6 @@ export default defineNuxtConfig({
 
           for (const form of data ?? []) {
             chunks.push(`<form name="${form.netlifyName}" data-netlify="true" netlify>`)
-            // include a honeypot so detection sees it:
             chunks.push(`<input type="text" name="bot-field" />`)
 
             for (const f of form.fields ?? []) {
@@ -109,18 +101,14 @@ export default defineNuxtConfig({
               if (t === 'hidden') {
                 chunks.push(`<input type="hidden" name="${f.key}" value="">`)
               } else if (t === 'checkbox' && (f.options?.length ?? 0) > 0) {
-                // ✅ IMPORTANT: use [] for multi-value names, matching your runtime submission
                 chunks.push(`<input type="checkbox" name="${f.key}[]" value="${f.options![0].value}">`)
               } else if (t === 'radio' && (f.options?.length ?? 0) > 0) {
                 chunks.push(`<input type="radio" name="${f.key}" value="${f.options![0].value}">`)
               } else if (t === 'select') {
                 const opt = f.options?.[0]?.value ?? ''
                 chunks.push(`<select name="${f.key}"><option value="${opt}">${opt}</option></select>`)
-              } else if (t === 'file') {
-                // Netlify only supports 1 file per field
-                chunks.push(`<input type="file" name="${f.key}">`)
               } else {
-                // text/email/tel/url/password/textarea fallback as text
+                // text/email/tel/url/password/textarea -> just give Netlify a simple input
                 chunks.push(`<input type="text" name="${f.key}" value="">`)
               }
             }
@@ -130,10 +118,8 @@ export default defineNuxtConfig({
 
           chunks.push('</body></html>')
 
-          const out = chunks.join('\n')
-          const publishDir = nitro.options.output.publicDir
           const detectionPath = path.join(publishDir, '_netlify-forms.html')
-          fs.writeFileSync(detectionPath, out, 'utf8')
+          fs.writeFileSync(detectionPath, chunks.join('\n'), 'utf8')
           console.log(`Wrote Netlify detection file: ${detectionPath}`)
         } catch (e) {
           console.warn('Skipping _netlify-forms.html generation:', e)
@@ -155,15 +141,8 @@ export default defineNuxtConfig({
   },
 
   devtools: { enabled: true },
-
-  devServer: {
-    host: '0.0.0.0',
-    port: 3000,
-  },
-
-  vite: {
-    plugins: [tailwindcss()],
-  },
+  devServer: { host: '0.0.0.0', port: 3000 },
+  vite: { plugins: [tailwindcss()] },
 
   modules: [
     '@nuxt/ui-pro',
@@ -190,8 +169,5 @@ export default defineNuxtConfig({
     '~/assets/css/fallback-theme.css',
   ],
 
-  colorMode: {
-    classSuffix: '',
-    preference: 'system',
-  },
+  colorMode: { classSuffix: '', preference: 'system' },
 })

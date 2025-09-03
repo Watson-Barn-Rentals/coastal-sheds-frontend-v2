@@ -5,8 +5,6 @@ import type { FormItem, Field, OptionArray, OptionKV } from '~/types/form-data'
 import { normalizeOptions } from '~/types/form-data'
 import { submitTrackingEvent } from '~/services/submit-tracking-event'
 
-// If you don't have component auto-imports, import your UI components here.
-
 const props = defineProps<{
   form: FormItem
   submitLabel?: string
@@ -20,18 +18,15 @@ const emit = defineEmits<{
 }>()
 
 const values = ref<Record<string, any>>({})
-const status  = ref<'idle'|'submitting'|'success'|'error'>('idle')
-const fileValues = ref<Record<string, FileList | null>>({})
+const status = ref<'idle'|'submitting'|'success'|'error'>('idle')
 
 const colClass = (w: Field['width']) => (w === '1/3' ? 'md:col-span-4' : w === '1/2' ? 'md:col-span-6' : 'md:col-span-12')
-const hasFileInput = computed(() => props.form.fields.some(f => f.type === 'file'))
-const encodePair = (k: string, v: any) => encodeURIComponent(k) + '=' + encodeURIComponent(v ?? '')
 
-const normType = (t: unknown) => String(t ?? '').toLowerCase()
-const isTextLike = (t: unknown) => ['text','email','url','password'].includes(normType(t)) // tel handled separately
+const normType   = (t: unknown) => String(t ?? '').toLowerCase()
 const isTextarea = (t: unknown) => normType(t) === 'textarea'
+const isTextLike = (t: unknown) => ['text','email','url','password'].includes(normType(t)) // tel handled separately
 
-// Pre-init checkbox arrays so v-model is a valid member expression everywhere
+// Pre-init checkbox arrays so v-model stays a valid member expr
 watchEffect(() => {
   for (const f of props.form.fields) {
     if (f.type === 'checkbox' && Array.isArray(f.options) && !Array.isArray(values.value[f.key])) {
@@ -40,71 +35,30 @@ watchEffect(() => {
   }
 })
 
-// Submit to Netlify
 const onSubmit = async (e: Event) => {
   e.preventDefault()
   emit('submitted')
   status.value = 'submitting'
 
   try {
-    let ok = false
     const target = typeof window !== 'undefined' && window.location?.pathname ? window.location.pathname : '/'
+    const params = new URLSearchParams()
+    params.append('form-name', props.form.netlifyName)
 
-    if (hasFileInput.value) {
-      const fd = new FormData()
-      fd.append('form-name', props.form.netlifyName)
-
-      // non-file fields
-      for (const f of props.form.fields) {
-        if (f.type === 'file') continue
-        const key = f.key
-        const v = values.value[key]
-        if (Array.isArray(v)) v.forEach((val: string) => fd.append(`${key}[]`, val))
-        else if (v != null) fd.append(key, String(v))
-      }
-
-      // file fields (Netlify supports ONE file per field)
-      for (const f of props.form.fields) {
-        if (f.type !== 'file') continue
-        const files = fileValues.value[f.key]
-        if (files && files.length) {
-          fd.append(f.key, files[0])
-        }
-      }
-
-      if (values.value['bot-field']) fd.append('bot-field', String(values.value['bot-field']))
-
-      const r = await fetch(target, { method: 'POST', body: fd })
-      ok = r.ok
-    } else {
-      const parts: string[] = []
-      parts.push(encodePair('form-name', props.form.netlifyName))
-
-      // primitives
-      for (const f of props.form.fields) {
-        const key = f.key
-        const v = values.value[key]
-        if (Array.isArray(v)) continue
-        if (v != null) parts.push(encodePair(key, v))
-      }
-      // arrays (multi-checkbox)
-      for (const f of props.form.fields) {
-        const key = f.key
-        const v = values.value[key]
-        if (Array.isArray(v)) v.forEach((val: string) => parts.push(encodePair(`${key}[]`, val)))
-      }
-      // honeypot
-      if (values.value['bot-field']) parts.push(encodePair('bot-field', values.value['bot-field']))
-
-      const r = await fetch(target, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: parts.join('&'),
-      })
-      ok = r.ok
+    for (const f of props.form.fields) {
+      const key = f.key
+      const v = values.value[key]
+      if (Array.isArray(v)) v.forEach((val: string) => params.append(`${key}[]`, String(val)))
+      else if (v != null) params.append(key, String(v))
     }
+    if (values.value['bot-field']) params.append('bot-field', String(values.value['bot-field']))
 
-    if (!ok) throw new Error('Netlify submission failed')
+    const r = await fetch(target, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+      body: params.toString(),
+    })
+    if (!r.ok) throw new Error('Netlify submission failed')
 
     status.value = 'success'
     emit('success')
@@ -115,12 +69,11 @@ const onSubmit = async (e: Event) => {
       return
     }
 
-    // Clear values
+    // Reset values (preserve checkbox arrays)
     const next: Record<string, any> = {}
     for (const f of props.form.fields) {
       if (f.type === 'checkbox' && Array.isArray(values.value[f.key])) next[f.key] = []
       else if (f.type !== 'hidden') next[f.key] = ''
-      if (f.type === 'file') fileValues.value[f.key] = null
     }
     values.value = next
   } catch (err) {
@@ -137,11 +90,10 @@ const onSubmit = async (e: Event) => {
     data-netlify="true"
     data-netlify-honeypot="bot-field"
     :action="form.redirectUrl || undefined"
-    :enctype="hasFileInput ? 'multipart/form-data' : undefined"
     @submit="onSubmit"
     class="grid grid-cols-12 gap-4"
   >
-    <!-- Required hidden for AJAX submissions -->
+    <!-- Netlify needs this even for AJAX -->
     <input type="hidden" name="form-name" :value="form.netlifyName" />
 
     <!-- Honeypot -->
@@ -151,25 +103,22 @@ const onSubmit = async (e: Event) => {
       </label>
     </p>
 
-    <!-- Fields -->
     <template v-for="field in form.fields" :key="field.key">
       <!-- Hidden -->
       <input v-if="field.type === 'hidden'" type="hidden" :name="field.key" v-model="values[field.key]" />
 
-      <!-- TEL: use ui-phone-input -->
+      <!-- TEL -->
       <div v-else-if="normType(field.type) === 'tel'" :class="['col-span-12', colClass(field.width)]">
         <UiPhoneInput
           :label="field.label"
           :placeholder="field.placeholder || '(555) 123-4567'"
           :name="field.key"
           :id="field.key"
-          :disabled="false"
-          v-model="values[field.key]"
-        />
+          v-model="values[field.key]"  />
         <small v-if="field.helpText" class="block text-xs opacity-70 mt-1">{{ field.helpText }}</small>
       </div>
 
-      <!-- Text-like (text/email/url/password) -->
+      <!-- Text-like -->
       <div v-else-if="isTextLike(field.type)" :class="['col-span-12', colClass(field.width)]">
         <UiText
           :type="(normType(field.type) as any)"
@@ -249,20 +198,6 @@ const onSubmit = async (e: Event) => {
           />
           <small v-if="field.helpText" class="block text-xs opacity-70 mt-1">{{ field.helpText }}</small>
         </template>
-      </div>
-
-      <!-- File (one file per field for Netlify) -->
-      <div v-else-if="field.type === 'file'" :class="['col-span-12', colClass(field.width)]">
-        <UiFile
-          :label="field.label"
-          :name="field.key"
-          :id="field.key"
-          :required="field.required"
-          :multiple="Boolean(field.meta?.multiple)"
-          :accept="(field.meta?.accept as string | undefined)"
-          :help-text="field.helpText"
-          v-model="fileValues[field.key]"
-        />
       </div>
     </template>
 
