@@ -26,13 +26,7 @@ export default defineNuxtConfig({
     '~/plugins/fingerprint.client.ts',
   ],
 
-  /**
-   * ✅ Use Nuxt's top-level hooks:
-   *    1) 'prerender:routes' (your existing prerendering)
-   *    2) 'nitro:init' -> nitro.hooks.hook('compiled', ...) to write _redirects
-   */
   hooks: {
-    // keep your prerender logic
     'prerender:routes': async (ctx) => {
       if (isPreviewMode) return
 
@@ -45,25 +39,23 @@ export default defineNuxtConfig({
       pageList.forEach(route => ctx.routes.add(route))
     },
 
-    // ✅ Attach to Nitro's lifecycle after Nitro instance exists
+    // After Nitro compiles, emit _redirects and netlify-forms.html into the publish dir
     'nitro:init': (nitro) => {
       nitro.hooks.hook('compiled', async () => {
-        // Optionally skip in preview mode
         if (isPreviewMode) return
 
         const apiRoot = process.env.API_ROOT_URL
         if (!apiRoot) {
-          console.warn('Missing API_ROOT_URL; skipping _redirects generation.')
+          console.warn('Missing API_ROOT_URL; skipping _redirects & forms registration.')
           return
         }
 
+        const publishDir = nitro.options.output.publicDir
+
+        /* ---------- 1) Build Netlify `_redirects` from CMS ---------- */
         try {
-          const res = await fetch(`${apiRoot}/api/redirects`, {
-            headers: { Accept: 'application/json' },
-          })
-          if (!res.ok) {
-            throw new Error(`Failed to fetch redirects: ${res.status} ${res.statusText}`)
-          }
+          const res = await fetch(`${apiRoot}/api/redirects`, { headers: { Accept: 'application/json' } })
+          if (!res.ok) throw new Error(`Failed to fetch redirects: ${res.status} ${res.statusText}`)
 
           const json = (await res.json()) as {
             data: Array<{ from: string; to: string; status?: number | string; force?: boolean; enabled?: boolean }>
@@ -74,16 +66,12 @@ export default defineNuxtConfig({
             if (r.enabled === false) continue
             const status = String(r.status ?? '301')
             const bang = r.force ? '!' : ''
-            // Netlify format: "<from>  <to>  <status[!]>"
-            lines.push(`${r.from}  ${r.to}  ${status}${bang}`)
+            lines.push(`${r.from}  ${r.to}  ${status}${bang}`) // Netlify: "<from>  <to>  <status[!]>"
           }
 
-          // Merge with optional static /public/_redirects
-          const publishDir = nitro.options.output.publicDir
           const redirectsPath = path.join(publishDir, '_redirects')
-
-          let baseline = ''
           const baselinePath = path.join(process.cwd(), 'public', '_redirects')
+          let baseline = ''
           if (fs.existsSync(baselinePath)) {
             baseline = fs.readFileSync(baselinePath, 'utf8').trim()
           }
@@ -94,6 +82,43 @@ export default defineNuxtConfig({
           console.log(`Wrote ${lines.length} redirect rules to ${redirectsPath}`)
         } catch (err) {
           console.error('Failed to build _redirects from CMS:', err)
+        }
+
+        /* ---------- 2) Generate Netlify Forms registration ---------- */
+        try {
+          const res = await fetch(`${apiRoot}/api/forms`, { headers: { Accept: 'application/json' } })
+          if (!res.ok) {
+            console.warn(`Skipping forms registration: ${res.status} ${res.statusText}`)
+          } else {
+            const { data } = (await res.json()) as {
+              data: Array<{ netlifyName: string; fieldKeys?: string[] }>
+            }
+
+            const stubs = (data ?? []).map((f) => {
+              // minimal inputs ensure detection; include honeypot and form-name
+              const keys = (f.fieldKeys && f.fieldKeys.length ? f.fieldKeys : ['name', 'email', 'message'])
+              const inputs = keys.map(k => `  <input name="${k}">`).join('\n')
+              return `<form name="${f.netlifyName}" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" hidden>
+  <input type="hidden" name="form-name" value="${f.netlifyName}">
+  <input name="bot-field">
+${inputs}
+</form>`
+            }).join('\n\n')
+
+            const html = `<!doctype html>
+<html>
+<head><meta charset="utf-8"><title>Netlify Forms Registration</title></head>
+<body>
+${stubs}
+</body>
+</html>
+`
+            const formsPath = path.join(publishDir, 'netlify-forms.html')
+            fs.writeFileSync(formsPath, html, 'utf8')
+            console.log(`Wrote Netlify Forms registration for ${(data ?? []).length} forms to ${formsPath}`)
+          }
+        } catch (err) {
+          console.error('Failed to generate netlify-forms.html:', err)
         }
       })
     },

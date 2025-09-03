@@ -43,6 +43,9 @@ import {
 } from './highlighted-blog-posts'
 import HighlightedBlogPostsBlockComponent from '~/components/page-blocks/highlighted-blog-posts-block-component.vue'
 
+import { assertHighlightedFaqsBlock, HIGHLIGHTED_FAQS_BLOCK_TYPE, type HighlightedFaqsBlock } from './highlighted-faqs'
+import HighlightedFaqsBlockComponent from '~/components/page-blocks/highlighted-faqs-block-component.vue'
+
 /**
  * 1) Mapping object: block “type” → assert-guard + component
  */
@@ -81,6 +84,11 @@ export const blockMap = {
     guard: assertHighlightedBlogPostsBlock,
     component: HighlightedBlogPostsBlockComponent,
   },
+
+  [HIGHLIGHTED_FAQS_BLOCK_TYPE]: {
+    guard: assertHighlightedFaqsBlock,
+    component: HighlightedFaqsBlockComponent,
+  },
 } as const
 
 /**
@@ -93,6 +101,7 @@ export type PageBlock =
   | TestimonialsSectionBlock
   | HeadingBlock
   | HighlightedBlogPostsBlock
+  | HighlightedFaqsBlock
 // (add “| MyNewBlock” on a new line below whenever you create a new block file)
 
 /**

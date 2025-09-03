@@ -2,6 +2,7 @@
 import { computed, ref, unref } from 'vue'
 import type { MaybeRef } from '@vueuse/core'
 import { textInventoryItem } from '~/services/api/text-inventory-item'
+import { submitTrackingEvent } from '~/services/submit-tracking-event';
 
 const props = defineProps<{ 
   isMenuOpen: MaybeRef<boolean>
@@ -39,6 +40,7 @@ const handleSubmit = async () => {
   isSubmitting.value = true
   try {
     await textInventoryItem(props.serialNumber, digitsOnly.value)
+    submitTrackingEvent('text-inventory-item')
     successMessage.value = 'Text sent! Check your phone in a moment.'
     setTimeout(closeMenu, 800)
   } catch (err: any) {

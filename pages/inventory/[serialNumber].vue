@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import { getInventoryItem } from "~/services/api/get-inventory-item";
 import { formatPrice, formatRoundedPrice } from "~/services/format-price";
+import { submitTrackingEvent } from "~/services/submit-tracking-event";
 import type { ImageMediaItem } from "~/types/image-media-item";
 import type { InventoryItem } from "~/types/inventory-item";
 
@@ -313,7 +314,7 @@ const ribbonTextColor = computed<string | null>(() => {
               >
                 <button
                   :class="'flex gap-2 p-3 rounded-lg shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer bg-accent'"
-                  @click=""
+                  @click="submitTrackingEvent('click-3d-design-button-on-inventory-page')"
                 >
                   <UIcon
                     name="tdesign:map-3d"

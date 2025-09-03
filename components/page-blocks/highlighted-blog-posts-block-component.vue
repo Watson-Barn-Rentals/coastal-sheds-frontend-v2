@@ -10,7 +10,7 @@ defineProps<{
 <template>
    <Heading 
       text="Explore Our Blog" 
-      heading-level="h1"
+      heading-level="h2"
       text-alignment="center"
     />
     <MaxWidthContentWrapper>

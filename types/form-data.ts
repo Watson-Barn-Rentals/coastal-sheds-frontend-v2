@@ -1,0 +1,68 @@
+// types/forms.ts
+import { z } from 'zod'
+
+/** Allowed field types from your CMS UI */
+export const FormFieldTypeSchema = z.enum([
+  'text', 'email', 'tel', 'textarea', 'select', 'radio', 'checkbox', 'file', 'hidden',
+])
+
+/** options can be either:
+ *  - Array<{ value: string; label: string }>
+ *  - Record<string, string>   // from Filament KeyValue
+ */
+export type OptionArray = Array<{ value: string; label: string }>
+export type OptionKV = Record<string, string>
+
+const OptionsArraySchema = z.array(z.object({
+  value: z.string(),
+  label: z.string(),
+}).strict())
+
+const OptionsRecordSchema = z.record(z.string())
+
+const OptionsSchema = z.union([OptionsArraySchema, OptionsRecordSchema])
+
+export const FormFieldSchema = z.object({
+  key: z.string(),
+  label: z.string(),
+  type: FormFieldTypeSchema,
+  required: z.boolean(),
+  placeholder: z.string().nullable(),
+  helpText: z.string().nullable(),
+  options: OptionsSchema,                 // [] or {}
+  meta: z.record(z.unknown()),            // arbitrary attributes (accept, multiple, pattern, etc.)
+  width: z.enum(['full', '1/2', '1/3']),
+}).strict()
+
+export const FormSchema = z.object({
+  name: z.string(),
+  slug: z.string(),
+  netlifyName: z.string(),
+  successMessage: z.string().nullable(),
+  redirectUrl: z.string().nullable(),
+  fields: z.array(FormFieldSchema),
+}).strict()
+
+// ======== Types ========
+export type FormItem = z.infer<typeof FormSchema>
+export type Field = z.infer<typeof FormFieldSchema>
+
+// Guards / assertion (optional)
+export const isFormItem = (x: unknown): x is FormItem =>
+  FormSchema.safeParse(x).success
+
+export function assertFormItem(x: unknown): asserts x is FormItem {
+  const r = FormSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`FormItem validation failed:\n${details}`)
+  }
+}
+
+/** Helper: normalize options to an array for renderers expecting [{value,label}] */
+export function normalizeOptions(opts: OptionArray | OptionKV): OptionArray {
+  if (Array.isArray(opts)) return opts
+  return Object.entries(opts || {}).map(([value, label]) => ({ value, label }))
+}

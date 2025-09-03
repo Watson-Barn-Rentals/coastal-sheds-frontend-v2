@@ -55,6 +55,8 @@ import {
   ImageCarouselColumnSectionSchema,
 } from './column-sections/image-carousel-column-section'
 import ImageCarouselColumnSectionComponent from '~/components/page-blocks/column-sections/image-carousel-column-section-component.vue'
+import { FORM_COLUMN_SECTION_TYPE, FormColumnSectionSchema, isFormColumnSection } from './column-sections/form-column-section'
+import FormColumnSectionComponent from '~/components/page-blocks/column-sections/form-column-section-component.vue'
 
 /**
  * 1) Mapping object from “type” → guard + component
@@ -93,6 +95,10 @@ export const blockMap = {
     guard: isImageCarouselColumnSection,
     component: ImageCarouselColumnSectionComponent,
   },
+  [FORM_COLUMN_SECTION_TYPE]: {
+    guard: isFormColumnSection,
+    component: FormColumnSectionComponent,
+  },
   // Add new sections here as before.
 } as const
 
@@ -109,6 +115,7 @@ export const ColumnSectionSchema = z.discriminatedUnion('type', [
   YoutubeEmbedColumnSectionSchema,
   ParagraphWithFloatedImageColumnSectionSchema,
   ImageCarouselColumnSectionSchema,
+  FormColumnSectionSchema,
 ])
 
 /**

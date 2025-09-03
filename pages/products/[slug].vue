@@ -1,6 +1,7 @@
 <script lang="ts" setup>
 import MaxWidthContentWrapper from "~/components/max-width-content-wrapper.vue";
 import { getProductItem } from "~/services/api/get-product-item";
+import { submitTrackingEvent } from "~/services/submit-tracking-event";
 import type { ImageMediaItem } from "~/types/image-media-item";
 import type { ProductItem } from "~/types/product-item";
 
@@ -200,6 +201,7 @@ const images = computed<ImageMediaItem[]>(() => {
               <NuxtLink :to="data.designer_link" target="_blank" class="shrink-0">
                 <button
                   class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
+                  @click="submitTrackingEvent('click-3d-design-button-on-product-page')"
                 >
                   <UIcon
                     name="tdesign:map-3d"
@@ -218,6 +220,7 @@ const images = computed<ImageMediaItem[]>(() => {
               <NuxtLink
                 :to="`/inventory?product=${data.slug}`"
                 class="shrink-0"
+                @click="submitTrackingEvent('click-view-in-stock-items-button-on-product-page')"
               >
                 <button
                   class="flex gap-2 p-3 rounded-lg text-black bg-accent shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
