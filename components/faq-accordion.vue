@@ -1,9 +1,17 @@
 <script setup lang="ts">
+import { twMerge } from 'tailwind-merge';
 import { ref, computed } from 'vue'
+import type { CustomCssStyling } from '~/types/custom-css-styling';
 import type { FaqItem } from '~/types/faq-data'
 
 // Props
-const props = defineProps<{ data: FaqItem[] }>()
+const props = defineProps<{ 
+  data: FaqItem[] 
+  wrapperCustomStyling?: CustomCssStyling
+  faqItemCustomStyling?: CustomCssStyling
+  questionCustomStyling?: CustomCssStyling
+  answerCustomStyling?: CustomCssStyling
+}>()
 
 // Only one panel open at a time
 const openIndex = ref<number | null>(null)
@@ -88,15 +96,19 @@ useHead(() => ({
     },
   ],
 }))
+
+useCustomCss(props.wrapperCustomStyling?.css ?? '');
+useCustomCss(props.faqItemCustomStyling?.css ?? '');
+useCustomCss(props.questionCustomStyling?.css ?? '');
+useCustomCss(props.answerCustomStyling?.css ?? '');
 </script>
 
 <template>
-  <div class="flex flex-col">
+  <div :class="twMerge('flex flex-col bg-black gap-[2px]', wrapperCustomStyling?.classNames?.join(' '))">
     <div
       v-for="(faq, i) in data"
       :key="`faq-${i}`"
-      :class="{ 'border-t': i !== 0 }"
-      class="p-4 bg-background-accent dark:bg-background-accent-dark"
+      :class="twMerge('p-4 bg-background-accent dark:bg-background-accent-dark', faqItemCustomStyling?.classNames?.join(' '))"
     >
       <!-- Header -->
       <button
@@ -106,13 +118,11 @@ useHead(() => ({
         :id="`faq-header-${i}`"
         @click="toggle(i)"
       >
-        <Heading
-          :text="faq.question"
-          heading-level="h3"
-          text-alignment="left"
-          :style="{ fontSize: '1.25rem', lineHeight: '1.5rem' }"
-          class="pr-3"
-        />
+        <h3
+          :class="twMerge('pr-3 text-md font-bold text-xl text-title', questionCustomStyling?.classNames?.join(' '))"
+        >
+          {{ faq.question }}
+        </h3>
         <UIcon
           name="material-symbols:chevron-right-rounded"
           class="transition-transform duration-200 w-8 h-8 shrink-0"
@@ -138,8 +148,7 @@ useHead(() => ({
         >
           <WysiwygRenderer
             :content="faq.answer"
-            :style="{ fontSize: '1rem', lineHeight: '1.6' }"
-            class="pl-4"
+            :class="twMerge('pl-4', answerCustomStyling?.classNames?.join(' '))"
           />
 
           <!-- Collapse button -->
@@ -159,3 +168,9 @@ useHead(() => ({
     </div>
   </div>
 </template>
+
+<style scoped>
+.standard-faq-item-border {
+  border-color: var(--border-color);
+}
+</style>

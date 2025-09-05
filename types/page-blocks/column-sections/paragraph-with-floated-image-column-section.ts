@@ -7,6 +7,10 @@ export const PARAGRAPH_WITH_FLOATED_IMAGE_COLUMN_SECTION_TYPE =
 
 export const ParagraphWithFloatedImageColumnSectionDataSchema = z.object({
   text: z.string(),
+  bodyTextSize: z.string(),
+  bodyFont: z.string(),
+  bodyTextColor: z.string(),
+  bodyCustomStyling: CustomCssStylingSchema,
   image: ImageMediaItemSchema,
   disableImagePlaceholder: z.boolean(),
   imagePosition: z.enum(['left', 'right']),

@@ -14,6 +14,13 @@ defineProps<{
       text-alignment="center"
     />
     <MaxWidthContentWrapper>
-      <FaqAccordion :data="data.faqs" class="mtslug-8" />
+      <FaqAccordion 
+        :data="data.faqs" 
+        class="mt-8" 
+        :wrapper-custom-styling="data.wrapperCustomStyling"
+        :faq-item-custom-styling="data.faqItemCustomStyling"
+        :question-custom-styling="data.questionCustomStyling"
+        :answer-custom-styling="data.answerCustomStyling"
+      />
     </MaxWidthContentWrapper>
 </template>

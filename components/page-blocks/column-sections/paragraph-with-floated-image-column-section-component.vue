@@ -7,6 +7,7 @@ const props = defineProps<{
 }>()
 
 useCustomCss(props.data.customImageStyling.css)
+useCustomCss(props.data.bodyCustomStyling.css)
 </script>
 
 <template>
@@ -33,7 +34,15 @@ useCustomCss(props.data.customImageStyling.css)
     </div>
 
     <!-- Text will flow around the floated image -->
-    <WysiwygRenderer :content="props.data.text" />
+    <WysiwygRenderer 
+      :content="props.data.text" 
+      :style="{
+          fontFamily: data.bodyFont,
+          fontSize: data.bodyTextSize,
+          color: data.bodyTextColor
+        }"
+      :class="props.data.bodyCustomStyling.classNames.join(' ')"
+    />
 
     <!-- Clear the float so the parent wraps the float + text -->
     <div class="clear-both"></div>

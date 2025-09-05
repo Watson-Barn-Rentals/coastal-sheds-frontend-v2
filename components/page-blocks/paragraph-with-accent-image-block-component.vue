@@ -79,8 +79,7 @@ useCustomCss(props.data.customImageStyling.css);
   padding: 0;
 }
 
-/* Desktop (md+): restore float/offset behavior */
-@media (min-width: 768px) {
+@media (width >= 920px) {
   .align-left  { margin-left:  var(--img-hoff); }
   .align-right { margin-right: var(--img-hoff); }
 

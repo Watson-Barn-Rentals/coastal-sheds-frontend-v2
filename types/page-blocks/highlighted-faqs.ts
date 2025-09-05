@@ -1,10 +1,15 @@
 import { z } from 'zod'
 import { FaqSchema } from '../faq-data'
+import { CustomCssStylingSchema } from '../custom-css-styling'
 
 export const HIGHLIGHTED_FAQS_BLOCK_TYPE = 'highlighted-faqs' as const
 
 export const HighlightedFaqsDataSchema = z.object({
   faqs: z.array(FaqSchema),
+  wrapperCustomStyling: CustomCssStylingSchema,
+  faqItemCustomStyling: CustomCssStylingSchema,
+  questionCustomStyling: CustomCssStylingSchema,
+  answerCustomStyling: CustomCssStylingSchema,
 }).strict()
 export type HighlightedFaqsData = z.infer<typeof HighlightedFaqsDataSchema>
 
