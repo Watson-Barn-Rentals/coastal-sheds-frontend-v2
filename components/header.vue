@@ -84,7 +84,7 @@ const { data } = await useAsyncData<HeaderSettings>(
         >
             <template #content>
                 <div class="flex">
-                    <p class="h-24 max-w-1/2 m-4">
+                    <div class="h-24 max-w-1/2 m-4">
                         <div class="w-full h-full flex items-center justify-center">
                           <img 
                             :src="data?.logo_url" 
@@ -92,7 +92,7 @@ const { data } = await useAsyncData<HeaderSettings>(
                             class="max-w-full max-h-full object-contain"
                           />
                         </div>
-                    </p>
+                    </div>
                     <UIcon
                         name="material-symbols:close-rounded"
                         class="absolute top-4 right-4 h-12 w-12 text-black dark:text-white cursor-pointer"

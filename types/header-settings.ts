@@ -6,6 +6,7 @@ export const SubMenuItemSchema = z.object({
   icon: z.string().nullable(),
   column_number: z.coerce.number().int(), // coerce "3" -> 3
   column_span: z.coerce.number().int(),
+  mobile_row_number: z.coerce.number().int().nullable(),
   url: z.string(),
 }).strict()
 
