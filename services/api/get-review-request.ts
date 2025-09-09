@@ -1,3 +1,4 @@
+// ~/services/api/get-review-request.ts
 import { assertReviewRequestItem, type ReviewRequestItem } from '~/types/review-request-item'
 
 export const getReviewRequest = async (slug: string): Promise<ReviewRequestItem> => {
@@ -5,35 +6,27 @@ export const getReviewRequest = async (slug: string): Promise<ReviewRequestItem>
 
   try {
     const { data } = await $fetch<{ data: unknown }>(
-      `${config.public.apiRootUrl}/api/review-requests/${encodeURIComponent(slug)}`
+      `${config.public.apiRootUrl}/api/review-requests/${encodeURIComponent(slug)}`,
+      { retry: 0 }
     )
 
-    // Assert with error logging
     try {
       assertReviewRequestItem(data)
     } catch (e: any) {
-      console.error(`[getReviewRequest] Validation failed for slug "${slug}":`, e?.message ?? e, {
-        data,
+      // Log once, then rethrow as a Nuxt error for consistent handling
+      console.error(`[getReviewRequest] Validation failed for slug "${slug}":`, e?.message ?? e, { data })
+      throw createError({
+        statusCode: 500,
+        statusMessage: `Invalid response for review request "${slug}"`,
       })
-      throw e
     }
 
     return data as ReviewRequestItem
   } catch (err: any) {
-    const statusCode =
-      err?.response?.status ??
-      err?.statusCode ??
-      err?.status ??
-      err?.data?.statusCode ??
-      500
-
-    const statusMessage =
-      err?.data?.message ??
-      err?.message ??
-      (statusCode === 404
-        ? 'Review request not found'
-        : `An error occurred while fetching review request with slug: ${slug}`)
-
-    throw createError({ statusCode, statusMessage })
+    // Wrap in a Nuxt error so middleware / page can treat uniformly
+    throw createError({
+      statusCode: err?.statusCode ?? 500,
+      statusMessage: `[getReviewRequest] Fetch failed for slug "${slug}": ${err?.message ?? err}`,
+    })
   }
 }

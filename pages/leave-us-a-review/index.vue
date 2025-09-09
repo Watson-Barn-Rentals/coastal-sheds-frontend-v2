@@ -3,6 +3,8 @@ import { NuxtLink } from '#components'
 import { getFallbackReviewRequest } from '~/services/api/get-fallback-review-request'
 import type { ReviewRequestTemplateItem } from '~/types/review-request-template-item'
 
+const route = useRoute()
+
 definePageMeta({
   key: (route) => route.fullPath, // remount on path change
   layout: 'leave-a-review-layout',
@@ -14,7 +16,6 @@ const { data, pending, error } = await useAsyncData<ReviewRequestTemplateItem>(
 )
 
 // ---- SEO: don't index, but share well on social ----
-const route = useRoute()
 const runtimeConfig = useRuntimeConfig()
 const siteUrl = (runtimeConfig.public?.siteUrl as string) || '' // e.g. https://coastalsheds.com
 const pageUrl = computed(() => (siteUrl ? siteUrl.replace(/\/+$/, '') + route.fullPath : route.fullPath))

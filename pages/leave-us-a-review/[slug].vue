@@ -4,19 +4,22 @@ import { submitReviewRequestChannelClickedEvent } from "~/services/api/submit-re
 import type { ReviewRequestChannelItem } from "~/types/review-request-channel-item";
 import type { ReviewRequestItem } from "~/types/review-request-item";
 
+const route = useRoute();
+
 definePageMeta({
+  middleware: ['review-request-exists'],
   key: (route) => route.fullPath, // remount on path change
   layout: 'leave-a-review-layout',
 });
 
-const route = useRoute();
 const slug = computed(() => route.params.slug as string);
 
 const { data, pending, error, refresh } = await useAsyncData<ReviewRequestItem>(
-  () => `review-request-${slug.value}`, // key depends on slug
-  () => getReviewRequest(slug.value), // fetch depends on slug
-  { watch: [slug] } // re-fetch when slug changes
-);
+  `review-request-${slug.value}`,          // <- string key
+  () => getReviewRequest(slug.value),      // fetcher depends on slug
+  { watch: [slug] }                        // re-fetch on slug change
+)
+
 
 // ---- SEO: don't index, but share well on social ----
 const runtimeConfig = useRuntimeConfig()
