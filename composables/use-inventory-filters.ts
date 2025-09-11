@@ -6,7 +6,7 @@ import type { InventoryItem } from '~/types/inventory-item'
 
 export type InventoryFiltersState = {
   searchQuery: string
-  productCategorySlug: string | null   // <— NEW
+  productCategorySlug: string | null
   productLineSlug: string | null
   productSlug: string | null
   size: string | null
@@ -17,7 +17,6 @@ export type InventoryFiltersState = {
   locationSlug: string | null
   regionSlug: string | null
 }
-
 export type InventorySortMode =
   | 'price-ascending'
   | 'price-descending'
@@ -29,10 +28,24 @@ export type InventorySortMode =
 type UrlQuery = Record<string, string | undefined>
 type Option = { value: string; label: string }
 
+// --- NEW helpers ------------------------------------------------------------
+function toLabelFromSlug(value: string): string {
+  // decode, turn kebab/snake into Title Case
+  const s = decodeURIComponent(value).replace(/[-_]+/g, ' ').trim()
+  return s.replace(/\b\w/g, (c) => c.toUpperCase())
+}
+/** Ensure the currently-selected value is present in the options. */
+function withSelected(list: Option[], selected?: string | null): Option[] {
+  if (!selected) return list
+  if (list.some(o => o.value === selected)) return list
+  return [...list, { value: selected, label: toLabelFromSlug(selected) }]
+}
+// ---------------------------------------------------------------------------
+
 function stateToQuery(state: InventoryFiltersState): UrlQuery {
   return {
     search: state.searchQuery || undefined,
-    productCategory: state.productCategorySlug || undefined, // <— NEW
+    productCategory: state.productCategorySlug || undefined,
     productLine: state.productLineSlug || undefined,
     product: state.productSlug || undefined,
     size: state.size || undefined,
@@ -48,7 +61,7 @@ function stateToQuery(state: InventoryFiltersState): UrlQuery {
 function queryToState(query: UrlQuery): InventoryFiltersState {
   return {
     searchQuery: query.search ?? '',
-    productCategorySlug: query.productCategory ?? null, // <— NEW
+    productCategorySlug: query.productCategory ?? null,
     productLineSlug: query.productLine ?? null,
     productSlug: query.product ?? null,
     size: query.size ?? null,
@@ -84,14 +97,12 @@ export function useInventoryFilters(
   filtered: ComputedRef<InventoryItem[]>
   sorted: ComputedRef<InventoryItem[]>
   sortMode: Ref<InventorySortMode>
-
-  productCategoryOptions: ComputedRef<Option[]>   // <— NEW
+  productCategoryOptions: ComputedRef<Option[]>
   productLineOptions: ComputedRef<Option[]>
   productOptions: ComputedRef<Option[]>
   sizeOptions: ComputedRef<Option[]>
   locationOptions: ComputedRef<Option[]>
   regionOptions: ComputedRef<Option[]>
-
   chips: ComputedRef<Array<{ key: keyof InventoryFiltersState | 'minPrice' | 'maxPrice'; label: string }>>
   clearChip: (key: keyof InventoryFiltersState | 'minPrice' | 'maxPrice') => void
   reset: () => void
@@ -99,12 +110,9 @@ export function useInventoryFilters(
   const route = useRoute()
   const router = useRouter()
 
-  // Filters from URL
   const state = reactive<InventoryFiltersState>(queryToState(route.query as UrlQuery))
-  // Sort from URL (default price-asc)
   const sortMode = ref<InventorySortMode>(parseSortMode(route.query.sort as string | undefined))
 
-  // React to URL changes (back/forward, external link)
   watch(
     () => route.query,
     (query) => {
@@ -113,7 +121,6 @@ export function useInventoryFilters(
     }
   )
 
-  // Push filters + sort to URL (debounced for search typing)
   const pushQueryToUrl = useDebounceFn(() => {
     const next: Record<string, any> = { ...route.query, ...stateToQuery(state), sort: sortMode.value }
     for (const key of Object.keys(next)) if (next[key] === undefined) delete next[key]
@@ -121,18 +128,20 @@ export function useInventoryFilters(
   }, 250)
 
   watch(state, pushQueryToUrl, { deep: true })
-  watch(sortMode, pushQueryToUrl) // <— keep sort in sync with URL
+  watch(sortMode, pushQueryToUrl)
 
-  // ---------- Option builders ----------
-  // Product Category (slug from item.product.product_category_slug; title from item.product.product_category_title)
+  // ---------- Option builders (now “sticky” to URL selections) ----------
   const productCategoryOptions = computed<Option[]>(() => {
     const map = new Map<string, string>()
     for (const item of (source.value ?? [])) {
-      const slug = (item as any).product.product_category_slug
-      const title = item.product.product_category_title
+      const slug = (item as any).product?.product_category_slug
+      const title = (item as any).product?.product_category_title
       if (slug && title) map.set(slug, title)
     }
-    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([value, label]) => ({ value, label }))
+    const list = [...map.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ value, label }))
+    return withSelected(list, state.productCategorySlug)
   })
 
   const productLineOptions = computed<Option[]>(() => {
@@ -142,7 +151,10 @@ export function useInventoryFilters(
       const title = item.product?.product_line_title
       if (slug && title) map.set(slug, title)
     }
-    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([value, label]) => ({ value, label }))
+    const list = [...map.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ value, label }))
+    return withSelected(list, state.productLineSlug)
   })
 
   const productOptions = computed<Option[]>(() => {
@@ -152,13 +164,17 @@ export function useInventoryFilters(
       const title = item.product?.title
       if (slug && title) map.set(slug, title)
     }
-    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([value, label]) => ({ value, label }))
+    const list = [...map.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ value, label }))
+    return withSelected(list, state.productSlug)
   })
 
   const sizeOptions = computed<Option[]>(() => {
     const set = new Set<string>()
     for (const item of (source.value ?? [])) if (item.size) set.add(item.size)
-    return [...set].sort().map(v => ({ value: v, label: v }))
+    const list = [...set].sort().map(v => ({ value: v, label: v }))
+    return withSelected(list, state.size)
   })
 
   const locationOptions = computed<Option[]>(() => {
@@ -168,7 +184,10 @@ export function useInventoryFilters(
       const title = item.location?.title
       if (slug && title) map.set(slug, title)
     }
-    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([value, label]) => ({ value, label }))
+    const list = [...map.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ value, label }))
+    return withSelected(list, state.locationSlug)
   })
 
   const regionOptions = computed<Option[]>(() => {
@@ -181,7 +200,10 @@ export function useInventoryFilters(
         if (slug && title) map.set(slug, title)
       }
     }
-    return [...map.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([value, label]) => ({ value, label }))
+    const list = [...map.entries()]
+      .sort((a, b) => a[1].localeCompare(b[1]))
+      .map(([value, label]) => ({ value, label }))
+    return withSelected(list, state.regionSlug)
   })
 
   // ---------- Filtering ----------
@@ -207,11 +229,9 @@ export function useInventoryFilters(
         if (!haystack.includes(query)) return false
       }
 
-      // NEW: product category
-      if (state.productCategorySlug && ((item as any)?.product.product_category_slug ?? '') !== state.productCategorySlug) {
+      if (state.productCategorySlug && ((item as any)?.product?.product_category_slug ?? '') !== state.productCategorySlug) {
         return false
       }
-
       if (state.productLineSlug && (item.product?.product_line_slug ?? '') !== state.productLineSlug) return false
       if (state.productSlug && (item.product?.slug ?? '') !== state.productSlug) return false
       if (state.size && (item.size ?? '') !== state.size) return false
@@ -243,10 +263,9 @@ export function useInventoryFilters(
     })
   })
 
-  // ---------- Sorting (closest → furthest for distance) ----------
+  // ---------- Sorting ----------
   const sorted = computed<InventoryItem[]>(() => {
     const base = [...filtered.value]
-
     switch (sortMode.value) {
       case 'price-ascending':
         return base.sort((a, b) => (a.cashPrice ?? 0) - (b.cashPrice ?? 0))
@@ -275,14 +294,13 @@ export function useInventoryFilters(
         })
       case 'distance-from-user': {
         const metersBySlug = opts?.distanceMetersByLocationSlug?.value ?? {}
-        // Ascending meters (closest first), null/undefined go last
         return base.sort((a, b) => {
           const da = metersBySlug[a.location?.slug ?? '']
           const db = metersBySlug[b.location?.slug ?? '']
           if (da == null && db == null) return 0
           if (da == null) return 1
           if (db == null) return -1
-          return da - db // <— FIX: closest → furthest
+          return da - db
         })
       }
       default:
@@ -292,28 +310,28 @@ export function useInventoryFilters(
 
   // ---------- Chips ----------
   const labelMaps = computed(() => ({
-    productCategory: Object.fromEntries(productCategoryOptions.value.map(o => [o.value, o.label])), // NEW
-    productLine: Object.fromEntries(productLineOptions.value.map(o => [o.value, o.label])),
-    product:     Object.fromEntries(productOptions.value.map(o => [o.value, o.label])),
-    size:        Object.fromEntries(sizeOptions.value.map(o => [o.value, o.label])),
-    location:    Object.fromEntries(locationOptions.value.map(o => [o.value, o.label])),
-    region:      Object.fromEntries(regionOptions.value.map(o => [o.value, o.label])),
+    productCategory: Object.fromEntries(productCategoryOptions.value.map(o => [o.value, o.label])),
+    productLine:     Object.fromEntries(productLineOptions.value.map(o => [o.value, o.label])),
+    product:         Object.fromEntries(productOptions.value.map(o => [o.value, o.label])),
+    size:            Object.fromEntries(sizeOptions.value.map(o => [o.value, o.label])),
+    location:        Object.fromEntries(locationOptions.value.map(o => [o.value, o.label])),
+    region:          Object.fromEntries(regionOptions.value.map(o => [o.value, o.label])),
   }))
 
   const chips = computed<Array<{ key: keyof InventoryFiltersState | 'minPrice' | 'maxPrice'; label: string }>>(() => {
     const labels = labelMaps.value
     const out: Array<{ key: any; label: string }> = []
     if (state.searchQuery) out.push({ key: 'searchQuery', label: `Search: "${state.searchQuery}"` })
-    if (state.productCategorySlug) out.push({ key: 'productCategorySlug', label: `Category: ${labels.productCategory[state.productCategorySlug] ?? state.productCategorySlug}` }) // NEW
-    if (state.productLineSlug) out.push({ key: 'productLineSlug', label: `Product Line: ${labels.productLine[state.productLineSlug] ?? state.productLineSlug}` })
-    if (state.productSlug) out.push({ key: 'productSlug', label: `Product: ${labels.product[state.productSlug] ?? state.productSlug}` })
-    if (state.size) out.push({ key: 'size', label: `Size: ${labels.size[state.size] ?? state.size}` })
-    if (state.minPrice != null) out.push({ key: 'minPrice', label: `Min: $${state.minPrice}` })
-    if (state.maxPrice != null) out.push({ key: 'maxPrice', label: `Max: $${state.maxPrice}` })
-    if (state.discounted !== null) out.push({ key: 'discounted', label: state.discounted ? 'Discounted: Yes' : 'Discounted: No' })
-    if (state.condition) out.push({ key: 'condition', label: `Condition: ${state.condition === 'used' ? 'Used' : 'New'}` })
-    if (state.locationSlug) out.push({ key: 'locationSlug', label: `Location: ${labels.location[state.locationSlug] ?? state.locationSlug}` })
-    if (state.regionSlug) out.push({ key: 'regionSlug', label: `Region: ${labels.region[state.regionSlug] ?? state.regionSlug}` })
+    if (state.productCategorySlug) out.push({ key: 'productCategorySlug', label: `Category: ${labels.productCategory[state.productCategorySlug] ?? toLabelFromSlug(state.productCategorySlug)}` })
+    if (state.productLineSlug)     out.push({ key: 'productLineSlug',     label: `Product Line: ${labels.productLine[state.productLineSlug] ?? toLabelFromSlug(state.productLineSlug)}` })
+    if (state.productSlug)         out.push({ key: 'productSlug',         label: `Product: ${labels.product[state.productSlug] ?? toLabelFromSlug(state.productSlug)}` })
+    if (state.size)                out.push({ key: 'size',                label: `Size: ${labels.size[state.size] ?? state.size}` })
+    if (state.minPrice != null)    out.push({ key: 'minPrice',            label: `Min: $${state.minPrice}` })
+    if (state.maxPrice != null)    out.push({ key: 'maxPrice',            label: `Max: $${state.maxPrice}` })
+    if (state.discounted !== null) out.push({ key: 'discounted',          label: state.discounted ? 'Discounted: Yes' : 'Discounted: No' })
+    if (state.condition)           out.push({ key: 'condition',           label: `Condition: ${state.condition === 'used' ? 'Used' : 'New'}` })
+    if (state.locationSlug)        out.push({ key: 'locationSlug',        label: `Location: ${labels.location[state.locationSlug] ?? toLabelFromSlug(state.locationSlug)}` })
+    if (state.regionSlug)          out.push({ key: 'regionSlug',          label: `Region: ${labels.region[state.regionSlug] ?? toLabelFromSlug(state.regionSlug)}` })
     return out
   })
 
@@ -328,7 +346,7 @@ export function useInventoryFilters(
   function reset() {
     Object.assign(state, {
       searchQuery: '',
-      productCategorySlug: null, // NEW
+      productCategorySlug: null,
       productLineSlug: null,
       productSlug: null,
       size: null,
@@ -346,14 +364,12 @@ export function useInventoryFilters(
     filtered,
     sorted,
     sortMode,
-
-    productCategoryOptions, // NEW
+    productCategoryOptions,
     productLineOptions,
     productOptions,
     sizeOptions,
     locationOptions,
     regionOptions,
-
     chips,
     clearChip,
     reset,
