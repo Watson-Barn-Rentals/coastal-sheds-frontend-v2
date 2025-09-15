@@ -1,10 +1,7 @@
 <script lang="ts" setup>
-import type { slideover } from '#build/ui'
 import { getHeaderSettings } from '~/services/api/get-header-settings'
 import HomeNavbarItem from './navigation/home-navbar-item.vue'
-import { vOnClickOutside } from '@vueuse/components'
 import type { HeaderSettings } from '~/types/header-settings'
-import SlideoverNavbarItem from './navigation/slideover-navbar-item.vue'
 
 const isMenuOpen = ref(false)
 
@@ -16,8 +13,6 @@ const { data } = await useAsyncData<HeaderSettings>(
   'header-settings',
   () => getHeaderSettings()
 )
-
-
 
 </script>
 
@@ -104,11 +99,12 @@ const { data } = await useAsyncData<HeaderSettings>(
                     @click="toggleMenu"
                 />
             </div>
-            <div class="flex flex-col gap-4 p-4">
+            <div class="flex flex-col gap-4 p-4 overflow-y-auto">
                 <NavigationSlideoverNavbarItem
                     v-for="(item, index) in data.menu"
                     :key="`slideover-navbar-item-${index}`"
                     :menu-item="item"
+                    @close-mobile-menu="toggleMenu"
                 />
             </div>
         </template>
