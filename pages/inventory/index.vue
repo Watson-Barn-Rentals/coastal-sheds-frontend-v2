@@ -1,3 +1,4 @@
+<!-- pages/inventory.vue (or your inventory page) -->
 <script lang="ts" setup>
 import type { Ref } from "vue";
 import { getInventoryList } from "~/services/api/get-inventory-list";
@@ -9,6 +10,7 @@ import {
 } from "~/services/google-maps";
 import type { LocationsMapSettings } from "~/types/locations-map-settings";
 import { getLocationsMapSettings } from "~/services/api/get-locations-map-settings";
+import RegionGateModal from "~/components/region-gate-modal.vue";
 
 definePageMeta({ layout: "default", key: "inventory-page" });
 
@@ -61,13 +63,11 @@ const ogImageHeight = computed(() => firstHero.value?.height);
 useHead(() => {
   const links: any[] = [{ rel: "canonical", href: canonicalUrl.value }];
 
-  // Preconnect/dns-prefetch to the first image origin (reduce handshake time)
   if (firstHero.value?.original_url) {
     try {
       const origin = new URL(firstHero.value.original_url).origin;
       links.push({ rel: "preconnect", href: origin, crossorigin: "" });
       links.push({ rel: "dns-prefetch", href: origin });
-      // Preload LCP candidate
       links.push({
         rel: "preload",
         as: "image",
@@ -79,9 +79,7 @@ useHead(() => {
     } catch {}
   }
 
-  // If you want to force og:type=website explicitly (avoid TS union complaints)
   const meta: any[] = [{ property: "og:type", content: "website" }];
-
   return { link: links, meta };
 });
 
@@ -104,7 +102,7 @@ useSeoMeta({
 /* ---------------- Schema.org ---------------- */
 
 useSchemaOrg(() => {
-  const items = (data.value ?? []).slice(0, 24); // cap to avoid huge JSON-LD
+  const items = (data.value ?? []).slice(0, 24);
   return [
     defineWebPage({
       "@type": "CollectionPage",
@@ -186,6 +184,18 @@ const {
 } = useInventoryFilters(data as Ref<InventoryItem[] | null>, {
   distanceMetersByLocationSlug,
 });
+
+/** Region gate: if multiple regions and no selection, block with modal */
+const gate = useRegionGate({
+  items: data as Ref<InventoryItem[] | null>,
+  regionSlug: computed({
+    get: () => filters.regionSlug,
+    set: (v) => { filters.regionSlug = v }
+  }),
+  regionOptions,
+  rememberInSession: true,
+  autoPickIfSingle: true,
+})
 
 /** Mobile filters toggle */
 const filtersOpen = ref(false);
@@ -281,7 +291,7 @@ const scrollToFilters = () => {
   window.scrollTo({ top: targetY, behavior: "smooth" });
 };
 
-/** Null-safe counts for the template (no Volar complaints) */
+/** Counts */
 const totalCount = computed(() => data.value?.length ?? 0);
 const hiddenByFilters = computed(() =>
   Math.max(0, totalCount.value - filtered.value.length)
@@ -292,12 +302,7 @@ const hiddenByFilters = computed(() =>
   <PageDataGate
     :sources="[
       { data, pending, error, refresh },
-      {
-        data: mapSettings,
-        pending: mapPending,
-        error: mapError,
-        refresh: mapRefresh,
-      },
+      { data: mapSettings, pending: mapPending, error: mapError, refresh: mapRefresh },
     ]"
   >
     <div v-if="data && mapSettings">
@@ -309,121 +314,116 @@ const hiddenByFilters = computed(() =>
       />
 
       <MaxWidthContentWrapper>
-        <div id="filters-section" class="mb-8">
-          <button
-            type="button"
-            class="w-full rounded-xl border px-3 py-2 bg-background-accent dark:bg-background-accent-dark cursor-pointer"
-            @click="filtersOpen = !filtersOpen"
-          >
-            <span class="font-semibold"
-              >{{ filtersOpen ? "Hide" : "Show" }} Filters</span
-            >
-            <span v-if="chips.length > 0" class="font-semibold pl-1">
-              ({{ chips.length }}
-              {{ chips.length === 1 ? "Filter" : "Filters" }} Applied)
-            </span>
-          </button>
+        <!-- Region Gate Modal (blocks page until selection if needed) -->
+        <RegionGateModal
+          :open="gate.open"
+          :options="gate.options"
+          :model-value="gate.selected"
+          @update:model-value="(v) => (gate.selected.value = v)"
+          @confirm="(slug) => gate.applySelection(slug)"
+        />
 
-          <transition name="fade">
-            <div v-show="filtersOpen" class="mt-3">
-              <InventoryFilters
-                v-model:filters="filters"
-                :product-category-options="productCategoryOptions"
-                :product-line-options="productLineOptions"
-                :product-options="productOptions"
-                :size-options="sizeOptions"
-                :location-options="locationOptions"
-                :region-options="regionOptions"
-                :chips="chips"
-                @clear-chip="clearChip"
-                @reset="reset"
+
+        <div>
+          <div id="filters-section" class="mb-8">
+            <button
+              type="button"
+              class="w-full rounded-xl border px-3 py-2 bg-background-accent dark:bg-background-accent-dark cursor-pointer"
+              @click="filtersOpen = !filtersOpen"
+            >
+              <span class="font-semibold">{{ filtersOpen ? "Hide" : "Show" }} Filters</span>
+              <span v-if="chips.length > 0" class="font-semibold pl-1">
+                ({{ chips.length }} {{ chips.length === 1 ? "Filter" : "Filters" }} Applied)
+              </span>
+            </button>
+
+            <transition name="fade">
+              <div v-show="filtersOpen" class="mt-3">
+                <InventoryFilters
+                  v-model:filters="filters"
+                  :product-category-options="productCategoryOptions"
+                  :product-line-options="productLineOptions"
+                  :product-options="productOptions"
+                  :size-options="sizeOptions"
+                  :location-options="locationOptions"
+                  :region-options="regionOptions"
+                  :chips="chips"
+                  @clear-chip="clearChip"
+                  @reset="reset"
+                />
+              </div>
+            </transition>
+          </div>
+
+          <!-- Sort bar (below filters) -->
+          <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center gap-2">
+              <UiSelect
+                v-model="sortMode"
+                :options="[
+                  { value: 'price-ascending', label: 'Price (low → high)' },
+                  { value: 'price-descending', label: 'Price (high → low)' },
+                  { value: 'product-name', label: 'Product (A → Z)' },
+                  { value: 'size-ascending', label: 'Size (small → large)' },
+                  { value: 'size-descending', label: 'Size (large → small)' },
+                  { value: 'distance-from-user', label: 'Distance from you' },
+                ]"
+                label="Sort by"
+                :showBlank="false"
               />
             </div>
-          </transition>
-        </div>
 
-        <!-- Sort bar (below filters) -->
-        <div
-          class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between"
-        >
-          <div class="flex items-center gap-2">
-            <UiSelect
-              v-model="sortMode"
-              :options="[
-                { value: 'price-ascending', label: 'Price (low → high)' },
-                { value: 'price-descending', label: 'Price (high → low)' },
-                { value: 'product-name', label: 'Product (A → Z)' },
-                { value: 'size-ascending', label: 'Size (small → large)' },
-                { value: 'size-descending', label: 'Size (large → small)' },
-                { value: 'distance-from-user', label: 'Distance from you' },
-              ]"
-              label="Sort by"
-              :showBlank="false"
-            />
-          </div>
-
-          <p
-            v-if="sortMode === 'distance-from-user' && distanceError"
-            class="text-sm text-red-600"
-          >
-            {{ distanceError }}
-          </p>
-          <p
-            v-else-if="sortMode === 'distance-from-user' && computingDistances"
-            class="text-sm opacity-70"
-          >
-            Calculating driving times…
-          </p>
-        </div>
-
-        <CardGallery class="my-8">
-          <InventoryCard
-            v-for="inventoryItem in sorted"
-            :key="inventoryItem.serialNumber"
-            :hero-image="inventoryItem.heroImage"
-            :serial-number="inventoryItem.serialNumber"
-            :size="inventoryItem.size"
-            :product-line-title="inventoryItem.product?.product_line_title"
-            :product-title="inventoryItem.product?.title"
-            :cash-price="inventoryItem.cashPrice"
-            :discount-amount="inventoryItem.discountAmount"
-            :location-name="inventoryItem.location?.title"
-            :lot-number="inventoryItem.lotNumber"
-            :highlighted-label="inventoryItem.highlightedLabel"
-            :used-building="inventoryItem.usedBuilding"
-            :approx-drive-time-text="
-              driveTimeTextBySlug[inventoryItem.location?.slug ?? ''] ?? null
-            "
-            :location-address="inventoryItem.location.address"
-            :location-city="inventoryItem.location.city"
-            :location-state="inventoryItem.location.state"
-            :location-zip="inventoryItem.location.zip"
-          />
-
-          <!-- Empty state -->
-          <NoItemsCard
-            v-if="filtered.length === 0"
-            message="No Inventory to Display"
-          />
-
-          <!-- Hidden-by-filters notice (no direct `data` access needed) -->
-          <div
-            v-if="hiddenByFilters > 0"
-            class="group flex h-full flex-col gap-8 overflow-hidden rounded-2xl bg-background-accent shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:bg-background-accent-dark p-8 justify-center"
-          >
-            <p class="text-center text-xl">
-              {{ hiddenByFilters }}
-              {{ hiddenByFilters === 1 ? "Item" : "Items" }} Hidden by Filters
+            <p v-if="sortMode === 'distance-from-user' && distanceError" class="text-sm text-red-600">
+              {{ distanceError }}
             </p>
-            <button
-              class="bg-brand text-white p-2 mx-auto rounded-lg flex gap-1 cursor-pointer transition-all duration-150 hover:scale-105"
-              @click="scrollToFilters"
-            >
-              <UIcon name="solar:arrow-up-broken" class="w-6 h-6 my-auto" />
-              <span class="my-auto">Jump to Filters</span>
-            </button>
+            <p v-else-if="sortMode === 'distance-from-user' && computingDistances" class="text-sm opacity-70">
+              Calculating driving times…
+            </p>
           </div>
-        </CardGallery>
+
+          <CardGallery class="my-8">
+            <InventoryCard
+              v-for="inventoryItem in sorted"
+              :key="inventoryItem.serialNumber"
+              :hero-image="inventoryItem.heroImage"
+              :serial-number="inventoryItem.serialNumber"
+              :size="inventoryItem.size"
+              :product-line-title="inventoryItem.product?.product_line_title"
+              :product-title="inventoryItem.product?.title"
+              :cash-price="inventoryItem.cashPrice"
+              :discount-amount="inventoryItem.discountAmount"
+              :location-name="inventoryItem.location?.title"
+              :lot-number="inventoryItem.lotNumber"
+              :highlighted-label="inventoryItem.highlightedLabel"
+              :used-building="inventoryItem.usedBuilding"
+              :approx-drive-time-text="driveTimeTextBySlug[inventoryItem.location?.slug ?? ''] ?? null"
+              :location-address="inventoryItem.location.address"
+              :location-city="inventoryItem.location.city"
+              :location-state="inventoryItem.location.state"
+              :location-zip="inventoryItem.location.zip"
+            />
+
+            <!-- Empty state -->
+            <NoItemsCard v-if="filtered.length === 0" message="No Inventory to Display" />
+
+            <!-- Hidden-by-filters notice -->
+            <div
+              v-if="hiddenByFilters > 0"
+              class="group flex h-full flex-col gap-8 overflow-hidden rounded-2xl bg-background-accent shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:bg-background-accent-dark p-8 justify-center"
+            >
+              <p class="text-center text-xl">
+                {{ hiddenByFilters }} {{ hiddenByFilters === 1 ? "Item" : "Items" }} Hidden by Filters
+              </p>
+              <button
+                class="bg-brand text-white p-2 mx-auto rounded-lg flex gap-1 cursor-pointer transition-all duration-150 hover:scale-105"
+                @click="scrollToFilters"
+              >
+                <UIcon name="solar:arrow-up-broken" class="w-6 h-6 my-auto" />
+                <span class="my-auto">Jump to Filters</span>
+              </button>
+            </div>
+          </CardGallery>
+        </div>
       </MaxWidthContentWrapper>
     </div>
   </PageDataGate>
@@ -431,11 +431,7 @@ const hiddenByFilters = computed(() =>
 
 <style scoped>
 .fade-enter-active,
-.fade-leave-active {
-  transition: opacity 0.15s ease;
-}
+.fade-leave-active { transition: opacity 0.15s ease; }
 .fade-enter-from,
-.fade-leave-to {
-  opacity: 0;
-}
+.fade-leave-to { opacity: 0; }
 </style>

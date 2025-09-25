@@ -44,33 +44,26 @@ const startViewTransition = (event: MouseEvent) => {
 </script>
 
 <template>
-    <button
-      :aria-label="`Switch to ${nextTheme} mode`"
-      class="rounded-full h-4 w-4 lg:h-6 lg:w-6 my-auto cursor-pointer"
-      @click="startViewTransition"
-    >
-    <ClientOnly>
-      <UIcon
-        v-if="colorMode.value === 'light'"
-        name="i-lucide-sun"
-        class="size-4 lg:size-6"
-        dynamic
-      />
-      <UIcon
-        v-else-if="colorMode.value === 'dark'"
-        name="i-lucide-moon"
-        class="size-4 lg:size-6"
-        dynamic
-      />
-      <UIcon
-        v-else
-        name="line-lg:light-dark-loop"
-        class="size-4 lg:size-6"
-        dynamic
-      />
-    </ClientOnly>
-    </button>
+  <button
+    aria-label="Toggle color mode"
+    class="rounded-full h-4 w-4 lg:h-6 lg:w-6 my-auto cursor-pointer text-auto"
+    @click="startViewTransition"
+  >
+    <!-- Show in LIGHT -->
+    <UIcon
+      name="i-lucide-sun"
+      class="size-4 lg:size-6 align-middle inline-block dark:hidden"
+      aria-hidden="true"
+    />
+    <!-- Show in DARK -->
+    <UIcon
+      name="i-lucide-moon"
+      class="size-4 lg:size-6 align-middle hidden dark:inline-block"
+      aria-hidden="true"
+    />
+  </button>
 </template>
+
 
 <style>
 ::view-transition-old(root),

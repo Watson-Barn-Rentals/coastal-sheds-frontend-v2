@@ -1,6 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useHead } from '#imports'
+import type { CustomCssStyling } from '~/types/custom-css-styling';
+import { twMerge } from 'tailwind-merge';
+import clsx from 'clsx';
 
 const props = defineProps<{
   backgroundOption: "none" | "color_background" | "image_background" | "video_background";
@@ -8,7 +11,10 @@ const props = defineProps<{
   backgroundImageUrl: string | null;
   backgroundVideoUrl: string | null;
   fadeTopAndBottom: boolean;
+  customCssStyling: CustomCssStyling;
 }>()
+
+useCustomCss(props.customCssStyling.css)
 
 // ✅ function form + literal 'as' fixes the types
 useHead(() => ({
@@ -30,22 +36,20 @@ useHead(() => ({
   <!-- COLOR -->
   <div
     v-if="backgroundOption === 'color_background' && backgroundColor"
-    :class="{ 'fade-top-bottom-mask': fadeTopAndBottom }"
+    :class="twMerge(clsx({ 'fade-top-bottom-mask': fadeTopAndBottom }, customCssStyling.classNames))"
     :style="{ backgroundColor }"
   >
     <slot />
   </div>
-
   <!-- IMAGE -->
   <div
-    v-else-if="backgroundOption === 'image_background' && backgroundImageUrl"
-    :class="{ 'fade-top-bottom-mask': fadeTopAndBottom }"
-    :style="{
-      backgroundImage: `url(${backgroundImageUrl})`,
-      backgroundSize: 'cover',
-      backgroundPosition: 'center',
-      backgroundRepeat: 'no-repeat',
-    }"
+  v-else-if="backgroundOption === 'image_background' && backgroundImageUrl"
+  :class="twMerge(clsx({ 'fade-top-bottom-mask': fadeTopAndBottom }), customCssStyling.classNames.join(' '))"
+  :style="{
+    backgroundImage: `url(${backgroundImageUrl})`,
+    backgroundSize: 'cover',
+    backgroundRepeat: 'no-repeat',
+  }"
   >
     <!--
       Hidden <img> to eagerly fetch the same URL.
@@ -68,7 +72,7 @@ useHead(() => ({
   <div
     v-else-if="backgroundOption === 'video_background' && backgroundVideoUrl"
     class="relative overflow-hidden"
-    :class="{ 'fade-top-bottom-mask': fadeTopAndBottom }"
+    :class="twMerge(clsx({ 'fade-top-bottom-mask': fadeTopAndBottom }, customCssStyling.classNames))"
   >
     <video
       class="absolute top-0 left-0 w-full h-full object-cover object-center"
@@ -84,7 +88,10 @@ useHead(() => ({
   </div>
 
   <!-- NONE -->
-  <div v-else>
+  <div 
+    v-else
+    :class="twMerge(clsx({ 'fade-top-bottom-mask': fadeTopAndBottom }, customCssStyling.classNames))"
+  >
     <slot />
   </div>
 </template>

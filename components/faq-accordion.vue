@@ -1,8 +1,11 @@
 <script setup lang="ts">
 import { twMerge } from 'tailwind-merge';
-import { ref, computed } from 'vue'
+import { ref, computed, nextTick } from 'vue'
 import type { CustomCssStyling } from '~/types/custom-css-styling';
 import type { FaqItem } from '~/types/faq-data'
+
+/* NEW: optional offset for sticky headers */
+const SCROLL_OFFSET = 0 // change to your sticky header height, e.g. 96
 
 // Props
 const props = defineProps<{ 
@@ -15,7 +18,30 @@ const props = defineProps<{
 
 // Only one panel open at a time
 const openIndex = ref<number | null>(null)
+
+/* NEW: queue the index we want to scroll to after the previous panel collapses */
+const pendingScrollTo = ref<number | null>(null)
+
+/* NEW: collect header elements to scroll to */
+const headerRefs = ref<HTMLElement[]>([])
+const setHeaderRef = (i: number) => (el: Element | ComponentPublicInstance | null) => {
+  headerRefs.value[i] = (el as HTMLElement) || undefined as any
+}
+
+/* NEW: helper */
+const scrollToHeader = (i: number) => {
+  if (typeof window === 'undefined') return
+  const el = headerRefs.value[i]
+  if (!el) return
+  const y = el.getBoundingClientRect().top + window.scrollY - SCROLL_OFFSET
+  window.scrollTo({ top: y, behavior: 'smooth' })
+}
+
 const toggle = (i: number) => {
+  // If switching from one open item to another, queue a scroll to the new header
+  if (openIndex.value !== null && openIndex.value !== i) {
+    pendingScrollTo.value = i
+  }
   openIndex.value = openIndex.value === i ? null : i
 }
 
@@ -30,7 +56,6 @@ const onEnter = (el: Element, done: () => void) => {
   const e = el as HTMLElement
   const h = e.scrollHeight
   e.style.transition = 'height 200ms ease, opacity 200ms ease'
-  // next frame to allow transition from 0 -> h
   requestAnimationFrame(() => {
     e.style.height = `${h}px`
     e.style.opacity = '1'
@@ -54,7 +79,6 @@ const onBeforeLeave = (el: Element) => {
 const onLeave = (el: Element, done: () => void) => {
   const e = el as HTMLElement
   e.style.transition = 'height 200ms ease, opacity 200ms ease'
-  // next frame to allow transition from h -> 0
   requestAnimationFrame(() => {
     e.style.height = '0px'
     e.style.opacity = '0'
@@ -65,6 +89,13 @@ const onLeave = (el: Element, done: () => void) => {
     e.style.opacity = ''
     e.style.transition = ''
     e.style.overflow = ''
+
+    /* NEW: after collapse finishes, do the queued scroll */
+    if (pendingScrollTo.value !== null) {
+      const target = pendingScrollTo.value
+      pendingScrollTo.value = null
+      nextTick(() => scrollToHeader(target))
+    }
     done()
   }
   e.addEventListener('transitionend', end)
@@ -103,6 +134,7 @@ useCustomCss(props.questionCustomStyling?.css ?? '');
 useCustomCss(props.answerCustomStyling?.css ?? '');
 </script>
 
+
 <template>
   <div :class="twMerge('flex flex-col bg-black gap-[2px]', wrapperCustomStyling?.classNames?.join(' '))">
     <div
@@ -116,6 +148,7 @@ useCustomCss(props.answerCustomStyling?.css ?? '');
         :aria-expanded="openIndex === i"
         :aria-controls="`faq-panel-${i}`"
         :id="`faq-header-${i}`"
+        :ref="setHeaderRef(i)"
         @click="toggle(i)"
       >
         <h3
@@ -131,7 +164,7 @@ useCustomCss(props.answerCustomStyling?.css ?? '');
         />
       </button>
 
-      <!-- Panel (kept in DOM via v-show) with slide animation -->
+      <!-- Panel -->
       <Transition
         :css="false"
         @before-enter="onBeforeEnter"
@@ -150,8 +183,6 @@ useCustomCss(props.answerCustomStyling?.css ?? '');
             :content="faq.answer"
             :class="twMerge('pl-4', answerCustomStyling?.classNames?.join(' '))"
           />
-
-          <!-- Collapse button -->
           <div class="mt-4 flex">
             <button
               type="button"
@@ -168,6 +199,7 @@ useCustomCss(props.answerCustomStyling?.css ?? '');
     </div>
   </div>
 </template>
+
 
 <style scoped>
 .standard-faq-item-border {

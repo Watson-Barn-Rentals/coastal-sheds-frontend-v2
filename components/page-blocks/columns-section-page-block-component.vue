@@ -5,7 +5,6 @@ const props = defineProps<{
   data: ColumnsSectionPageBlockData;
 }>();
 
-useCustomCss(props.data.pageBlockCustomStyling.css)
 useCustomCss(props.data.contentAreaCustomStyling.css)
 
 // Flatten all columns across groups (for mobile rendering)
@@ -57,7 +56,7 @@ const contentAreaStyling = computed(() => {
     :background-image-url="props.data.pageBlockBackgroundImageUrl"
     :background-video-url="props.data.pageBlockBackgroundVideoUrl"
     :fade-top-and-bottom="props.data.fadeTopAndBottomOfPageBlock"
-    :class="props.data.pageBlockCustomStyling.classNames.join(' ')"
+    :custom-css-styling="props.data.pageBlockCustomStyling"
     :style="{
       paddingTop: props.data.pageBlockPaddingTop,
       paddingBottom: props.data.pageBlockPaddingBottom,
@@ -73,7 +72,6 @@ const contentAreaStyling = computed(() => {
     >
       <ColumnSectionRenderer :column-sections="mobileColumnSections" />
     </div>
-
     <!-- Desktop Layout: render each column group stacked vertically -->
     <div class="hidden md:block">
       <div

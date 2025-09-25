@@ -17,6 +17,7 @@ const props = defineProps<{
   wrapperClass?: string
   labelClass?: string
   inputClass?: string
+  required?: boolean
 }>()
 
 const inputEl = ref<HTMLInputElement | null>(null)
@@ -84,7 +85,7 @@ function clear() {
 <template>
   <div :class="['w-full relative', wrapperClass]">
     <label v-if="label" :class="['block text-sm font-medium text-slate-600 dark:text-white', labelClass]">
-      {{ label }}
+      {{ label }} <span v-if="required" aria-hidden="true">*</span>
     </label>
 
     <HeadlessCombobox :model-value="localText">
@@ -96,8 +97,9 @@ function clear() {
           @beforeinput="onBeforeInput"
           @paste="onPaste"
           @input="onInput"
-          :placeholder="placeholder ?? '(555) 123-4567'"
+          :placeholder="placeholder"
           :name="name"
+          :required="required"
           :id="id"
           :disabled="disabled"
           inputmode="tel"

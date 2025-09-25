@@ -1,6 +1,7 @@
 // ~/composables/useInventoryFilters.ts
 import { useRoute, useRouter } from '#imports'
 import { useDebounceFn } from '@vueuse/core'
+import { computed, reactive, ref, watch } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
 import type { InventoryItem } from '~/types/inventory-item'
 
@@ -17,6 +18,7 @@ export type InventoryFiltersState = {
   locationSlug: string | null
   regionSlug: string | null
 }
+
 export type InventorySortMode =
   | 'price-ascending'
   | 'price-descending'
@@ -28,19 +30,17 @@ export type InventorySortMode =
 type UrlQuery = Record<string, string | undefined>
 type Option = { value: string; label: string }
 
-// --- NEW helpers ------------------------------------------------------------
+// --- helpers ------------------------------------------------------------
 function toLabelFromSlug(value: string): string {
-  // decode, turn kebab/snake into Title Case
   const s = decodeURIComponent(value).replace(/[-_]+/g, ' ').trim()
   return s.replace(/\b\w/g, (c) => c.toUpperCase())
 }
-/** Ensure the currently-selected value is present in the options. */
 function withSelected(list: Option[], selected?: string | null): Option[] {
   if (!selected) return list
   if (list.some(o => o.value === selected)) return list
   return [...list, { value: selected, label: toLabelFromSlug(selected) }]
 }
-// ---------------------------------------------------------------------------
+// -----------------------------------------------------------------------
 
 function stateToQuery(state: InventoryFiltersState): UrlQuery {
   return {
@@ -130,7 +130,7 @@ export function useInventoryFilters(
   watch(state, pushQueryToUrl, { deep: true })
   watch(sortMode, pushQueryToUrl)
 
-  // ---------- Option builders (now “sticky” to URL selections) ----------
+  // ---------- Option builders ----------
   const productCategoryOptions = computed<Option[]>(() => {
     const map = new Map<string, string>()
     for (const item of (source.value ?? [])) {
@@ -205,6 +205,17 @@ export function useInventoryFilters(
       .map(([value, label]) => ({ value, label }))
     return withSelected(list, state.regionSlug)
   })
+
+  // --- NEW: auto-pick region if only one option exists -----------------
+  watch(
+    () => regionOptions.value,
+    (opts) => {
+      if (!state.regionSlug && opts.length === 1) {
+        state.regionSlug = opts[0].value
+      }
+    },
+    { immediate: true }
+  )
 
   // ---------- Filtering ----------
   const filtered = computed<InventoryItem[]>(() => {
@@ -331,7 +342,7 @@ export function useInventoryFilters(
     if (state.discounted !== null) out.push({ key: 'discounted',          label: state.discounted ? 'Discounted: Yes' : 'Discounted: No' })
     if (state.condition)           out.push({ key: 'condition',           label: `Condition: ${state.condition === 'used' ? 'Used' : 'New'}` })
     if (state.locationSlug)        out.push({ key: 'locationSlug',        label: `Location: ${labels.location[state.locationSlug] ?? toLabelFromSlug(state.locationSlug)}` })
-    if (state.regionSlug)          out.push({ key: 'regionSlug',          label: `Region: ${labels.region[state.regionSlug] ?? toLabelFromSlug(state.regionSlug)}` })
+    // Region intentionally omitted from chips
     return out
   })
 
@@ -340,6 +351,7 @@ export function useInventoryFilters(
     else if (key === 'discounted') state.discounted = null
     else if (key === 'condition') state.condition = null
     else if (key === 'searchQuery') state.searchQuery = ''
+    else if (key === 'regionSlug') { /* required: do not clear */ }
     else (state as any)[key] = null
   }
 
@@ -355,7 +367,8 @@ export function useInventoryFilters(
       discounted: null,
       condition: null,
       locationSlug: null,
-      regionSlug: null,
+      // Preserve region (required)
+      regionSlug: state.regionSlug,
     } satisfies InventoryFiltersState)
   }
 

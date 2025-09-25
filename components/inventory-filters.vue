@@ -28,6 +28,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{ (e: 'clear-chip', key: any): void; (e: 'reset'): void }>()
 
+
 // Discounted select bridge
 const discountedSelectValue = computed<string | null>({
   get: () => filters.value.discounted === null ? null : (filters.value.discounted ? '1' : '0'),
@@ -39,7 +40,7 @@ const discountedSelectValue = computed<string | null>({
   <div class="w-full bg-background-accent dark:bg-background-accent-dark rounded-2xl shadow-lg border-4 border-background-accent dark:border-background-accent-dark p-4 md:p-6 mt-6 space-y-3">
     <p class="font-title text-center text-xl font-bold">Filters</p>
 
-    <!-- Chips ... (unchanged) -->
+    <!-- Chips (region intentionally omitted upstream) -->
     <div class="flex flex-wrap gap-4">
       <div
         v-for="chip in props.chips"
@@ -48,9 +49,7 @@ const discountedSelectValue = computed<string | null>({
       >
         <span class="my-auto">{{ chip.label }}</span>
         <button @click="$emit('clear-chip', chip.key)" class="cursor-pointer h-4 w-4 hover:scale-150 transition-all duration-150">
-          <UIcon
-            name="material-symbols:close"
-          />
+          <UIcon name="material-symbols:close" />
         </button>
       </div>
       <div
@@ -72,7 +71,7 @@ const discountedSelectValue = computed<string | null>({
         class="md:col-span-2"
       />
 
-      <!-- Product Category (NEW, before Product Line) -->
+      <!-- Product Category -->
       <UiSelect
         v-model="filters.productCategorySlug"
         :options="productCategoryOptions"
@@ -133,10 +132,22 @@ const discountedSelectValue = computed<string | null>({
       />
 
       <!-- Location -->
-      <UiSelect v-model="filters.locationSlug" :options="locationOptions" label="Location" placeholder="All" :show-blank="true" />
+      <UiSelect
+        v-model="filters.locationSlug"
+        :options="locationOptions"
+        label="Location"
+        placeholder="All"
+        :show-blank="true"
+      />
 
-      <!-- Region -->
-      <UiSelect v-model="filters.regionSlug" :options="regionOptions" label="Region" placeholder="All" :show-blank="true" />
+      <!-- Region (REQUIRED) -->
+      <UiSelect
+        v-model="filters.regionSlug"
+        :options="regionOptions"
+        label="Region"
+        placeholder="Choose a region"
+        :show-blank="false"
+      />
     </div>
   </div>
 </template>

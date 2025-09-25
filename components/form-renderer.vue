@@ -20,6 +20,8 @@ const emit = defineEmits<{
 const values = ref<Record<string, any>>({})
 const status = ref<'idle'|'submitting'|'success'|'error'>('idle')
 
+const agreedToTerms = ref(false)
+
 const colClass = (w: Field['width']) => (w === '1/3' ? 'md:col-span-4' : w === '1/2' ? 'md:col-span-6' : 'md:col-span-12')
 
 const normType   = (t: unknown) => String(t ?? '').toLowerCase()
@@ -111,8 +113,9 @@ const onSubmit = async (e: Event) => {
       <div v-else-if="normType(field.type) === 'tel'" :class="['col-span-12', colClass(field.width)]">
         <UiPhoneInput
           :label="field.label"
-          :placeholder="field.placeholder || '(555) 123-4567'"
+          :placeholder="field.placeholder ?? undefined"
           :name="field.key"
+          :required="field.required"
           :id="field.key"
           v-model="values[field.key]"  />
         <small v-if="field.helpText" class="block text-xs opacity-70 mt-1">{{ field.helpText }}</small>
@@ -203,10 +206,26 @@ const onSubmit = async (e: Event) => {
 
     <div class="col-span-12">
       <div class="flex justify-center">
+        <input type="checkbox" v-model="agreedToTerms" class=" w8 h-8 mr-2" />
+        <label for="terms" class="text-xs">
+          <span>By checking this box and submitting this form, you agree to receive text messages, phone calls, and/or emails on the contact methods you provide. </span>
+          <span>Message and data rates may apply. </span>
+          <span>You may opt out at any time. </span>
+          <span>See our <NuxtLink to="/privacy-policy" class="text-hovered-link hover:underline">privacy policy</NuxtLink>.</span>
+        </label>
+      </div>
+    </div>
+
+    <div class="col-span-12">
+      <div class="flex justify-center">
         <button
           type="submit"
-          :disabled="status==='submitting'"
-          class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
+          :disabled="status==='submitting' || !agreedToTerms"
+          class="flex gap-2 p-3 rounded-lg text-white bg-brand"
+          :class="{ 
+            'opacity-50 cursor-not-allowed': status==='submitting' || !agreedToTerms,
+            'shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer': status!=='submitting' && agreedToTerms
+          }"
         >
           {{ status === 'submitting' ? 'Sending…' : (submitLabel || 'Send') }}
         </button>
