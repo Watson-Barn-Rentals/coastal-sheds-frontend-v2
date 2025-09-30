@@ -13,8 +13,14 @@ const emit = defineEmits<{
 const route = useRoute()
 const dropdownState = ref<boolean>(false)
 
-const isActive = computed<boolean>(() => route.path === props.menuItem.url)
-const subItemIsActive = (subItem: SubMenuItem) => route.path === subItem.url
+const strippedPageUrl = computed(() =>
+  route.path
+    .replace(/[?#].*$/, '')         // remove query params and hash
+    .replace(/(.+?)\/+$/, '$1')     // remove trailing slashes unless it's just "/"
+)
+
+const isActive = computed<boolean>(() => strippedPageUrl.value === props.menuItem.url)
+const subItemIsActive = (subItem: SubMenuItem) => strippedPageUrl.value === subItem.url
 
 const handleClick = () => { dropdownState.value = !dropdownState.value }
 
