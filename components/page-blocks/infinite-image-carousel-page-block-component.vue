@@ -15,7 +15,7 @@ defineProps<{
       relative overflow-hidden
 
       /* left overlay: stays solid for first half, then fades */
-        before:content-[''] before:absolute before:inset-y-0 before:left-0 before:w-24
+        before:content-[''] before:absolute before:inset-y-0 before:left-0 before:w-4 sm:before:w-16
         before:bg-gradient-to-r 
         before:from-[var(--color-background)] 
         dark:before:from-[var(--color-background-dark)] 
@@ -24,7 +24,7 @@ defineProps<{
         before:to-transparent
 
       /* right overlay: same in reverse */
-        after:content-['']  after:absolute after:inset-y-0 after:right-0 after:w-24
+        after:content-['']  after:absolute after:inset-y-0 after:right-0 after:w-4 sm:after:w-16
         after:bg-gradient-to-l 
         after:from-[var(--color-background)] 
         dark:after:from-[var(--color-background-dark)] 
@@ -54,7 +54,7 @@ defineProps<{
           :style="{
             rotate: index % 2 === 0 ? `-${data.maxImageRotation}` : data.maxImageRotation,
             width: '20rem',
-            maxWidth: '90vw',
+            maxWidth: '40vw',
           }"
       >
         <ResponsiveImage

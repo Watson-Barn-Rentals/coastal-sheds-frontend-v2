@@ -280,7 +280,7 @@ useSchemaOrg(() => {
                 </div>
               </div>
               <div class="flex justify-center mt-8">
-                <NuxtLink :to="`/inventory?l=${data.slug}`" class="shrink-0 m">
+                <NuxtLink :to="`/inventory?location=${data.slug}`" class="shrink-0 m">
                   <button
                     class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
                   >

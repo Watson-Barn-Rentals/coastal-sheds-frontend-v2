@@ -30,7 +30,7 @@ const handleClick = () => { dropdownState.value = !dropdownState.value }
       <li
         class="font-title flex gap-2 text-xl border-b-2 pb-1"
         :class="{
-          'border-black hover:border-hovered-link': isActive,
+          'border-black dark:border-white hover:border-hovered-link': isActive,
           'border-transparent': !isActive
         }"
         @click="emit('close-mobile-menu')"

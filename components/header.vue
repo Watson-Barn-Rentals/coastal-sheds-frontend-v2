@@ -17,44 +17,53 @@ const { data } = await useAsyncData<HeaderSettings>(
 </script>
 
 <template>
-    <div 
-        v-if="data"
-        :class="[
-            'fixed top-0 left-0 w-full z-[100] flex px-4 py-2',
-            'sm:justify-center justify-end'
-        ]"
-    >
-    <header 
-    :class="[
-        'bg-background dark:bg-background-dark border-b-2 border-background-accent dark:border-background-accent-dark',
-        'max-w-full sm:h-[60px] rounded-full py-1 px-1',
-        'shadow-xl border-2 border-background-accent dark:border-background-accent-dark',
-    ]"
+    <div v-if="data">
+        <div 
+            :class="[
+                'hidden sm:flex',
+                'fixed top-0 left-0 w-full z-[100] flex px-4 py-2',
+                'sm:justify-center justify-end'
+            ]"
         >
-            <div class="hidden sm:flex mx-2 h-full items-center justify-between">
-                <nav class="flex gap-x-2 md:gap-x-4 lg:gap-x-6 gap-y-24 flex-wrap justify-center items-center my-auto h-full overflow-hidden">
-                    <HomeNavbarItem 
-                        :logo-url="data.logo_url"
-                        class="h-full mx-1"
-                    />
-                    <NavigationNavbarItem 
-                        v-for="(item, index) in data.menu"
-                        :key="`navbar-item-${index}`"
-                        :menu-item="item"
-                        class="text-xs md:text-sm lg:text-base hover:text-hovered-link"
-                    />
-                    <NuxtLink
-                        v-if="data.show_phone_call_to_action"
-                        :to="`tel:${data.phone_call_to_action_phone_number}`"
-                        class="bg-brand rounded-full flex flex-col items-center justify-center px-4 md:px-6 py-1 relative"
-                    >
-                        <span class="text-white text-nowrap text-xs lg:text-sm">{{ data.phone_call_to_action_label }}</span>
-                        <span class="text-nowrap font-bold text-white text-xs lg:text-sm" >{{ data.phone_call_to_action_phone_number.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') }}</span>
-                    </NuxtLink>
-                    <ColorModeToggleButton v-if="data.show_display_mode_toggle" class="my-auto w-4 m-1" />
-                </nav>
-            </div>
-            <div class="sm:hidden flex justify-center items-center p-1 cursor-pointer">
+        <header 
+        :class="[
+            'bg-background dark:bg-background-dark border-b-2 border-background-accent dark:border-background-accent-dark',
+            'max-w-full h-[60px] rounded-full py-1 px-1',
+            'shadow-xl border-2 border-background-accent dark:border-background-accent-dark',
+        ]"
+            >
+                <div class="hidden sm:flex mx-2 h-full items-center justify-between">
+                    <nav class="flex gap-x-2 md:gap-x-4 lg:gap-x-6 gap-y-24 flex-wrap justify-center items-center my-auto h-full overflow-hidden">
+                        <HomeNavbarItem 
+                            :logo-url="data.logo_url"
+                            class="h-full mx-1"
+                        />
+                        <NavigationNavbarItem 
+                            v-for="(item, index) in data.menu"
+                            :key="`navbar-item-${index}`"
+                            :menu-item="item"
+                            class="text-xs md:text-sm lg:text-base hover:text-hovered-link"
+                        />
+                        <NuxtLink
+                            v-if="data.show_phone_call_to_action"
+                            :to="`tel:${data.phone_call_to_action_phone_number}`"
+                            class="bg-brand rounded-full flex flex-col items-center justify-center px-4 md:px-6 py-1 relative"
+                        >
+                            <span class="text-white text-nowrap text-xs lg:text-sm">{{ data.phone_call_to_action_label }}</span>
+                            <span class="text-nowrap font-bold text-white text-xs lg:text-sm" >{{ data.phone_call_to_action_phone_number.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') }}</span>
+                        </NuxtLink>
+                        <ColorModeToggleButton v-if="data.show_display_mode_toggle" class="my-auto w-4 m-1" />
+                    </nav>
+                </div>
+
+            </header>
+        </div>
+        <div class="flex sm:hidden justify-between h-[58px] bg-background dark:bg-background-dark border-b-2 border-background-accent dark:border-background-accent-dark p-0.5">
+            <HomeNavbarItem 
+                :logo-url="data.logo_url"
+                class="h-full"
+            />
+            <div class="flex fixed right-0 top-0 z-[100] m-1 p-1 h-[50px] w-[50px] justify-center items-center bg-background dark:bg-background-dark border-2 rounded-full border-background-accent dark:border-background-accent-dark cursor-pointer">
                 <button
                     @click="toggleMenu"
                     class="focus:outline-none text-black dark:text-white h-8 w-8 cursor-pointer"
@@ -65,7 +74,7 @@ const { data } = await useAsyncData<HeaderSettings>(
                     />
                 </button>
             </div>
-        </header>
+        </div>
     </div>
 
     <USlideover
@@ -99,13 +108,16 @@ const { data } = await useAsyncData<HeaderSettings>(
                     @click="toggleMenu"
                 />
             </div>
-            <div class="flex flex-col gap-4 p-4 overflow-y-auto">
-                <NavigationSlideoverNavbarItem
-                    v-for="(item, index) in data.menu"
-                    :key="`slideover-navbar-item-${index}`"
-                    :menu-item="item"
-                    @close-mobile-menu="toggleMenu"
-                />
+            <div class="flex flex-col grow justify-between">
+                <div class="flex flex-col gap-4 p-4 overflow-y-auto">
+                    <NavigationSlideoverNavbarItem
+                        v-for="(item, index) in data.menu"
+                        :key="`slideover-navbar-item-${index}`"
+                        :menu-item="item"
+                        @close-mobile-menu="toggleMenu"
+                    />
+                </div>
+                <NavigationSlideoverColorModeToggle v-if="data.show_display_mode_toggle" class="p-4" />
             </div>
         </template>
     </USlideover>
