@@ -14,6 +14,7 @@ const filters = defineModel<{
   condition: 'new' | 'used' | null
   locationSlug: string | null
   regionSlug: string | null
+  highlightedLabel: string | null
 }>('filters', { required: true })
 
 const props = defineProps<{
@@ -23,6 +24,7 @@ const props = defineProps<{
   sizeOptions: Option[]
   locationOptions: Option[]
   regionOptions: Option[]
+  tagOptions: Option[]
   chips: Array<{ key: any; label: string }>
 }>()
 
@@ -94,6 +96,15 @@ const discountedSelectValue = computed<string | null>({
         v-model="filters.productSlug"
         :options="productOptions"
         label="Product"
+        placeholder="All"
+        :show-blank="true"
+      />
+
+      <!-- Tag (highlightedLabel) -->
+      <UiSelect
+        v-model="filters.highlightedLabel"
+        :options="tagOptions"
+        label="Tag"
         placeholder="All"
         :show-blank="true"
       />

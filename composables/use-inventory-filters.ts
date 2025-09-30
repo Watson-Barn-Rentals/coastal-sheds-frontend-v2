@@ -17,6 +17,7 @@ export type InventoryFiltersState = {
   condition: 'new' | 'used' | null
   locationSlug: string | null
   regionSlug: string | null
+  highlightedLabel: string | null
 }
 
 export type InventorySortMode =
@@ -55,6 +56,7 @@ function stateToQuery(state: InventoryFiltersState): UrlQuery {
     condition: state.condition ?? undefined,
     location: state.locationSlug || undefined,
     region: state.regionSlug || undefined,
+    tag: state.highlightedLabel || undefined,
   }
 }
 
@@ -71,6 +73,7 @@ function queryToState(query: UrlQuery): InventoryFiltersState {
     condition: query.condition === 'new' || query.condition === 'used' ? query.condition : null,
     locationSlug: query.location ?? null,
     regionSlug: query.region ?? null,
+    highlightedLabel: query.tag ?? null,
   }
 }
 
@@ -103,6 +106,7 @@ export function useInventoryFilters(
   sizeOptions: ComputedRef<Option[]>
   locationOptions: ComputedRef<Option[]>
   regionOptions: ComputedRef<Option[]>
+  tagOptions: ComputedRef<Option[]>
   chips: ComputedRef<Array<{ key: keyof InventoryFiltersState | 'minPrice' | 'maxPrice'; label: string }>>
   clearChip: (key: keyof InventoryFiltersState | 'minPrice' | 'maxPrice') => void
   reset: () => void
@@ -190,6 +194,17 @@ export function useInventoryFilters(
     return withSelected(list, state.locationSlug)
   })
 
+  const tagOptions = computed<Option[]>(() => {
+    const set = new Set<string>()
+    for (const item of (source.value ?? [])) {
+      const tag = item.highlightedLabel?.trim()
+      if (tag) set.add(tag)
+    }
+    const list = [...set].sort((a, b) => a.localeCompare(b))
+      .map(v => ({ value: v, label: v }))
+    return withSelected(list, state.highlightedLabel)
+  })
+
   const regionOptions = computed<Option[]>(() => {
     const map = new Map<string, string>()
     for (const item of (source.value ?? [])) {
@@ -236,6 +251,7 @@ export function useInventoryFilters(
           item.sidingColor ?? '',
           item.trimColor ?? '',
           item.description ?? '',
+          item.highlightedLabel ?? '',
         ].join(' ').toLowerCase()
         if (!haystack.includes(query)) return false
       }
@@ -268,6 +284,10 @@ export function useInventoryFilters(
         const regions = item.location?.regions ?? []
         const inRegion = regions.some(r => (r?.slug ?? '') === state.regionSlug)
         if (!inRegion) return false
+      }
+
+      if (state.highlightedLabel && (item.highlightedLabel ?? '') !== state.highlightedLabel) {
+        return false
       }
 
       return true
@@ -327,6 +347,7 @@ export function useInventoryFilters(
     size:            Object.fromEntries(sizeOptions.value.map(o => [o.value, o.label])),
     location:        Object.fromEntries(locationOptions.value.map(o => [o.value, o.label])),
     region:          Object.fromEntries(regionOptions.value.map(o => [o.value, o.label])),
+    tag:             Object.fromEntries(tagOptions.value.map(o => [o.value, o.label])),
   }))
 
   const chips = computed<Array<{ key: keyof InventoryFiltersState | 'minPrice' | 'maxPrice'; label: string }>>(() => {
@@ -342,6 +363,7 @@ export function useInventoryFilters(
     if (state.discounted !== null) out.push({ key: 'discounted',          label: state.discounted ? 'Discounted: Yes' : 'Discounted: No' })
     if (state.condition)           out.push({ key: 'condition',           label: `Condition: ${state.condition === 'used' ? 'Used' : 'New'}` })
     if (state.locationSlug)        out.push({ key: 'locationSlug',        label: `Location: ${labels.location[state.locationSlug] ?? toLabelFromSlug(state.locationSlug)}` })
+    if (state.highlightedLabel)    out.push({ key: 'highlightedLabel',    label: `Tag: ${labels.tag[state.highlightedLabel] ?? state.highlightedLabel}` })
     // Region intentionally omitted from chips
     return out
   })
@@ -369,6 +391,7 @@ export function useInventoryFilters(
       locationSlug: null,
       // Preserve region (required)
       regionSlug: state.regionSlug,
+      highlightedLabel: null,
     } satisfies InventoryFiltersState)
   }
 
@@ -383,6 +406,7 @@ export function useInventoryFilters(
     sizeOptions,
     locationOptions,
     regionOptions,
+    tagOptions,
     chips,
     clearChip,
     reset,

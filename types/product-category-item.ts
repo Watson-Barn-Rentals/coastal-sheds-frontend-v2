@@ -12,6 +12,7 @@ export const ProductCategoryItemSchema = z.object({
   long_description: z.string(),
   override_page_url: z.string().nullable(),
   product_lines: z.array(ProductLineItemSchema),
+  discontinued: z.boolean(),
 }).strict()
 
 export type ProductCategoryItem = z.infer<typeof ProductCategoryItemSchema>

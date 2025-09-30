@@ -359,19 +359,23 @@ const ribbonTextColor = computed<string | null>(() => {
               <div class="flex gap-2">
                 <span>Product:</span>
                 <NuxtLink
+                  v-if="!data.product.discontinued"
                   :to="`/products/${data.product.slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.product.title }}</NuxtLink
                 >
+                <span v-else class="font-bold">{{ data.product.title }} (Discontinued)</span>
               </div>
               <div class="flex gap-2">
                 <span>Product Line:</span>
                 <NuxtLink
+                  v-if="!data.product.product_line_discontinued"
                   :to="`/product-lines/${data.product.product_line_slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.product.product_line_title }}
                   {{ data.product.product_category_title }}</NuxtLink
                 >
+                <span v-else class="font-bold">{{ data.product.product_line_title }} (Discontinued)</span>
               </div>
               <div class="flex gap-2">
                 <span>Location:</span>
@@ -420,7 +424,9 @@ const ribbonTextColor = computed<string | null>(() => {
               :serial-number="inventoryItem.serialNumber"
               :size="inventoryItem.size"
               :product-line-title="inventoryItem.product?.product_line_title"
+              :product-line-discontinued="inventoryItem.product.product_line_discontinued"
               :product-title="inventoryItem.product?.title"
+              :product-discontinued="inventoryItem.product.discontinued"
               :cash-price="inventoryItem.cashPrice"
               :discount-amount="inventoryItem.discountAmount"
               :location-name="inventoryItem.location?.title"

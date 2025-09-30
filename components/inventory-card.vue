@@ -8,7 +8,9 @@ const props = defineProps<{
   serialNumber: string
   size: string
   productLineTitle: string
+  productLineDiscontinued: boolean
   productTitle: string
+  productDiscontinued: boolean
   cashPrice: number
   discountAmount: number | null
   locationName: string
@@ -91,28 +93,28 @@ const ribbonText = computed(() => {
       <p class="text-lg font-bold text-center">{{ size }} {{ productTitle }}</p>
 
       <div class="flex gap-2 text-sm">
-        <span class="font-bold">Product Line:</span>
-        <span>{{ productLineTitle }}</span>
+        <span class="font-bold shrink-0">Product Line:</span>
+        <span>{{ productLineTitle }} <span v-if="productLineDiscontinued">(Discontinued Line)</span></span>
       </div>
 
       <div class="flex gap-2 text-sm">
-        <span class="font-bold">New/Used:</span>
+        <span class="font-bold shrink-0">New/Used:</span>
         <span>{{ usedBuilding ? 'Used' : 'New' }}</span>
       </div>
 
       <div class="flex gap-2 text-sm">
-        <span class="font-bold">Serial #:</span>
+        <span class="font-bold shrink-0">Serial #:</span>
         <span>{{ serialNumber }}</span>
       </div>
 
       <div class="flex gap-2 text-sm">
-        <span class="font-bold">Price:</span>
+        <span class="font-bold shrink-0">Price:</span>
         <span :class="{ 'line-through': discountAmount }">{{ formatPrice(cashPrice) }}</span>
         <span v-if="discountAmount" class="ml-2 text-red-500">{{ formatPrice(cashPrice - discountAmount) }}</span>
       </div>
 
       <div class="flex gap-2 text-sm">
-        <span class="font-bold">Location:</span>
+        <span class="font-bold shrink-0">Location:</span>
         <span>{{ locationName }} ({{ locationCity }}, {{ locationState }})</span>
       </div>
 

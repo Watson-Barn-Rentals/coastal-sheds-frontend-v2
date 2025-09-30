@@ -178,6 +178,7 @@ const {
   sizeOptions,
   locationOptions,
   regionOptions,
+  tagOptions,
   chips,
   clearChip,
   reset,
@@ -347,6 +348,7 @@ const hiddenByFilters = computed(() =>
                   :size-options="sizeOptions"
                   :location-options="locationOptions"
                   :region-options="regionOptions"
+                  :tag-options="tagOptions"
                   :chips="chips"
                   @clear-chip="clearChip"
                   @reset="reset"
@@ -389,7 +391,9 @@ const hiddenByFilters = computed(() =>
               :serial-number="inventoryItem.serialNumber"
               :size="inventoryItem.size"
               :product-line-title="inventoryItem.product?.product_line_title"
+              :product-line-discontinued="inventoryItem.product.product_line_discontinued"
               :product-title="inventoryItem.product?.title"
+              :product-discontinued="inventoryItem.product.discontinued"
               :cash-price="inventoryItem.cashPrice"
               :discount-amount="inventoryItem.discountAmount"
               :location-name="inventoryItem.location?.title"

@@ -14,8 +14,11 @@ export const ProductItemSchema = z.object({
   starting_price: z.string().nullable(),
   product_line_slug: z.string(),
   product_line_title: z.string(),
+  product_line_discontinued: z.boolean(),
   product_category_slug: z.string(),
   product_category_title: z.string(),
+  product_category_discontinued: z.boolean(),
+  discontinued: z.boolean(),
 }).strict()
 
 export type ProductItem = z.infer<typeof ProductItemSchema>
