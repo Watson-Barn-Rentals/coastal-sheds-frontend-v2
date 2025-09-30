@@ -7,10 +7,14 @@ export const getPageData = async (pageUrl: string): Promise<PageData> => {
   const queries = new URLSearchParams()
   if (config.public.previewMode) queries.append('preview', 'true')
 
+  const strippedPageUrl = pageUrl
+    .replace(/[?#].*$/, '')         // remove query params and hash
+    .replace(/(.+?)\/+$/, '$1');    // remove trailing slashes unless it's just "/"
+
   try {
     const { data } = await $fetch<{ data: unknown }>(
       `${config.public.apiRootUrl}/api/get-page${queries.toString() ? `?${queries.toString()}` : ''}`,
-      { method: 'POST', body: { url: pageUrl } }
+      { method: 'POST', body: { url: strippedPageUrl } }
     )
 
     // Assert with error logging
