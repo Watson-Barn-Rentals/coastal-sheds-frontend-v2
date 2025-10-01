@@ -114,17 +114,15 @@ const handleHeaderPhoneCtaClick = () => {
                     @click="toggleMenu"
                 />
             </div>
-            <div class="flex flex-col grow justify-between">
-                <div class="flex flex-col gap-4 p-4 overflow-y-auto">
+                <div class="flex flex-col gap-4 p-4 pb-24 overflow-y-auto">
                     <NavigationSlideoverNavbarItem
                         v-for="(item, index) in data.menu"
                         :key="`slideover-navbar-item-${index}`"
                         :menu-item="item"
                         @close-mobile-menu="toggleMenu"
                     />
+                    <NavigationSlideoverColorModeToggle v-if="data.show_display_mode_toggle" />
                 </div>
-                <NavigationSlideoverColorModeToggle v-if="data.show_display_mode_toggle" class="p-4" />
-            </div>
         </template>
     </USlideover>
 </template>
