@@ -199,28 +199,30 @@ const images = computed<ImageMediaItem[]>(() => {
           />
         </CardGallery>
       </MaxWidthContentWrapper>
-      <div class="flex justify-center gap-10 mx-10 my-20">
-        <NuxtLink to="/products" class="shrink-0">
-          <button
-            class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
-          >
-            <UIcon
-              name="icon-park-outline:back"
-              dynamic
-              class="h-6 w-6 my-auto sm:h-8 sm:w-8 text-white"
-            />
-            <p
-              class="font-title select-none text-white font-semibold text-sm sm:text-base my-auto shrink-0"
+      <div class="flex justify-center flex-col sm:flex-row gap-10 mx-10 my-20">
+        <div class="flex justify-center">
+          <NuxtLink to="/products" class="shrink-0">
+            <button
+              class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
             >
-              Back to All Products
-            </p>
-          </button>
-        </NuxtLink>
+              <UIcon
+                name="icon-park-outline:back"
+                dynamic
+                class="h-6 w-6 my-auto sm:h-8 sm:w-8 text-white"
+              />
+              <p
+                class="font-title select-none text-white font-semibold text-sm sm:text-base my-auto shrink-0"
+              >
+                Back to All Products
+              </p>
+            </button>
+          </NuxtLink>
+        </div>
         <div class="flex flex-col">
           <p class="font-semibold text-center">
             Didn't find what you are looking for?
           </p>
-          <p class="text-sm">
+          <p class="text-sm text-center">
             Explore our other products and services, or give us a call and speak
             to our customer support team!
           </p>
