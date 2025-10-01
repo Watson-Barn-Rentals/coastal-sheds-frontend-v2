@@ -270,6 +270,18 @@ export default defineNuxtConfig({
       fallbackDescription: '',
       pageTitleSiteName: process.env.PAGE_TITLE_SITE_NAME || '',
       siteRootUrl: process.env.SITE_ROOT_URL || '',
+      legalOwnerName:       process.env.NUXT_PUBLIC_LEGAL_OWNER_NAME       || 'Your Business',
+      legalEntityType:      process.env.NUXT_PUBLIC_LEGAL_ENTITY_TYPE      || 'LLC',
+      legalCity:            process.env.NUXT_PUBLIC_LEGAL_CITY             || '',
+      legalState:           process.env.NUXT_PUBLIC_LEGAL_STATE            || '',
+      legalGoverningState:  process.env.NUXT_PUBLIC_LEGAL_GOVERNING_STATE  || process.env.NUXT_PUBLIC_LEGAL_STATE || '',
+      legalVenueLocation:   process.env.NUXT_PUBLIC_LEGAL_VENUE_LOCATION   || '',
+      legalContactEmail:    process.env.NUXT_PUBLIC_LEGAL_CONTACT_EMAIL    || 'legal@example.com',
+      legalContactPhone:    process.env.NUXT_PUBLIC_LEGAL_CONTACT_PHONE    || '',
+      legalOperatorName:    process.env.NUXT_PUBLIC_LEGAL_OPERATOR_NAME    || '', // e.g., "Watson Barn Rentals, LLC"
+      legalRegionNote:      process.env.NUXT_PUBLIC_LEGAL_REGION_NOTE      || 'Our services are intended for customers in the Southeastern United States.',
+      legalEffectiveISO:    process.env.NUXT_PUBLIC_LEGAL_EFFECTIVE_ISO    || '2025-10-01',
+      legalEffectiveHuman:  process.env.NUXT_PUBLIC_LEGAL_EFFECTIVE_HUMAN  || 'October 1, 2025'
     },
   },
 
