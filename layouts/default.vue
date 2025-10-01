@@ -11,6 +11,6 @@
 
 <style>
 #leadbox-iframe {
-  background: transparent !important;
+  background-color: transparent !important;
 }
 </style>
