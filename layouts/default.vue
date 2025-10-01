@@ -8,3 +8,9 @@
       <Footer />
   </UApp>
 </template>
+
+<style>
+#leadbox-iframe {
+  background: transparent !important;
+}
+</style>
