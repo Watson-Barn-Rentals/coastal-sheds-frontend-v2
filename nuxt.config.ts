@@ -140,6 +140,7 @@ export default defineNuxtConfig({
     '~/plugins/vueuse-motion.ts',
     '~/plugins/site-settings.ts',
     '~/plugins/fingerprint.client.ts',
+    '~/plugins/fix-leadferno-background.client.ts',
   ],
 
   hooks: {
