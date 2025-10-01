@@ -7,6 +7,237 @@ import path from 'node:path'
 const isPreviewMode = process.env.PREVIEW_MODE === 'true'
 const staticPageRoutes = new Set<string>()
 
+type SitemapEntryMeta = { lastmod?: string }
+type SitemapBlogPostRecord = { slug?: string; updated_at?: string; published_at?: string }
+type SitemapInventoryRecord = { serialNumber?: string; updated_at?: string }
+type SitemapLocationRecord = { slug?: string; updated_at?: string }
+type SitemapProductRecord = {
+  slug?: string
+  discontinued?: boolean
+  override_page_url?: string | null
+}
+type SitemapProductLineRecord = SitemapProductRecord & {
+  products?: SitemapProductRecord[]
+}
+type SitemapProductCategoryRecord = SitemapProductRecord & {
+  product_lines?: SitemapProductLineRecord[]
+}
+
+const escapeXml = (value: string): string =>
+  value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&apos;')
+
+const toIsoDate = (value?: string | null): string | undefined => {
+  if (!value) return undefined
+  const date = new Date(value)
+  return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
+}
+
+async function buildSitemap({
+  apiRoot,
+  siteRoot,
+  publishDir,
+}: {
+  apiRoot: string
+  siteRoot: string | undefined
+  publishDir: string
+}) {
+  if (!siteRoot) {
+    console.warn('Missing SITE_ROOT_URL; skipping sitemap generation.')
+    return
+  }
+
+  let siteRootUrl: URL
+  try {
+    siteRootUrl = new URL(siteRoot)
+  } catch (err) {
+    console.warn('Invalid SITE_ROOT_URL; skipping sitemap generation.', err)
+    return
+  }
+
+  const rootOrigin = siteRootUrl.origin
+
+  const urls = new Map<string, SitemapEntryMeta>()
+
+  const addPath = (input: string | undefined, meta: SitemapEntryMeta = {}) => {
+    if (!input) return
+
+    let absolute: string | null = null
+
+    try {
+      if (/^https?:\/\//i.test(input)) {
+        const url = new URL(input)
+        if (url.origin !== rootOrigin) return
+        url.hash = ''
+        url.search = ''
+        if (url.pathname !== '/' && url.pathname.endsWith('/')) {
+          url.pathname = url.pathname.replace(/\/+$/, '') || '/'
+        }
+        absolute = url.toString()
+      } else {
+        const normalized = input.startsWith('/') ? input : `/${input}`
+        const url = new URL(normalized, siteRootUrl)
+        url.hash = ''
+        url.search = ''
+        if (url.pathname !== '/' && url.pathname.endsWith('/')) {
+          url.pathname = url.pathname.replace(/\/+$/, '') || '/'
+        }
+        absolute = url.toString()
+      }
+    } catch {
+      return
+    }
+
+    const existing = urls.get(absolute) ?? {}
+    const merged: SitemapEntryMeta = { ...existing }
+    if (meta.lastmod) merged.lastmod = meta.lastmod
+    urls.set(absolute, merged)
+  }
+
+  const registerArray = <T>(collection: unknown, handler: (item: T) => void) => {
+    if (!Array.isArray(collection)) return
+    for (const item of collection as T[]) handler(item)
+  }
+
+  const defaultStaticPaths = [
+    '/',
+    '/blog',
+    '/inventory',
+    '/locations',
+    '/products',
+    '/leave-us-a-review',
+    '/faqs',
+    '/privacy-policy',
+    '/terms-of-use',
+    '/cookies',
+  ]
+
+  defaultStaticPaths.forEach(path => addPath(path))
+  staticPageRoutes.forEach(path => addPath(path))
+
+  try {
+    const res = await fetch(`${apiRoot}/api/get-prerender-page-list`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`get-prerender-page-list ${res.status} ${res.statusText}`)
+    const json = (await res.json()) as { data?: unknown }
+    registerArray<string>(json.data, route => addPath(route))
+  } catch (err) {
+    console.warn('Unable to extend sitemap with CMS pages:', err)
+  }
+
+  try {
+    const res = await fetch(`${apiRoot}/api/list-blog-posts`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`list-blog-posts ${res.status} ${res.statusText}`)
+    const json = (await res.json()) as { data?: SitemapBlogPostRecord[] }
+
+    registerArray<SitemapBlogPostRecord>(json.data, post => {
+      if (!post?.slug) return
+      const lastmod = toIsoDate(post.updated_at ?? post.published_at)
+      addPath(`/blog/${post.slug}`, lastmod ? { lastmod } : {})
+    })
+  } catch (err) {
+    console.warn('Unable to extend sitemap with blog posts:', err)
+  }
+
+  try {
+    const res = await fetch(`${apiRoot}/api/list-inventory`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`list-inventory ${res.status} ${res.statusText}`)
+    const json = (await res.json()) as { data?: SitemapInventoryRecord[] }
+
+    registerArray<SitemapInventoryRecord>(json.data, item => {
+      if (!item?.serialNumber) return
+      const encoded = encodeURIComponent(item.serialNumber)
+      const lastmod = toIsoDate(item.updated_at)
+      addPath(`/inventory/${encoded}`, lastmod ? { lastmod } : {})
+    })
+  } catch (err) {
+    console.warn('Unable to extend sitemap with inventory items:', err)
+  }
+
+  try {
+    const res = await fetch(`${apiRoot}/api/list-locations`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`list-locations ${res.status} ${res.statusText}`)
+    const json = (await res.json()) as { data?: SitemapLocationRecord[] }
+
+    registerArray<SitemapLocationRecord>(json.data, location => {
+      if (!location?.slug) return
+      const lastmod = toIsoDate(location.updated_at)
+      addPath(`/locations/${location.slug}`, lastmod ? { lastmod } : {})
+    })
+  } catch (err) {
+    console.warn('Unable to extend sitemap with locations:', err)
+  }
+
+  try {
+    const res = await fetch(`${apiRoot}/api/list-product-categories`, {
+      headers: { Accept: 'application/json' },
+    })
+    if (!res.ok) throw new Error(`list-product-categories ${res.status} ${res.statusText}`)
+    const json = (await res.json()) as { data?: SitemapProductCategoryRecord[] }
+
+    registerArray<SitemapProductCategoryRecord>(json.data, category => {
+      if (!category?.slug || category.discontinued) return
+
+      if (!category.override_page_url) {
+        addPath(`/product-categories/${category.slug}`)
+      }
+
+      registerArray<SitemapProductLineRecord>(category.product_lines, line => {
+        if (!line?.slug || line.discontinued) return
+
+        if (!line.override_page_url) {
+          addPath(`/product-lines/${line.slug}`)
+        }
+
+        registerArray<SitemapProductRecord>(line.products, product => {
+          if (!product?.slug || product.discontinued) return
+          if (product.override_page_url) return
+          addPath(`/products/${product.slug}`)
+        })
+      })
+    })
+  } catch (err) {
+    console.warn('Unable to extend sitemap with product catalog data:', err)
+  }
+
+  const entries = Array.from(urls.entries()).sort(([a], [b]) => a.localeCompare(b))
+
+  if (!entries.length) {
+    console.warn('Sitemap generation produced no entries; skipping file emit.')
+    return
+  }
+
+  const chunks: string[] = []
+  chunks.push('<?xml version="1.0" encoding="UTF-8"?>')
+  chunks.push('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
+
+  for (const [loc, meta] of entries) {
+    chunks.push('  <url>')
+    chunks.push(`    <loc>${escapeXml(loc)}</loc>`)
+    if (meta.lastmod) {
+      chunks.push(`    <lastmod>${meta.lastmod}</lastmod>`)
+    }
+    chunks.push('  </url>')
+  }
+
+  chunks.push('</urlset>')
+
+  const sitemapPath = path.join(publishDir, 'sitemap.xml')
+  fs.writeFileSync(sitemapPath, chunks.join('\n'), 'utf8')
+  console.log(`Wrote sitemap with ${entries.length} URLs to ${sitemapPath}`)
+}
+
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
   ssr: !isPreviewMode,
@@ -33,7 +264,10 @@ export default defineNuxtConfig({
       const res = await fetch(`${apiRoot}/api/get-prerender-page-list`)
       if (!res.ok) throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`)
       const { data: pageList } = (await res.json()) as { data: string[] }
-      pageList.forEach(route => ctx.routes.add(route))
+      pageList.forEach((route) => {
+        ctx.routes.add(route)
+        staticPageRoutes.add(route)
+      })
     },
 
     // Emit _redirects and a hidden forms-detection HTML (no file inputs)
@@ -131,6 +365,13 @@ export default defineNuxtConfig({
           console.log(`Wrote Netlify detection file: ${detectionPath}`)
         } catch (e) {
           console.warn('Skipping _netlify-forms.html generation:', e)
+        }
+
+        /* 3) Build sitemap.xml from CMS data */
+        try {
+          await buildSitemap({ apiRoot, siteRoot: process.env.SITE_ROOT_URL, publishDir })
+        } catch (err) {
+          console.error('Failed to build sitemap.xml:', err)
         }
       })
     },
