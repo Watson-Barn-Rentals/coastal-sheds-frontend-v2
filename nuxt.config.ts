@@ -301,9 +301,9 @@ export default defineNuxtConfig({
 
   scripts: {
     registry: {
-      googleAnalytics: { id: 'G-L2JCGM5R9C' },
-      metaPixel: { id: 'YOUR_ID' },
-      hotjar: { id: 6439262 },
+      googleAnalytics: { id: process.env.GOOGLE_ANALYTICS_ID || 'G-XXXXXXX' },
+      metaPixel: { id: process.env.META_PIXEL_ID || 'YOUR_ID' },
+      hotjar: { id: Number(process.env.HOTJAR_ID) || Number('0000000') },
     },
   },
 
