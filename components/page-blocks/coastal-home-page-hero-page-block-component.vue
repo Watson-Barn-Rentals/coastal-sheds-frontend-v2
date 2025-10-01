@@ -1,9 +1,18 @@
 <script setup lang="ts">
+import { submitTrackingEvent } from '~/services/submit-tracking-event';
 import type { CoastalHomePageHeroBlockData } from '~/types/page-blocks/coastal-home-page-hero';
 
 const props = defineProps<{
   data: CoastalHomePageHeroBlockData;
 }>();
+
+const handleExploreStylesClick = () => {
+  submitTrackingEvent('coastal-home-hero-explore-styles-click');
+};
+
+const handleBrowseInventoryClick = () => {
+  submitTrackingEvent('coastal-home-hero-browse-inventory-click');
+};
 </script>
 
 <template>
@@ -56,6 +65,7 @@ const props = defineProps<{
             <NuxtLink to="/products">
               <button
                 class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
+                @click="handleExploreStylesClick"
               >
                 <UIcon
                   name="f7:hammer-fill"
@@ -72,6 +82,7 @@ const props = defineProps<{
             <NuxtLink to="/inventory">
               <button
                 class="flex gap-2 p-3 rounded-lg bg-accent text-slate-800 shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
+                @click="handleBrowseInventoryClick"
               >
                 <p
                   class="font-title select-none font-semibold text-sm sm:text-base my-auto"

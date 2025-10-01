@@ -2,6 +2,7 @@
 import { getHeaderSettings } from '~/services/api/get-header-settings'
 import HomeNavbarItem from './navigation/home-navbar-item.vue'
 import type { HeaderSettings } from '~/types/header-settings'
+import { submitTrackingEvent } from '~/services/submit-tracking-event'
 
 const isMenuOpen = ref(false)
 
@@ -13,6 +14,10 @@ const { data } = await useAsyncData<HeaderSettings>(
   'header-settings',
   () => getHeaderSettings()
 )
+
+const handleHeaderPhoneCtaClick = () => {
+    submitTrackingEvent('header-phone-cta-click')
+}
 
 </script>
 
@@ -48,6 +53,7 @@ const { data } = await useAsyncData<HeaderSettings>(
                             v-if="data.show_phone_call_to_action"
                             :to="`tel:${data.phone_call_to_action_phone_number}`"
                             class="bg-brand rounded-full flex flex-col items-center justify-center px-4 md:px-6 py-1 relative"
+                            @click="handleHeaderPhoneCtaClick"
                         >
                             <span class="text-white text-nowrap text-xs lg:text-sm">{{ data.phone_call_to_action_label }}</span>
                             <span class="text-nowrap font-bold text-white text-xs lg:text-sm" >{{ data.phone_call_to_action_phone_number.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') }}</span>
