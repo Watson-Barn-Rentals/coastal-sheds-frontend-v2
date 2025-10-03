@@ -150,7 +150,7 @@ const flip = (newIndex: number, direction: 'left' | 'right') => {
             </div>
             <p class="text-xs line-clamp-3 mb-2">{{ t.text }}</p>
             <div class="mt-auto text-xs">
-              <span>{{ t.authorsName }}</span><span class="mx-1">·</span
+              <span>{{ t.authorsName }}</span><span v-if="t.date" class="mx-1">·</span
               ><span v-if="t.date">{{ new Date(t.date).toLocaleDateString() }}</span>
             </div>
           </div>
