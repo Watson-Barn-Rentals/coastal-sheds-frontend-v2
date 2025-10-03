@@ -5,7 +5,7 @@ export const TESTIMONIALS_SECTION_BLOCK_TYPE = 'testimonials-section' as const
 // Single testimonial
 export const TestimonialSchema = z.object({
   authorsName: z.string(),
-  date: z.string().optional(),
+  date: z.string().nullable().optional(),
   text: z.string(),
   source: z.string(),
   starRating: z.string(), // e.g., 0–5; add .min(0).max(5) if you want bounds

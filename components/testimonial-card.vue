@@ -34,7 +34,7 @@ defineEmits([
                 v-for="n in 5"
                 :key="n"
                 class="h-5 w-5"
-                :class="n <= testimonial.starRating ? 'text-yellow-400' : 'text-gray-300'"
+                :class="n <= Number(testimonial.starRating) ? 'text-yellow-400' : 'text-gray-300'"
                 fill="currentColor"
                 viewBox="0 0 20 20"
               >

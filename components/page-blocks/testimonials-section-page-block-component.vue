@@ -130,7 +130,7 @@ const flip = (newIndex: number, direction: 'left' | 'right') => {
                   v-for="n in 5"
                   :key="n"
                   class="h-4 w-4"
-                  :class="n <= t.starRating ? 'text-yellow-400' : 'text-gray-300'"
+                  :class="n <= Number(t.starRating) ? 'text-yellow-400' : 'text-gray-300'"
                   fill="currentColor"
                   viewBox="0 0 20 20"
                 >
