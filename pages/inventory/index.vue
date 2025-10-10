@@ -363,6 +363,7 @@ const hiddenByFilters = computed(() =>
               <UiSelect
                 v-model="sortMode"
                 :options="[
+                  { value: 'default', label: 'Default Order' },
                   { value: 'price-ascending', label: 'Price (low → high)' },
                   { value: 'price-descending', label: 'Price (high → low)' },
                   { value: 'product-name', label: 'Product (A → Z)' },
