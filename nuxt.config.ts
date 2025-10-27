@@ -149,127 +149,121 @@ export default defineNuxtConfig({
 		'~/plugins/fix-leadferno-background.client.ts',
 	],
 
-	hooks: {
-		'prerender:routes': async (ctx) => {
-			if (isPreviewMode) return
-			const apiRoot = process.env.API_ROOT_URL
-			if (!apiRoot) throw new Error('Missing API_ROOT_URL')
+hooks: {
+	'prerender:routes': async (ctx) => {
+		if (isPreviewMode) return
+		const apiRoot = process.env.API_ROOT_URL
+		if (!apiRoot) throw new Error('Missing API_ROOT_URL')
 
-			const res = await fetch(`${apiRoot}/api/get-prerender-page-list`)
-			if (!res.ok) throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`)
-			const { data: pageList } = (await res.json()) as { data: string[] }
-			pageList.forEach(route => ctx.routes.add(route))
-		},
-
-		// Emit _redirects and a hidden forms-detection HTML (no file inputs)
-		'nitro:init': (nitro) => {
-			nitro.hooks.hook('compiled', async () => {
-				if (isPreviewMode) {
-          console.log('Preview mode active; skipping _redirects, forms registration, and sitemap generation.')
-          return
-        }
-
-				const apiRoot = process.env.API_ROOT_URL
-				if (!apiRoot) {
-					console.warn('Missing API_ROOT_URL; skipping _redirects, forms registration, and sitemap generation.')
-					return
-				}
-
-				const publishDir = nitro.options.output.publicDir
-
-				/* 1) Build Netlify `_redirects` from CMS */
-				try {
-					const res = await fetch(`${apiRoot}/api/redirects`, { headers: { Accept: 'application/json' } })
-					if (!res.ok) throw new Error(`Failed to fetch redirects: ${res.status} ${res.statusText}`)
-
-					const json = (await res.json()) as {
-						data: Array<{ from: string; to: string; status?: number | string; force?: boolean; enabled?: boolean }>
-					}
-
-					const lines: string[] = []
-
-					lines.push('/_netlify-forms.html  /_netlify-forms.html  200!') // force static
-
-					for (const r of json.data ?? []) {
-						if (r.enabled === false) continue
-						const status = String(r.status ?? '301')
-						const bang = r.force ? '!' : ''
-						lines.push(`${r.from}  ${r.to}  ${status}${bang}`)
-					}
-
-					const redirectsPath = path.join(publishDir, '_redirects')
-					const baselinePath  = path.join(process.cwd(), 'public', '_redirects')
-					let baseline = ''
-					if (fs.existsSync(baselinePath)) baseline = fs.readFileSync(baselinePath, 'utf8').trim()
-
-					const dynamicRules = lines.join('\n').trim()
-					const final = [baseline, dynamicRules].filter(Boolean).join('\n') + '\n'
-					fs.writeFileSync(redirectsPath, final, 'utf8')
-					console.log(`Wrote ${lines.length} redirect rules to ${redirectsPath}`)
-				} catch (err) {
-					console.error('Failed to build _redirects from CMS:', err)
-				}
-
-				/* 2) Generate Netlify Forms registration (no file inputs) */
-				try {
-					const res = await fetch(`${apiRoot}/api/list-forms`, { headers: { Accept: 'application/json' } })
-					if (!res.ok) throw new Error(`list-forms ${res.status} ${res.statusText}`)
-					const { data } = await res.json() as {
-						data: Array<{ netlifyName: string; fields: Array<{ key: string; type: string; options?: Array<{ value: string; label: string }> }> }>
-					}
-
-					const chunks: string[] = []
-					chunks.push(
-						'<!doctype html><html><head><meta charset="utf-8"><title>Netlify Forms Detection</title></head><body style="display:none;">'
-					)
-
-					for (const form of data ?? []) {
-						chunks.push(
-							`<form name="${form.netlifyName}" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" netlify>`
-						)
-						// form-name helps both bots and JS-only submissions
-						chunks.push(`<input type="hidden" name="form-name" value="${form.netlifyName}" />`)
-						// honeypot field Netlify expects (will be ignored if left empty)
-						chunks.push(`<input type="text" name="bot-field" />`)
-
-						for (const f of form.fields ?? []) {
-						 const t = String(f.type || '').toLowerCase()
-						 if (t === 'hidden') {
-							 chunks.push(`<input type="hidden" name="${f.key}" value="">`)
-						 } else if (t === 'checkbox' && (f.options?.length ?? 0) > 0) {
-							 chunks.push(`<input type="checkbox" name="${f.key}[]" value="${f.options![0].value}">`)
-						 } else if (t === 'radio' && (f.options?.length ?? 0) > 0) {
-							 chunks.push(`<input type="radio" name="${f.key}" value="${f.options![0].value}">`)
-						 } else if (t === 'select') {
-							 const opt = f.options?.[0]?.value ?? ''
-							 chunks.push(`<select name="${f.key}"><option value="${opt}">${opt}</option></select>`)
-						 } else {
-							 // text/email/tel/url/password/textarea -> just give Netlify a simple input
-							 chunks.push(`<input type="text" name="${f.key}" value="">`)
-						 }
-						}
-
-						chunks.push('</form>')
-					}
-
-					chunks.push('</body></html>')
-
-					const detectionPath = path.join(publishDir, '_netlify-forms.html')
-					fs.writeFileSync(detectionPath, chunks.join('\n'), 'utf8')
-					console.log(`Wrote Netlify detection file: ${detectionPath}`)
-				} catch (e) {
-					console.warn('Skipping _netlify-forms.html generation:', e)
-				}
-
-				/* 3) Build sitemap.xml from CMS data */
-				try {
-					await buildSitemap({ apiRoot, siteRoot: process.env.SITE_ROOT_URL, publishDir })
-				} catch (err) {
-					console.error('Failed to build sitemap.xml:', err)
-				}
-			})
-		},
+		const res = await fetch(`${apiRoot}/api/get-prerender-page-list`)
+		if (!res.ok) throw new Error(`Failed to fetch page list: ${res.status} ${res.statusText}`)
+		const { data: pageList } = (await res.json()) as { data: string[] }
+		pageList.forEach(route => ctx.routes.add(route))
 	},
+
+	/**
+	 * Runs after Nitro builds public assets (typed hook).
+	 * Safe place to write _redirects, _netlify-forms.html, and sitemap.xml.
+	 */
+	'nitro:build:public-assets': async (nitro) => {
+		if (isPreviewMode) {
+			console.log('Preview mode active; skipping _redirects, forms registration, and sitemap generation.')
+			return
+		}
+
+		const apiRoot = process.env.API_ROOT_URL
+		if (!apiRoot) {
+			console.warn('Missing API_ROOT_URL; skipping _redirects, forms registration, and sitemap generation.')
+			return
+		}
+
+		const publishDir = nitro.options.output.publicDir
+
+		/* 1) Build Netlify `_redirects` from CMS */
+		try {
+			const res = await fetch(`${apiRoot}/api/redirects`, { headers: { Accept: 'application/json' } })
+			if (!res.ok) throw new Error(`Failed to fetch redirects: ${res.status} ${res.statusText}`)
+
+			const json = (await res.json()) as {
+				data: Array<{ from: string; to: string; status?: number | string; force?: boolean; enabled?: boolean }>
+			}
+
+			const lines: string[] = []
+			lines.push('/_netlify-forms.html  /_netlify-forms.html  200!') // force static
+
+			for (const r of json.data ?? []) {
+				if (r.enabled === false) continue
+				const status = String(r.status ?? '301')
+				const bang = r.force ? '!' : ''
+				lines.push(`${r.from}  ${r.to}  ${status}${bang}`)
+			}
+
+			const redirectsPath = path.join(publishDir, '_redirects')
+			const baselinePath  = path.join(process.cwd(), 'public', '_redirects')
+			let baseline = ''
+			if (fs.existsSync(baselinePath)) baseline = fs.readFileSync(baselinePath, 'utf8').trim()
+
+			const dynamicRules = lines.join('\n').trim()
+			const final = [baseline, dynamicRules].filter(Boolean).join('\n') + '\n'
+			fs.writeFileSync(redirectsPath, final, 'utf8')
+			console.log(`Wrote ${lines.length} redirect rules to ${redirectsPath}`)
+		} catch (err) {
+			console.error('Failed to build _redirects from CMS:', err)
+		}
+
+		/* 2) Generate Netlify Forms registration (no file inputs) */
+		try {
+			const res = await fetch(`${apiRoot}/api/list-forms`, { headers: { Accept: 'application/json' } })
+			if (!res.ok) throw new Error(`list-forms ${res.status} ${res.statusText}`)
+			const { data } = await res.json() as {
+				data: Array<{ netlifyName: string; fields: Array<{ key: string; type: string; options?: Array<{ value: string; label: string }> }> }>
+			}
+
+			const chunks: string[] = []
+			chunks.push('<!doctype html><html><head><meta charset="utf-8"><title>Netlify Forms Detection</title></head><body style="display:none;">')
+
+			for (const form of data ?? []) {
+				chunks.push(`<form name="${form.netlifyName}" method="POST" data-netlify="true" data-netlify-honeypot="bot-field" netlify>`)
+				chunks.push(`<input type="hidden" name="form-name" value="${form.netlifyName}" />`)
+				chunks.push(`<input type="text" name="bot-field" />`)
+
+				for (const f of form.fields ?? []) {
+					const t = String(f.type || '').toLowerCase()
+					if (t === 'hidden') {
+						chunks.push(`<input type="hidden" name="${f.key}" value="">`)
+					} else if (t === 'checkbox' && (f.options?.length ?? 0) > 0) {
+						chunks.push(`<input type="checkbox" name="${f.key}[]" value="${f.options![0].value}">`)
+					} else if (t === 'radio' && (f.options?.length ?? 0) > 0) {
+						chunks.push(`<input type="radio" name="${f.key}" value="${f.options![0].value}">`)
+					} else if (t === 'select') {
+						const opt = f.options?.[0]?.value ?? ''
+						chunks.push(`<select name="${f.key}"><option value="${opt}">${opt}</option></select>`)
+					} else {
+						chunks.push(`<input type="text" name="${f.key}" value="">`)
+					}
+				}
+
+				chunks.push('</form>')
+			}
+
+			chunks.push('</body></html>')
+
+			const detectionPath = path.join(publishDir, '_netlify-forms.html')
+			fs.writeFileSync(detectionPath, chunks.join('\n'), 'utf8')
+			console.log(`Wrote Netlify detection file: ${detectionPath}`)
+		} catch (e) {
+			console.warn('Skipping _netlify-forms.html generation:', e)
+		}
+
+		/* 3) Build sitemap.xml from CMS data */
+		try {
+			await buildSitemap({ apiRoot, siteRoot: process.env.SITE_ROOT_URL, publishDir })
+		} catch (err) {
+			console.error('Failed to build sitemap.xml:', err)
+		}
+	},
+},
+
 
 	runtimeConfig: {
 		public: {
