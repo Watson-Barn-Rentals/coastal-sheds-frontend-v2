@@ -22,7 +22,7 @@ const ogImageUrl = computed(() => absolutize(representative.value?.heroImage?.or
 const ogImageAlt = computed(() => representative.value?.title || "Products")
 
 // Canonical
-const canonicalUrl = computed(() => `${config.public.siteRootUrl}/products`)
+const canonicalUrl = computed(() => `${config.public.siteRootUrl}/products/`)
 
 // Preconnect/dns-prefetch to the image origins of the first few cards
 const imageOrigins = computed(() => {

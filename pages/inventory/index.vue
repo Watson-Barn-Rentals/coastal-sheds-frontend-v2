@@ -34,7 +34,7 @@ const {
 /* ---------------- SEO: canonical, description, OG/Twitter ---------------- */
 
 const canonicalUrl = computed(
-  () => `${config.public.siteRootUrl}/inventory`
+  () => `${config.public.siteRootUrl}/inventory/`
 );
 
 // Short, keyword-rich description for a listing page

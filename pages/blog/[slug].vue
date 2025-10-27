@@ -10,8 +10,9 @@ const slug = computed(() => route.params.slug as string);
 definePageMeta({ layout: "default", key: (r) => r.fullPath });
 
 const canonicalUrl = computed(
-  () => `${config.public.siteRootUrl}/blog/${slug.value}`
+  () => `${config.public.siteRootUrl}/blog/${slug.value}/`
 );
+
 useHead({
   link: [{ rel: "canonical", href: canonicalUrl.value }],
 });

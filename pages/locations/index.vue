@@ -219,7 +219,7 @@ const handleFindNearestClick = async () => {
 };
 
 const canonicalUrl = computed(
-  () => `${config.public.siteRootUrl}/locations`
+  () => `${config.public.siteRootUrl}/locations/`
 );
 const siteRoot = config.public.siteRootUrl
 

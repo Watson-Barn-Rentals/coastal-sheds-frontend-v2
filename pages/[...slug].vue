@@ -15,9 +15,38 @@ const { data, pending, error, refresh } = await useAsyncData(
 
 /** Prefer the CMS path (avoids duplicate URLs if someone hits /about?ref=…) */
 const canonicalUrl = computed(() => {
-  const path = (data.value?.url || route.path) || '/'
-  return new URL(path, config.public.siteRootUrl).toString()
+	const siteRoot = config.public.siteRootUrl
+	const rawPath = (data.value?.url || route.path) || '/'
+
+	// Normalize internal path and ensure trailing slash
+	const toTrailing = (url?: string | null): string => {
+		if (!url) return '/'
+		if (/^(https?:|mailto:|tel:|#)/i.test(url)) return url
+
+		let base = url.startsWith('/') ? url : `/${url}`
+
+		// Separate query/hash for preservation
+		const qIndex = base.indexOf('?')
+		const hIndex = base.indexOf('#')
+		const cut = [qIndex, hIndex].filter(i => i !== -1).sort((a, b) => a - b)[0] ?? base.length
+
+		const path = base.slice(0, cut).replace(/\/+/g, '/')
+		const tail = base.slice(cut)
+
+		const withSlash = path !== '/' && !path.endsWith('/') ? `${path}/` : path
+		return withSlash + tail
+	}
+
+	const normalizedPath = toTrailing(rawPath)
+
+	try {
+		return new URL(normalizedPath, siteRoot).toString()
+	} catch {
+		// fallback to root if siteRoot is malformed
+		return `${siteRoot.replace(/\/+$/, '')}/`
+	}
 })
+
 
 /** Sitewide fallback OG image */
 const fallbackOgImage = computed(
