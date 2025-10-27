@@ -24,7 +24,7 @@ const canonicalUrl = computed(
   () =>
     `${config.public.siteRootUrl}/inventory/${encodeURIComponent(
       serialNumber.value
-    )}`
+    )}/`
 );
 
 function absolutize(url?: string) {
