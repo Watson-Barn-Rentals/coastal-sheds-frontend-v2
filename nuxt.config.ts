@@ -164,11 +164,14 @@ export default defineNuxtConfig({
 		// Emit _redirects and a hidden forms-detection HTML (no file inputs)
 		'nitro:init': (nitro) => {
 			nitro.hooks.hook('compiled', async () => {
-				if (isPreviewMode) return
+				if (isPreviewMode) {
+          console.log('Preview mode active; skipping _redirects, forms registration, and sitemap generation.')
+          return
+        }
 
 				const apiRoot = process.env.API_ROOT_URL
 				if (!apiRoot) {
-					console.warn('Missing API_ROOT_URL; skipping _redirects & forms registration.')
+					console.warn('Missing API_ROOT_URL; skipping _redirects, forms registration, and sitemap generation.')
 					return
 				}
 
