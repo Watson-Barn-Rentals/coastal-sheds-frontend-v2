@@ -102,7 +102,7 @@ useSchemaOrg(() => {
       '@type': 'ListItem',
       position: idx + 1,
       item: {
-        '@type': 'Product',
+        '@type': 'Thing',
         name: pl.title,
         description: pl.short_description,
         url,
