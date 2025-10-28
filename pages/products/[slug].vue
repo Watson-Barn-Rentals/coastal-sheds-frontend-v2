@@ -21,7 +21,7 @@ const { data, pending, error, refresh } = await useAsyncData<ProductItem>(
 );
 
 const canonicalUrl = computed(
-  () => `${config.public.siteRootUrl}/products/${slug.value}`
+  () => `${config.public.siteRootUrl}/products/${slug.value}/`
 );
 
 // Hero helpers

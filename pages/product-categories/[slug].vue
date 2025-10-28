@@ -21,7 +21,7 @@ const { data, pending, error, refresh } =
   );
 
 const canonicalUrl = computed(
-  () => `${config.public.siteRootUrl}/product-categories/${slug.value}`
+  () => `${config.public.siteRootUrl}/product-categories/${slug.value}/`
 );
 
 // Convenient hero getters
