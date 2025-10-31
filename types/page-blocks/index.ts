@@ -10,6 +10,12 @@ import {
 } from './coastal-home-page-hero'
 
 import {
+  assertWatsonHomePageHeroBlock,
+  WATSON_HOME_PAGE_HERO_BLOCK_TYPE,
+  type WatsonHomePageHeroBlock,
+} from './watson-home-page-hero'
+
+import {
   assertParagraphWithAccentImageBlock,
   PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE,
   type ParagraphWithAccentImageBlock,
@@ -45,6 +51,7 @@ import HighlightedBlogPostsBlockComponent from '~/components/page-blocks/highlig
 
 import { assertHighlightedFaqsBlock, HIGHLIGHTED_FAQS_BLOCK_TYPE, type HighlightedFaqsBlock } from './highlighted-faqs'
 import HighlightedFaqsBlockComponent from '~/components/page-blocks/highlighted-faqs-block-component.vue'
+import WatsonHomePageHeroPageBlockComponent from '~/components/page-blocks/watson-home-page-hero-page-block-component.vue'
 
 /**
  * 1) Mapping object: block “type” → assert-guard + component
@@ -58,6 +65,11 @@ export const blockMap = {
   [COASTAL_HOME_PAGE_HERO_BLOCK_TYPE]: {
     guard: assertCoastalHomePageHeroBlock,
     component: CoastalHomePageHeroPageBlockComponent,
+  },
+
+  [WATSON_HOME_PAGE_HERO_BLOCK_TYPE]: {
+    guard: assertWatsonHomePageHeroBlock,
+    component: WatsonHomePageHeroPageBlockComponent,
   },
 
   [PARAGRAPH_WITH_ACCENT_IMAGE_BLOCK_TYPE]: {
@@ -96,6 +108,7 @@ export const blockMap = {
  */
 export type PageBlock =
   | CoastalHomePageHeroBlock
+  | WatsonHomePageHeroBlock
   | ParagraphWithAccentImageBlock
   | InfiniteImageCarouselBlock
   | TestimonialsSectionBlock

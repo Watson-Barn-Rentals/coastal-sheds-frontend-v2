@@ -16,6 +16,6 @@
   --color-hovered-link:          #1c398e;
 
   /* Fonts */
-  --font-title: "Segoe UI", sans-serif;
-  --font-body:  "Quicksand", sans-serif;
+  --font-title: serif;
+  --font-body:  sans-serif;
 }

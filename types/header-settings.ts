@@ -39,6 +39,7 @@ export const HeaderSettingsSchema = z.object({
   phone_call_to_action_label: z.string(),
   phone_call_to_action_phone_number: z.string(),
   show_display_mode_toggle: z.boolean(),
+  header_preset: z.enum(['floating-rounded', 'standard-full-width']),
   menu: z.array(MenuItemSchema),
 }).strict()
 

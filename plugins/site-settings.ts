@@ -35,7 +35,9 @@ export default defineNuxtPlugin(async (nuxtApp) => {
   --color-accent:${theme.color_accent};
   --color-secondary-accent:${theme.color_secondary_accent};
   --color-background:${theme.color_background};
+  --color-background-dark:${theme.color_background_dark};
   --color-background-accent:${theme.color_background_accent};
+  --color-background-accent-dark:${theme.color_background_accent_dark};
   --color-hovered-link:${theme.color_hovered_link};
 
   --font-title:${theme.font_title};
