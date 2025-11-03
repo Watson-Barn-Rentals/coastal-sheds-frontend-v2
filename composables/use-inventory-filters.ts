@@ -310,12 +310,33 @@ const sorted = computed<InventoryItem[]>(() => {
         (a.product?.title ?? '').localeCompare(b.product?.title ?? '') ||
         (a.serialNumber ?? '').localeCompare(b.serialNumber ?? '')
       )
-    case 'size-ascending':
-      // ... (unchanged)
-    case 'size-descending':
-      // ... (unchanged)
-    case 'distance-from-user':
-      // ... (unchanged)
+      case 'size-ascending':
+        return base.sort((a, b) => {
+          const aa = parseSizeToArea(a.size), bb = parseSizeToArea(b.size)
+          if (Number.isNaN(aa) && Number.isNaN(bb)) return (a.size ?? '').localeCompare(b.size ?? '')
+          if (Number.isNaN(aa)) return 1
+          if (Number.isNaN(bb)) return -1
+          return aa - bb
+        })
+      case 'size-descending':
+        return base.sort((a, b) => {
+          const aa = parseSizeToArea(a.size), bb = parseSizeToArea(b.size)
+          if (Number.isNaN(aa) && Number.isNaN(bb)) return (b.size ?? '').localeCompare(a.size ?? '')
+          if (Number.isNaN(aa)) return 1
+          if (Number.isNaN(bb)) return -1
+          return bb - aa
+        })
+      case 'distance-from-user': {
+        const metersBySlug = opts?.distanceMetersByLocationSlug?.value ?? {}
+        return base.sort((a, b) => {
+          const da = metersBySlug[a.location?.slug ?? '']
+          const db = metersBySlug[b.location?.slug ?? '']
+          if (da == null && db == null) return 0
+          if (da == null) return 1
+          if (db == null) return -1
+          return da - db
+        })
+      }
     default:
       return base
   }
