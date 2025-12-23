@@ -8,11 +8,6 @@ defineProps<{
 </script>
 
 <template>
-   <Heading 
-      text="Frequently Asked Questions" 
-      heading-level="h2"
-      text-alignment="center"
-    />
     <MaxWidthContentWrapper>
       <FaqAccordion 
         :data="data.faqs" 

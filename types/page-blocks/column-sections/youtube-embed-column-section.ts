@@ -8,6 +8,7 @@ export const YoutubeEmbedColumnSectionDataSchema = z.object({
   marginBottom: z.string(),
   marginLeft: z.string(),
   marginRight: z.string(),
+  aspectRatio: z.string(),
   trackingEventName: z.string(),
 }).strict()
 
