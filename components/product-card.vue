@@ -1,18 +1,24 @@
 <script setup lang="ts">
 import type { ImageMediaItem } from '~/types/image-media-item'
 
-defineProps<{
-  heroImage: ImageMediaItem
-  title: string
-  description: string
-  link: string
-  startingPrice?: string
-  designerLink?: string
-  showStartingPrice?: boolean
-  show3dDesignLink?: boolean
-  clickable?: boolean
-}>()
+withDefaults(
+	defineProps<{
+		heroImage: ImageMediaItem
+		title: string
+		description: string
+		link: string
+		startingPrice?: string
+		designerLink?: string
+		showStartingPrice?: boolean
+		show3dDesignLink?: boolean
+		clickable?: boolean
+	}>(),
+	{
+		clickable: true,
+	}
+)
 </script>
+
 
 <template>
     <div 
