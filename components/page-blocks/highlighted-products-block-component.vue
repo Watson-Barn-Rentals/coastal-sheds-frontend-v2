@@ -21,6 +21,7 @@ defineProps<{
             :startingPrice="product.starting_price ?? undefined"
             :show3dDesignLink="data.show3dDesignLink"
             :designerLink="product.designer_link ?? undefined"
+            :clickable="data.clickableCards"
             :link="
               product.override_page_url
                 ? product.override_page_url
