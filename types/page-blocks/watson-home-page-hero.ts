@@ -12,22 +12,9 @@ export const SlideSchema = z.object({
   slideDurationSeconds: z.number().min(1),
 }).strict()
 
-export const ButtonDataSchema = z.object({
-  destination: z.string(), // keep as string since it may be a route, not a full URL
-  label: z.string(),
-  iconPresets: z.enum(['custom-icon', 'animated-right-side-arrow']),
-  iconName: z.string().nullable(),
-  customIconStyling: CustomCssStylingSchema,
-  buttonStyling: z.string(),
-  trackingEventName: z.string(),
-}).strict()
-export type LinkButtonData = z.infer<typeof ButtonDataSchema>
-
 export const WatsonHomePageHeroBlockDataSchema = z.object({
   slides: z.array(SlideSchema),
   titleLetterSpeedMilliseconds: z.number().min(0),
-  buttonSpacing: z.enum(['center', 'space-between', 'space-around']),
-  buttons: z.array(ButtonDataSchema),
 }).strict()
 
 export type WatsonHomePageHeroBlockData = z.infer<typeof WatsonHomePageHeroBlockDataSchema>

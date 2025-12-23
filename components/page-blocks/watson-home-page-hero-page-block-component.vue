@@ -188,18 +188,18 @@ watch(slides, (arr) => {
               'absolute leading-none font-[800] font-[TimesNewRoman] text-[#006595] shrink-0',
               'bottom-[0.25rem] sm:bottom-[0.5rem] lg:bottom-[1rem]',
               'left-[8rem] sm:left-[11.5rem] md:left-[13rem] lg:left-[18.5rem] xl:left-[19rem]', // atson pos
-              'text-[3.25rem] md:text-[4rem] lg:text-[6rem] xl:text-[7rem]'                     // atson size
+              'text-[3.25rem] md:text-[4rem] lg:text-[5.25rem] xl:text-[7rem]'                     // atson size
             ]"
           >atson</span>
 
           <!-- Typed title (desktop) -->
           <span 
             :class="[
-              'hidden sm:block',
+              'hidden sm:block text-nowrap',
               'absolute leading-none font-[800] font-[TimesNewRoman] text-[#006595] shrink-0',
               'bottom-[0.25rem] sm:bottom-[0.5rem] lg:bottom-[1rem]',
-              'left-[19.5rem] md:left-[23rem] lg:left-[33.25rem] xl:left-[37rem]', // title pos
-              'text-[3rem] md:text-[4rem] lg:text-[6rem] xl:text-[7rem]',          // title size
+              'left-[19.5rem] md:left-[23rem] lg:left-[31.5rem] xl:left-[37rem]', // title pos
+              'text-[3rem] md:text-[4rem] lg:text-[5.25rem] xl:text-[7rem]',          // title size
               'typewriter-cursor'
             ]"
           >{{ displayedTitle }}</span>
