@@ -14,6 +14,10 @@ const props = defineProps<{
 const handleClick = (trackingEventName: string) => {
   submitTrackingEvent(trackingEventName);
 };
+
+const colorMode = useColorMode()
+
+const isDark = computed(() => colorMode.value === 'dark')
 </script>
 
 <template>
@@ -30,13 +34,17 @@ const handleClick = (trackingEventName: string) => {
     >
       <NuxtLink :to="button.destination">
         <button 
-          :class="twMerge('flex gap-2 p-3 rounded-lg shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer', button.buttonStyling)"
+          class="flex gap-2 p-3 rounded-lg shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
+          :style="{
+            backgroundColor: isDark ? button.darkModeButtonColor : button.buttonColor,
+            color: isDark ? button.darkModeTextColor : button.textColor
+          }"
           @click="handleClick(button.trackingEventName)"
         >
           <UIcon
             v-if="button.iconPresets === 'custom-icon'"
             :name="button.iconName ?? ''"
-            :class="twMerge('h-6 w-6 my-auto sm:h-8 sm:w-8', button.customIconStyling.classNames.join(' '))"
+            class="h-6 w-6 my-auto sm:h-8 sm:w-8"
           />
           <p
             class="font-title select-none font-semibold text-sm sm:text-base my-auto shrink-0"

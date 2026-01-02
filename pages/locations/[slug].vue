@@ -224,14 +224,12 @@ useSchemaOrg(() => {
             :src="data.googleMapsEmbedUrl"
             class="w-full aspect-[1/1] sm:aspect-[2/1] lg:aspect-[3/1]"
           />
-          <div class="flex flex-col md:flex-row gap-8">
+          <div class="">
             <ResponsiveImage
               :image-media-item="data.heroImage"
-              class="w-full md:w-1/2"
+              class="w-full md:w-1/2 float-left mb-8 md:mr-8 mr-0"
             />
-            <div class="w-full md:w-1/2 flex flex-col">
-              <WysiwygRenderer v-if="data" :content="data.longDescription" />
-            </div>
+            <WysiwygRenderer v-if="data" :content="data.longDescription" />
           </div>
           <div class="flex flex-col md:flex-row gap-8">
             <div class="w-full md:w-1/2 flex flex-col gap-4 text-lg">

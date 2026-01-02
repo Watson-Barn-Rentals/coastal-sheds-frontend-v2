@@ -10,7 +10,10 @@ export const LinkButtonDataSchema = z.object({
   iconPresets: z.enum(['custom-icon', 'animated-right-side-arrow']),
   iconName: z.string().nullable(),
   customIconStyling: CustomCssStylingSchema,
-  buttonStyling: z.string(),
+  buttonColor: z.string(),
+  darkModeButtonColor: z.string(),
+  textColor: z.string(),
+  darkModeTextColor: z.string(),
   trackingEventName: z.string(),
 }).strict()
 export type LinkButtonData = z.infer<typeof LinkButtonDataSchema>
