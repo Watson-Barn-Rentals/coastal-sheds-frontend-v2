@@ -8,11 +8,6 @@ defineProps<{
 </script>
 
 <template>
-   <Heading 
-      text="Explore Our Blog" 
-      heading-level="h2"
-      text-alignment="center"
-    />
     <MaxWidthContentWrapper>
       <CardGallery class="my-8">
         <BlogPostCard
