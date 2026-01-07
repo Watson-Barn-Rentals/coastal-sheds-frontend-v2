@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
     <MaxWidthContentWrapper>
-      <CardGallery class="my-8">
+      <CardGallery>
         <BlogPostCard
           v-for="blogPost in data.blogPosts"
           :key="blogPost.slug"
