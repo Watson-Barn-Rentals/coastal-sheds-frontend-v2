@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { card } from "#build/ui";
 import type { ReviewsSectionBlockData } from "~/types/page-blocks/reviews-section";
 
 const props = defineProps<{ data: ReviewsSectionBlockData }>();
@@ -105,26 +106,31 @@ const paused = ref(false);
 const currentIndex = ref(0);
 const nextInRevewIndex = ref(2);
 const cardAIndex = ref(props.data.reviews.length - 2);
+const mobileCardAIndex = ref(props.data.reviews.length - 2);
 const cardAPositionData = ref<CardPositionData>(positionOneCardData.value);
 const mobileCardAPositionData = ref<CardPositionData>(
 	mobilePositionOneCardData.value
 );
 const cardBIndex = ref(props.data.reviews.length - 1);
+const mobileCardBIndex = ref(props.data.reviews.length - 1);
 const cardBPositionData = ref<CardPositionData>(positionTwoCardData.value);
 const mobileCardBPositionData = ref<CardPositionData>(
 	mobilePositionTwoCardData.value
 );
 const cardCIndex = ref(0);
+const mobileCardCIndex = ref(0);
 const cardCPositionData = ref<CardPositionData>(positionThreeCardData.value);
 const mobileCardCPositionData = ref<CardPositionData>(
 	mobilePositionThreeCardData.value
 );
 const cardDIndex = ref(1);
+const mobileCardDIndex = ref(1);
 const cardDPositionData = ref<CardPositionData>(positionFourCardData.value);
 const mobileCardDPositionData = ref<CardPositionData>(
 	mobilePositionFourCardData.value
 );
 const cardEIndex = ref(2);
+const mobileCardEIndex = ref(2);
 const cardEPositionData = ref<CardPositionData>(positionFiveCardData.value);
 const mobileCardEPositionData = ref<CardPositionData>(
 	mobilePositionFiveCardData.value
@@ -180,6 +186,125 @@ const getNextPositionIndex = (currentIndex: number) => {
 	}
 };
 
+const wrapIndex = (y: number, len: number) => ((y % len) + len) % len;
+
+const updateIndexOfLastCard = () => {
+	let newIndex = 0;
+
+	if (cardAPositionData.value.index === 4) {
+		newIndex = cardAIndex.value - props.data.reviews.length;
+		newIndex += 5;
+		cardAIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+
+	} else if (cardBPositionData.value.index === 4) {
+		newIndex = cardBIndex.value - props.data.reviews.length;
+		newIndex += 5;
+		cardBIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+
+	} else if (cardCPositionData.value.index === 4) {
+		newIndex = cardCIndex.value - props.data.reviews.length;
+		newIndex += 5;
+		cardCIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+
+	} else if (cardDPositionData.value.index === 4) {
+		newIndex = cardDIndex.value - props.data.reviews.length;
+		newIndex += 5;
+		cardDIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+
+	} else if (cardEPositionData.value.index === 4) {
+		newIndex = cardEIndex.value - props.data.reviews.length;
+		newIndex += 5;
+		cardEIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+	}
+
+	let mobileNewIndex = 0;
+	if (mobileCardAPositionData.value.index === 4) {
+		mobileNewIndex = mobileCardAIndex.value - props.data.reviews.length;
+		mobileNewIndex += 5;
+		mobileCardAIndex.value = wrapIndex(
+			mobileNewIndex,
+			props.data.reviews.length
+		);
+	} else if (mobileCardBPositionData.value.index === 4) {
+		mobileNewIndex = mobileCardBIndex.value - props.data.reviews.length;
+		mobileNewIndex += 5;
+		mobileCardBIndex.value = wrapIndex(
+			mobileNewIndex,
+			props.data.reviews.length
+		);
+	} else if (mobileCardCPositionData.value.index === 4) {
+		mobileNewIndex = mobileCardCIndex.value - props.data.reviews.length;
+		mobileNewIndex += 5;
+		mobileCardCIndex.value = wrapIndex(
+			mobileNewIndex,
+			props.data.reviews.length
+		);
+	} else if (mobileCardDPositionData.value.index === 4) {
+		mobileNewIndex = mobileCardDIndex.value - props.data.reviews.length;
+		mobileNewIndex += 5;
+		mobileCardDIndex.value = wrapIndex(
+			mobileNewIndex,
+			props.data.reviews.length
+		);
+	} else if (mobileCardEPositionData.value.index === 4) {
+		mobileNewIndex = mobileCardEIndex.value - props.data.reviews.length;
+		mobileNewIndex += 5;
+		mobileCardEIndex.value = wrapIndex(
+			mobileNewIndex,
+			props.data.reviews.length
+		);
+	}
+};
+
+const updateIndexOfFirstCard = () => {
+	let newIndex = 0;
+	if (cardAPositionData.value.index === 0) {
+		newIndex = cardAIndex.value + props.data.reviews.length;
+		newIndex -= 5;
+		cardAIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+	} else if (cardBPositionData.value.index === 0) {
+		newIndex = cardBIndex.value + props.data.reviews.length;
+		newIndex -= 5;
+		cardBIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+	} else if (cardCPositionData.value.index === 0) {
+		newIndex = cardCIndex.value + props.data.reviews.length;
+		newIndex -= 5;
+		cardCIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+	} else if (cardDPositionData.value.index === 0) {
+		newIndex = cardDIndex.value + props.data.reviews.length;
+		newIndex -= 5;
+		cardDIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+	} else if (cardEPositionData.value.index === 0) {
+		newIndex = cardEIndex.value + props.data.reviews.length;
+		newIndex -= 5;
+		cardEIndex.value = wrapIndex(newIndex, props.data.reviews.length);
+	}
+
+	let mobileNewIndex = 0;
+	if (mobileCardAPositionData.value.index === 0) {
+		mobileNewIndex = mobileCardAIndex.value + props.data.reviews.length;
+		mobileNewIndex -= 5;
+		mobileCardAIndex.value = wrapIndex(mobileNewIndex, props.data.reviews.length);
+	} else if (mobileCardBPositionData.value.index === 0) {
+		mobileNewIndex = mobileCardBIndex.value + props.data.reviews.length;
+		mobileNewIndex -= 5;
+		mobileCardBIndex.value = wrapIndex(mobileNewIndex, props.data.reviews.length);
+	} else if (mobileCardCPositionData.value.index === 0) {
+		mobileNewIndex = mobileCardCIndex.value + props.data.reviews.length;
+		mobileNewIndex -= 5;
+		mobileCardCIndex.value = wrapIndex(mobileNewIndex, props.data.reviews.length);
+	} else if (mobileCardDPositionData.value.index === 0) {
+		mobileNewIndex = mobileCardDIndex.value + props.data.reviews.length;
+		mobileNewIndex -= 5;
+		mobileCardDIndex.value = wrapIndex(mobileNewIndex, props.data.reviews.length);
+	} else if (mobileCardEPositionData.value.index === 0) {
+		mobileNewIndex = mobileCardEIndex.value + props.data.reviews.length;
+		mobileNewIndex -= 5;
+		mobileCardEIndex.value = wrapIndex(mobileNewIndex, props.data.reviews.length);
+	}
+};
+
+
 const advance = () => {
 	if (nextInRevewIndex.value === props.data.reviews.length - 1) {
 		nextInRevewIndex.value = 0;
@@ -224,6 +349,8 @@ const advance = () => {
 	mobileCardEPositionData.value = getMobilePositionDataByIndex(
 		getNextPositionIndex(mobileCardEPositionData.value.index)
 	);
+
+	updateIndexOfLastCard();
 };
 
 const reverse = () => {
@@ -270,6 +397,8 @@ const reverse = () => {
 	mobileCardEPositionData.value = getMobilePositionDataByIndex(
 		getPreviousPositionIndex(mobileCardEPositionData.value.index)
 	);
+
+	updateIndexOfFirstCard();
 };
 
 function sleep(ms: number) {
@@ -335,10 +464,10 @@ onMounted(() => {
 			}"
 		>
 			<ReviewCard
-				:star-rating="Number(data.reviews[cardAIndex].starRating)"
-				:authors-name="data.reviews[cardAIndex].authorsName"
-				:review-text="data.reviews[cardAIndex].text"
-				:review-source="data.reviews[cardAIndex].source"
+				:star-rating="Number(data.reviews[mobileCardAIndex].starRating)"
+				:authors-name="data.reviews[mobileCardAIndex].authorsName"
+				:review-text="data.reviews[mobileCardAIndex].text"
+				:review-source="data.reviews[mobileCardAIndex].source"
 				:card-scale="mobileCardAPositionData.scale"
 				:card-opacity="mobileCardAPositionData.opacity"
 				:card-z-index="mobileCardAPositionData.zIndex"
@@ -362,10 +491,10 @@ onMounted(() => {
 				:review-text-size="data.reviewTextFontSize"
 			/>
 			<ReviewCard
-				:star-rating="Number(data.reviews[cardBIndex].starRating)"
-				:authors-name="data.reviews[cardBIndex].authorsName"
-				:review-text="data.reviews[cardBIndex].text"
-				:review-source="data.reviews[cardBIndex].source"
+				:star-rating="Number(data.reviews[mobileCardBIndex].starRating)"
+				:authors-name="data.reviews[mobileCardBIndex].authorsName"
+				:review-text="data.reviews[mobileCardBIndex].text"
+				:review-source="data.reviews[mobileCardBIndex].source"
 				:card-scale="mobileCardBPositionData.scale"
 				:card-opacity="mobileCardBPositionData.opacity"
 				:card-z-index="mobileCardBPositionData.zIndex"
@@ -389,10 +518,10 @@ onMounted(() => {
 				:review-text-size="data.reviewTextFontSize"
 			/>
 			<ReviewCard
-				:star-rating="Number(data.reviews[cardCIndex].starRating)"
-				:authors-name="data.reviews[cardCIndex].authorsName"
-				:review-text="data.reviews[cardCIndex].text"
-				:review-source="data.reviews[cardCIndex].source"
+				:star-rating="Number(data.reviews[mobileCardCIndex].starRating)"
+				:authors-name="data.reviews[mobileCardCIndex].authorsName"
+				:review-text="data.reviews[mobileCardCIndex].text"
+				:review-source="data.reviews[mobileCardCIndex].source"
 				:card-scale="mobileCardCPositionData.scale"
 				:card-opacity="mobileCardCPositionData.opacity"
 				:card-z-index="mobileCardCPositionData.zIndex"
@@ -416,10 +545,10 @@ onMounted(() => {
 				:review-text-size="data.reviewTextFontSize"
 			/>
 			<ReviewCard
-				:star-rating="Number(data.reviews[cardDIndex].starRating)"
-				:authors-name="data.reviews[cardDIndex].authorsName"
-				:review-text="data.reviews[cardDIndex].text"
-				:review-source="data.reviews[cardDIndex].source"
+				:star-rating="Number(data.reviews[mobileCardDIndex].starRating)"
+				:authors-name="data.reviews[mobileCardDIndex].authorsName"
+				:review-text="data.reviews[mobileCardDIndex].text"
+				:review-source="data.reviews[mobileCardDIndex].source"
 				:card-scale="mobileCardDPositionData.scale"
 				:card-opacity="mobileCardDPositionData.opacity"
 				:card-z-index="mobileCardDPositionData.zIndex"
@@ -443,10 +572,10 @@ onMounted(() => {
 				:review-text-size="data.reviewTextFontSize"
 			/>
 			<ReviewCard
-				:star-rating="Number(data.reviews[cardEIndex].starRating)"
-				:authors-name="data.reviews[cardEIndex].authorsName"
-				:review-text="data.reviews[cardEIndex].text"
-				:review-source="data.reviews[cardEIndex].source"
+				:star-rating="Number(data.reviews[mobileCardEIndex].starRating)"
+				:authors-name="data.reviews[mobileCardEIndex].authorsName"
+				:review-text="data.reviews[mobileCardEIndex].text"
+				:review-source="data.reviews[mobileCardEIndex].source"
 				:card-scale="mobileCardEPositionData.scale"
 				:card-opacity="mobileCardEPositionData.opacity"
 				:card-z-index="mobileCardEPositionData.zIndex"
@@ -620,6 +749,7 @@ onMounted(() => {
 				@click="previous"
 			/>
 			<div
+				v-if="isLargeScreen"
 				v-for="(review, index) in data.reviews"
 				:key="index"
 				class="w-4 h-4 rounded-full cursor-pointer border-1 transition-all my-auto"

@@ -70,7 +70,7 @@ const isDark = computed(() => colorMode.value === "dark");
 		</div>
 		<div class="grow">
 			<p
-				class="clamp-text"
+				class="clamp-text leading-tight"
 				:style="{
 					fontFamily: textFontFamily,
 					color: isDark ? cardTextColorDarkMode : cardTextColor,

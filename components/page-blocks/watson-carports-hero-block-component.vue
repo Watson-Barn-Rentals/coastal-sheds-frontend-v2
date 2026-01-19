@@ -35,7 +35,6 @@ const initSlides = () => {
 		subtitle: props.data.slides[slideIndex.value].subtitle,
 		image: props.data.slides[slideIndex.value].image,
 	};
-
 };
 
 const transtionSlides = () => {
@@ -281,6 +280,7 @@ onMounted(() => {
 					v-if="slideOne"
 					:style="{
 						opacity: slideOne.visible ? 1 : 0,
+						zIndex: slideOne.visible ? 20 : 10,
 					}"
 					class="absolute w-full h-full flex flex-col justify-start p-8 transition-all duration-1000"
 				>
@@ -301,12 +301,29 @@ onMounted(() => {
 						>
 							{{ slideOne.subtitle }}
 						</div>
+						<div class="mt-4 relative transition-transform duration-150 hover:bottom-1">
+							<NuxtLink
+								to="#highlighted-products"
+								class="font-title cursor-pointer flex flex-row gap-2 justify-center "
+							>
+								<div class="flex flex-col justify-center">
+									<span class="text-center leading-none"
+										>Scroll to Products</span
+									>
+								</div>
+								<UIcon
+									name="tabler:arrow-down-dashed"
+									class="inline-block w-6 h-6"
+								/>
+							</NuxtLink>
+						</div>
 					</div>
 				</div>
 				<div
 					v-if="slideTwo"
 					:style="{
 						opacity: slideTwo.visible ? 1 : 0,
+						zIndex: slideTwo.visible ? 20 : 10,
 					}"
 					class="absolute w-full h-full flex flex-col justify-start p-8 transition-all duration-1000"
 				>
@@ -326,6 +343,22 @@ onMounted(() => {
 							class="mt-4 text-lg md:text-xl font-medium opacity-95 text-center font-title"
 						>
 							{{ slideTwo.subtitle }}
+						</div>
+						<div class="mt-4 relative transition-transform duration-150 hover:bottom-1">
+							<NuxtLink
+								to="#highlighted-products"
+								class="font-title cursor-pointer flex flex-row gap-2 justify-center "
+							>
+								<div class="flex flex-col justify-center">
+									<span class="text-center leading-none"
+										>Scroll to Products</span
+									>
+								</div>
+								<UIcon
+									name="tabler:arrow-down-dashed"
+									class="inline-block w-6 h-6"
+								/>
+							</NuxtLink>
 						</div>
 					</div>
 				</div>

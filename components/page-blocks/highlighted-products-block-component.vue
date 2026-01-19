@@ -9,7 +9,7 @@ defineProps<{
 
 <template>
       <MaxWidthContentWrapper>
-        <CardGallery class="my-8">
+        <CardGallery id="highlighted-products" class="my-8">
           <ProductCard
             v-for="product in data.products"
             :key="product.slug"
