@@ -6,7 +6,7 @@ import type { ImageMediaItem } from '~/types/image-media-item'
 const props = defineProps<{
   heroImage: ImageMediaItem
   serialNumber: string
-  size: string
+  size: string | null
   productLineTitle: string
   productLineDiscontinued: boolean
   productTitle: string
@@ -90,7 +90,7 @@ const ribbonText = computed(() => {
     </div>
 
     <div class="flex min-h-0 flex-1 flex-col gap-2 px-4 py-4">
-      <p class="text-lg font-bold text-center">{{ size }} {{ productTitle }}</p>
+      <p class="text-lg font-bold text-center">{{ size ? size + ' ' : '' }}{{ productTitle }}</p>
 
       <div class="flex gap-2 text-sm">
         <span class="font-bold shrink-0">Product Line:</span>

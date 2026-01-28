@@ -10,6 +10,7 @@ export const ProductItemSchema = z.object({
   short_description: z.string(),
   long_description: z.string(),
   override_page_url: z.string().nullable(),
+  override_page_title: z.string().nullable(),
   designer_link: z.string().nullable(),
   starting_price: z.string().nullable(),
   product_line_slug: z.string(),

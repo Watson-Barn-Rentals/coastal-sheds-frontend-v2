@@ -272,9 +272,7 @@ const ribbonTextColor = computed<string | null>(() => {
     <div v-if="data">
       <Heading
         class="mt-12 md:mt-24"
-        :text="`${data.usedBuilding ? 'Used' : 'New'} ${data.size} ${
-          data.product.title
-        }`"
+        :text="`${data.usedBuilding ? 'Used' : 'New'}${data.size ? ' ' + data.size + ' ' : ' '} ${data.product.title}`"
         heading-level="h1"
         text-alignment="center"
       />
@@ -352,7 +350,10 @@ const ribbonTextColor = computed<string | null>(() => {
                   >**Used Buildings are sold in AS IS condition</span
                 >
               </div>
-              <div class="flex gap-2">
+              <div
+                v-if="data.size"
+                class="flex gap-2"
+              >
                 <span>Size:</span>
                 <span class="font-bold">{{ data.size }}</span>
               </div>

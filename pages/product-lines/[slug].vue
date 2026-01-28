@@ -166,7 +166,7 @@ const images = computed<ImageMediaItem[]>(() => {
   <PageDataGate :sources="[{ data, pending, error, refresh }]">
     <div v-if="data">
       <Heading
-        :text="`${data.title} ${data.product_category_title}`"
+        :text="`${data.override_page_title ?? data.title + ' ' + data.product_category_title}`"
         heading-level="h1"
         text-alignment="center"
         class="mt-12 md:mt-24"

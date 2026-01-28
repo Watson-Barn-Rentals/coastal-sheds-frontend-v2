@@ -12,7 +12,7 @@ export interface InventoryItem {
   lotNumber: string | null
   location: LocationItem
   product: ProductItem
-  size: string
+  size: string | null
   usedBuilding: boolean
   cashPrice: number
   discountAmount: number | null
@@ -35,7 +35,7 @@ export const InventoryItemSchema: z.ZodType<InventoryItem> = z.lazy(() =>
       lotNumber: z.string().nullable(),
       location: LocationItemSchema,
       product: ProductItemSchema,
-      size: z.string(),
+      size: z.string().nullable(),
       usedBuilding: z.boolean(),
       cashPrice: z.number().finite(),
       discountAmount: z.number().finite().nullable(),

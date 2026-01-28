@@ -93,7 +93,7 @@ useHead(() => {
 useSeoMeta({
 	title: () => {
 		if (!data.value) return "Product Details";
-		const base = `${data.value.product_line_title} ${data.value.title}`;
+		const base = `${data.value.override_page_title ?? data.value.product_line_title + ' ' + data.value.title}`;
 		const brand = config.public.pageTitleSiteName || "";
 		return brand ? `${base} | ${brand}` : base;
 	},
@@ -112,9 +112,7 @@ useSeoMeta({
 	ogImage: () => heroAbsUrl.value,
 	ogImageAlt: () =>
 		(hero.value?.alt ||
-			`${data.value?.product_line_title ?? ""} ${
-				data.value?.title ?? "Product"
-			} image`) as any,
+			`${data.value?.override_page_title ?? data.value?.product_line_title + ' ' + data.value?.title} image`) as any,
 
 	// Twitter
 	twitterCard: () => (heroAbsUrl.value ? "summary_large_image" : "summary"),
@@ -223,7 +221,7 @@ useSchemaOrg(() => {
 	// Fallback: Thing (no Product-specific requirements)
 	return [
 		defineWebPage({
-			name: `${data.value.product_line_title} ${data.value.title}`,
+			name: `${data.value.override_page_title ?? data.value.product_line_title + ' ' + data.value.title}`,
 			description: data.value.short_description,
 			url: canonicalUrl.value,
 			inLanguage: "en-US",
@@ -269,7 +267,7 @@ const images = computed<ImageMediaItem[]>(() => {
 		<div v-if="data">
 			<Heading
 				class="mt-12 md:mt-24"
-				:text="`${data.product_line_title} ${data.title}`"
+				:text="`${data.override_page_title ?? data.product_line_title + ' ' + data.title}`"
 				heading-level="h1"
 				text-alignment="center"
 			/>
