@@ -131,16 +131,21 @@ export const useIdeasGalleryFilters = (
   })
 
   const tagFilterOptions = computed<IdeasGalleryTagWithActiveState[]>(() => {
-    const allUniqueTags = entries.value.reduce<Set<IdeasGalleryTag>>((acc, entry) => {
-      entry.tags.forEach((tag) => acc.add(tag))
-      return acc
-    }, new Set())
+  	// key by slug to ensure true uniqueness
+  	const tagsBySlug = new Map<string, IdeasGalleryTag>()
 
-    return Array.from(allUniqueTags).map((tag) => ({
-      ...tag,
-      isActive: tag.slug === activeTagSlug.value,
-    }))
+  	for (const entry of entries.value) {
+  		for (const tag of entry.tags) {
+  			// keep the first occurrence to preserve natural order
+  			if (!tagsBySlug.has(tag.slug)) tagsBySlug.set(tag.slug, tag)
+  		}
+  	}
+
+    return Array.from(tagsBySlug.values())
+    	.sort((a, b) => a.title.localeCompare(b.title))
+    	.map((tag) => ({ ...tag, isActive: tag.slug === activeTagSlug.value }))
   })
+
 
   const setTagSlugFilter = (slug: string) => {
     activeTagSlug.value = slug
