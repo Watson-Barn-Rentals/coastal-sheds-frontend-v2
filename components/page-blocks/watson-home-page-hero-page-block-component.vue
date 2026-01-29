@@ -208,7 +208,7 @@ watch(slides, (arr) => {
           <span 
             :class="[
               'block sm:hidden',
-              'absolute leading-none font-[800] font-[TimesNewRoman] text-[#006595] shrink-0',
+              'absolute leading-none font-[800] font-[TimesNewRoman] text-[#006595] shrink-0 text-nowrap',
               '-bottom-[2.5rem]',
               'left-[8rem]',
               'text-[3rem]',
