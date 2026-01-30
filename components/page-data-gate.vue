@@ -46,6 +46,12 @@ const errors = computed(() =>
     .filter(Boolean)
 )
 
+watch(errors, (newErrors) => {
+  if (newErrors.length) {
+    console.error('Page Data Gate encountered errors:', newErrors)
+  }
+}, { immediate: true })
+
 const has404Only = computed(() => {
   if (!errors.value.length) return false
   const codes = errors.value.map(statusCodeOf).filter(Boolean)
