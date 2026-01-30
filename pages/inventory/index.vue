@@ -1,8 +1,13 @@
-<!-- pages/inventory.vue (or your inventory page) -->
+<!-- pages/inventory.vue -->
 <script lang="ts" setup>
 import type { Ref } from "vue";
-import { getInventoryList } from "~/services/api/get-inventory-list";
-import type { InventoryItem } from "~/types/inventory-item";
+import { getInventoryLiteList } from "~/services/api/get-inventory-lite-list";
+import {
+  isInventoryItem,
+  isPlaceholderInventoryItem,
+  type InventoryItem,
+  type PlaceholderInventoryItem,
+} from "~/types/inventory-item";
 import {
   getDrivingDistances,
   getUserPosition,
@@ -11,16 +16,21 @@ import {
 import type { LocationsMapSettings } from "~/types/locations-map-settings";
 import { getLocationsMapSettings } from "~/services/api/get-locations-map-settings";
 import RegionGateModal from "~/components/region-gate-modal.vue";
+import PlaceholderInventoryCard from "~/components/placeholder-inventory-card.vue";
+import { getInventoryPaginatedList } from "~/services/api/get-inventory-paginated-list";
 
 definePageMeta({ layout: "default", key: "inventory-page" });
 
 const config = useRuntimeConfig();
 const route = useRoute();
 
-const { data, pending, error, refresh } = await useAsyncData<InventoryItem[]>(
-  "inventory-list",
-  getInventoryList
-);
+/**
+ * 1) SSR waits only on the lite list (placeholders)
+ */
+const { data, pending, error, refresh } = await useAsyncData<
+  (PlaceholderInventoryItem | InventoryItem)[]
+>("inventory-list", getInventoryLiteList);
+
 const {
   data: mapSettings,
   pending: mapPending,
@@ -31,54 +41,122 @@ const {
   getLocationsMapSettings
 );
 
+/**
+ * 2) Client-only background hydration of full records
+ */
+const fullHydrationPending = ref(false);
+const fullHydrationError = ref<string | null>(null);
+
+const nextCursor = ref<string | null>(null);
+const hydratedSerials = ref(new Set<string>());
+
+/** Prevent starting hydration more than once */
+const hydrationStarted = ref(false);
+
+function mergeFullItemsIntoData(items: InventoryItem[]) {
+  if (!data.value) return;
+
+  // Build index for fast replacement
+  const indexBySerial = new Map<string, number>();
+  for (let i = 0; i < data.value.length; i++) {
+    indexBySerial.set(data.value[i].serialNumber, i);
+  }
+
+  for (const item of items) {
+    const idx = indexBySerial.get(item.serialNumber);
+    if (idx === undefined) continue;
+
+    // Replace placeholder/old item with full item (reactive)
+    data.value.splice(idx, 1, item);
+    hydratedSerials.value.add(item.serialNumber);
+  }
+}
+
+async function hydrateInventoryInBatches() {
+  if (hydrationStarted.value) return;
+  hydrationStarted.value = true;
+
+  fullHydrationPending.value = true;
+  fullHydrationError.value = null;
+
+  let cancelled = false;
+  onBeforeUnmount(() => {
+    cancelled = true;
+  });
+
+  try {
+    // Make sure lite list exists before starting
+    if (!data.value || data.value.length === 0) return;
+
+    /**
+     * Fetch first 6 full records ASAP
+     */
+    const first = await getInventoryPaginatedList(30, null);
+    if (cancelled) return;
+
+    nextCursor.value = first.nextCursor ?? null;
+    mergeFullItemsIntoData(first.items);
+
+    /**
+     * Continue loading in chunks of 30 until exhausted
+     */
+    while (!cancelled && nextCursor.value) {
+      const page = await getInventoryPaginatedList(30, nextCursor.value);
+      if (cancelled) return;
+
+      nextCursor.value = page.nextCursor ?? null;
+      mergeFullItemsIntoData(page.items);
+
+      // Safety: avoid infinite loop if API misbehaves
+      if (!page.items || page.items.length === 0) break;
+
+      // Yield to keep UI responsive
+      await new Promise((r) => setTimeout(r, 0));
+    }
+  } catch (e: any) {
+    fullHydrationError.value = e?.message ?? "Failed to hydrate inventory.";
+  } finally {
+    fullHydrationPending.value = false;
+  }
+}
+
+/**
+ * Fire-and-forget BEFORE mount (client only)
+ * (We do not await this; page render is not blocked.)
+ */
+if (import.meta.client) {
+  onBeforeMount(() => {
+    // only start once, and only if we have lite list
+    if (data.value?.length) {
+      void hydrateInventoryInBatches();
+    } else {
+      // If for some reason data isn't ready, start once it is
+      const stop = watch(
+        () => data.value?.length ?? 0,
+        (len) => {
+          if (len > 0) {
+            stop();
+            void hydrateInventoryInBatches();
+          }
+        },
+        { immediate: true }
+      );
+    }
+  });
+}
+
 /* ---------------- SEO: canonical, description, OG/Twitter ---------------- */
 
-const canonicalUrl = computed(
-  () => `${config.public.siteRootUrl}/inventory/`
-);
+const canonicalUrl = computed(() => `${config.public.siteRootUrl}/inventory/`);
 
-// Short, keyword-rich description for a listing page
 const pageDescription = computed(() => {
   return `Browse in-stock sheds by size, model, price, and location. Real-time availability, delivery options, and financing.`;
 });
 
-// First hero image to improve LCP/link unfurls
-const firstItem = computed(() => (data.value?.length ? data.value[0] : null));
-const firstHero = computed(() => firstItem.value?.heroImage ?? null);
-const ogImageUrl = computed(() => {
-  const u = firstHero.value?.original_url;
-  if (!u) return undefined;
-  return u.startsWith("http")
-    ? u
-    : new URL(u, config.public.siteRootUrl).toString();
-});
-const ogImageAlt = computed(() =>
-  firstItem.value
-    ? `${firstItem.value.size} ${firstItem.value.product.title}`
-    : "Inventory"
-);
-const ogImageWidth = computed(() => firstHero.value?.width);
-const ogImageHeight = computed(() => firstHero.value?.height);
+const ogImageAlt = computed(() => "Inventory");
 
 useHead(() => {
   const links: any[] = [{ rel: "canonical", href: canonicalUrl.value }];
-
-  if (firstHero.value?.original_url) {
-    try {
-      const origin = new URL(firstHero.value.original_url).origin;
-      links.push({ rel: "preconnect", href: origin, crossorigin: "" });
-      links.push({ rel: "dns-prefetch", href: origin });
-      links.push({
-        rel: "preload",
-        as: "image",
-        href: firstHero.value.original_url,
-        imagesrcset: firstHero.value.srcset,
-        imagesizes: "100vw",
-        fetchpriority: "high",
-      });
-    } catch {}
-  }
-
   const meta: any[] = [{ property: "og:type", content: "website" }];
   return { link: links, meta };
 });
@@ -89,14 +167,8 @@ useSeoMeta({
   ogTitle: `Browse In-Stock Inventory - ${config.public.pageTitleSiteName}`,
   ogDescription: () => pageDescription.value,
   ogUrl: () => canonicalUrl.value,
-  ogImage: () => ogImageUrl.value,
-  ogImageAlt: () => ogImageAlt.value as any,
-  ogImageWidth: () => ogImageWidth.value as any,
-  ogImageHeight: () => ogImageHeight.value as any,
-  twitterCard: () => (ogImageUrl.value ? "summary_large_image" : "summary"),
   twitterTitle: "Browse Inventory",
   twitterDescription: () => pageDescription.value,
-  twitterImage: () => ogImageUrl.value,
 });
 
 /* ---------------- Schema.org ---------------- */
@@ -126,9 +198,7 @@ useSchemaOrg(() => {
           `/inventory/${encodeURIComponent(it.serialNumber)}`,
           config.public.siteRootUrl
         ).toString(),
-        name: `${it.usedBuilding ? "Used" : "New"} ${it.size} ${
-          it.product.title
-        }`,
+        name: `Inventory Item #${it.serialNumber}`,
       })),
     }),
   ];
@@ -150,21 +220,19 @@ function formatDriveTime(seconds: number): string {
 const driveTimeTextBySlug = computed<Record<string, string>>(() => {
   const out: Record<string, string> = {};
   for (const [slug, res] of Object.entries(locationDistanceBySlug.value)) {
-    if (res && typeof res.seconds === "number")
-      out[slug] = formatDriveTime(res.seconds);
+    if (res && typeof res.seconds === "number") out[slug] = formatDriveTime(res.seconds);
   }
   return out;
 });
 
 /** Meters map for distance sort */
-const distanceMetersByLocationSlug = computed<Record<string, number | null>>(
-  () =>
-    Object.fromEntries(
-      Object.entries(locationDistanceBySlug.value).map(([slug, res]) => [
-        slug,
-        res?.meters ?? null,
-      ])
-    )
+const distanceMetersByLocationSlug = computed<Record<string, number | null>>(() =>
+  Object.fromEntries(
+    Object.entries(locationDistanceBySlug.value).map(([slug, res]) => [
+      slug,
+      res?.meters ?? null,
+    ])
+  )
 );
 
 const {
@@ -191,12 +259,14 @@ const gate = useRegionGate({
   items: data as Ref<InventoryItem[] | null>,
   regionSlug: computed({
     get: () => filters.regionSlug,
-    set: (v) => { filters.regionSlug = v }
+    set: (v) => {
+      filters.regionSlug = v;
+    },
   }),
   regionOptions,
   rememberInSession: true,
   autoPickIfSingle: true,
-})
+});
 
 /** Mobile filters toggle */
 const filtersOpen = ref(false);
@@ -206,18 +276,9 @@ function collectUniqueDestinations(items: InventoryItem[]) {
   const map = new Map<string, { lat: number; lng: number }>();
   for (const item of items) {
     const slug = item?.location?.slug;
-    const lat = Number(
-      (item as any)?.location?.latitude ?? (item as any)?.location?.lat
-    );
-    const lng = Number(
-      (item as any)?.location?.longitude ?? (item as any)?.location?.lng
-    );
-    if (
-      slug &&
-      Number.isFinite(lat) &&
-      Number.isFinite(lng) &&
-      !map.has(slug)
-    ) {
+    const lat = Number((item as any)?.location?.latitude ?? (item as any)?.location?.lat);
+    const lng = Number((item as any)?.location?.longitude ?? (item as any)?.location?.lng);
+    if (slug && Number.isFinite(lat) && Number.isFinite(lng) && !map.has(slug)) {
       map.set(slug, { lat, lng });
     }
   }
@@ -236,9 +297,7 @@ async function ensureDistances() {
     const unique = collectUniqueDestinations(items);
     if (!unique.size) return;
 
-    const missing = [...unique.keys()].filter(
-      (slug) => !(slug in locationDistanceBySlug.value)
-    );
+    const missing = [...unique.keys()].filter((slug) => !(slug in locationDistanceBySlug.value));
     if (!missing.length) return;
 
     if (!mapSettings.value?.api_key) {
@@ -247,21 +306,11 @@ async function ensureDistances() {
     }
 
     const position = await getUserPosition();
-    const origin = {
-      lat: position.coords.latitude,
-      lng: position.coords.longitude,
-    };
+    const origin = { lat: position.coords.latitude, lng: position.coords.longitude };
     const destinations = [...unique.values()];
-    const results = await getDrivingDistances(
-      mapSettings.value.api_key,
-      origin,
-      destinations,
-      "imperial"
-    );
+    const results = await getDrivingDistances(mapSettings.value.api_key, origin, destinations, "imperial");
 
-    const next: Record<string, DistanceResult | null> = {
-      ...locationDistanceBySlug.value,
-    };
+    const next: Record<string, DistanceResult | null> = { ...locationDistanceBySlug.value };
     let i = 0;
     for (const slug of unique.keys()) next[slug] = results[i++] ?? null;
     locationDistanceBySlug.value = next;
@@ -285,18 +334,13 @@ const scrollToFilters = () => {
   const el = document.getElementById("filters-section");
   if (!el) return;
   filtersOpen.value = true;
-  const targetY = Math.max(
-    0,
-    el.getBoundingClientRect().top + window.pageYOffset - 84
-  );
+  const targetY = Math.max(0, el.getBoundingClientRect().top + window.pageYOffset - 84);
   window.scrollTo({ top: targetY, behavior: "smooth" });
 };
 
 /** Counts */
 const totalCount = computed(() => data.value?.length ?? 0);
-const hiddenByFilters = computed(() =>
-  Math.max(0, totalCount.value - filtered.value.length)
-);
+const hiddenByFilters = computed(() => Math.max(0, totalCount.value - filtered.value.length));
 </script>
 
 <template>
@@ -315,7 +359,6 @@ const hiddenByFilters = computed(() =>
       />
 
       <MaxWidthContentWrapper>
-        <!-- Region Gate Modal (blocks page until selection if needed) -->
         <RegionGateModal
           :open="gate.open"
           :options="gate.options"
@@ -323,7 +366,6 @@ const hiddenByFilters = computed(() =>
           @update:model-value="(v) => (gate.selected.value = v)"
           @confirm="(slug) => gate.applySelection(slug)"
         />
-
 
         <div>
           <div id="filters-section" class="mb-8">
@@ -357,7 +399,6 @@ const hiddenByFilters = computed(() =>
             </transition>
           </div>
 
-          <!-- Sort bar (below filters) -->
           <div class="mt-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <div class="flex items-center gap-2">
               <UiSelect
@@ -385,33 +426,39 @@ const hiddenByFilters = computed(() =>
           </div>
 
           <CardGallery class="my-8">
-            <InventoryCard
-              v-for="inventoryItem in sorted"
-              :key="inventoryItem.serialNumber"
-              :hero-image="inventoryItem.heroImage"
-              :serial-number="inventoryItem.serialNumber"
-              :size="inventoryItem.size"
-              :product-line-title="inventoryItem.product?.product_line_title"
-              :product-line-discontinued="inventoryItem.product.product_line_discontinued"
-              :product-title="inventoryItem.product?.title"
-              :product-discontinued="inventoryItem.product.discontinued"
-              :cash-price="inventoryItem.cashPrice"
-              :discount-amount="inventoryItem.discountAmount"
-              :location-name="inventoryItem.location?.title"
-              :lot-number="inventoryItem.lotNumber"
-              :highlighted-label="inventoryItem.highlightedLabel"
-              :used-building="inventoryItem.usedBuilding"
-              :approx-drive-time-text="driveTimeTextBySlug[inventoryItem.location?.slug ?? ''] ?? null"
-              :location-address="inventoryItem.location.address"
-              :location-city="inventoryItem.location.city"
-              :location-state="inventoryItem.location.state"
-              :location-zip="inventoryItem.location.zip"
-            />
+            <div v-for="inventoryItem in sorted" :key="inventoryItem.serialNumber">
+              <PlaceholderInventoryCard
+                v-if="isPlaceholderInventoryItem(inventoryItem)"
+                :serial-number="inventoryItem.serialNumber"
+                :size="inventoryItem.size"
+                :product-title="inventoryItem.title"
+                :hero-base64svg="inventoryItem.heroBase64svg"
+              />
+              <InventoryCard
+                v-else-if="isInventoryItem(inventoryItem)"
+                :hero-image="inventoryItem.heroImage"
+                :serial-number="inventoryItem.serialNumber"
+                :size="inventoryItem.size"
+                :product-line-title="inventoryItem.product?.product_line_title"
+                :product-line-discontinued="inventoryItem.product.product_line_discontinued"
+                :product-title="inventoryItem.product?.title"
+                :product-discontinued="inventoryItem.product.discontinued"
+                :cash-price="inventoryItem.cashPrice"
+                :discount-amount="inventoryItem.discountAmount"
+                :location-name="inventoryItem.location?.title"
+                :lot-number="inventoryItem.lotNumber"
+                :highlighted-label="inventoryItem.highlightedLabel"
+                :used-building="inventoryItem.usedBuilding"
+                :approx-drive-time-text="driveTimeTextBySlug[inventoryItem.location?.slug ?? ''] ?? null"
+                :location-address="inventoryItem.location.address"
+                :location-city="inventoryItem.location.city"
+                :location-state="inventoryItem.location.state"
+                :location-zip="inventoryItem.location.zip"
+              />
+            </div>
 
-            <!-- Empty state -->
             <NoItemsCard v-if="filtered.length === 0" message="No Inventory to Display" />
 
-            <!-- Hidden-by-filters notice -->
             <div
               v-if="hiddenByFilters > 0"
               class="group flex h-full flex-col gap-8 overflow-hidden rounded-2xl bg-background-accent shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:bg-background-accent-dark p-8 justify-center"
@@ -436,7 +483,11 @@ const hiddenByFilters = computed(() =>
 
 <style scoped>
 .fade-enter-active,
-.fade-leave-active { transition: opacity 0.15s ease; }
+.fade-leave-active {
+  transition: opacity 0.15s ease;
+}
 .fade-enter-from,
-.fade-leave-to { opacity: 0; }
+.fade-leave-to {
+  opacity: 0;
+}
 </style>

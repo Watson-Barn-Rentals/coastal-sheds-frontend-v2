@@ -3,7 +3,7 @@ import { useRoute, useRouter } from '#imports'
 import { useDebounceFn } from '@vueuse/core'
 import { computed, reactive, ref, watch } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
-import type { InventoryItem } from '~/types/inventory-item'
+import { isPlaceholderInventoryItem, type InventoryItem } from '~/types/inventory-item'
 
 export type InventoryFiltersState = {
   searchQuery: string
@@ -240,6 +240,10 @@ export function useInventoryFilters(
     const hasSearch = query.length > 0
 
     return list.filter((item) => {
+      if (isPlaceholderInventoryItem(item)) {
+        return true;
+      }
+
       if (hasSearch) {
         const haystack = [
           item.serialNumber,
@@ -297,9 +301,9 @@ export function useInventoryFilters(
 
   // ---------- Sorting ----------
 const sorted = computed<InventoryItem[]>(() => {
-  const base = [...filtered.value]  // preserves API order for "default"
+  const base = [...filtered.value]
   switch (sortMode.value) {
-    case 'default':                 // 👈 add this case
+    case 'default':
       return base
     case 'price-ascending':
       return base.sort((a, b) => (a.cashPrice ?? 0) - (b.cashPrice ?? 0))

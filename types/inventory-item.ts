@@ -4,6 +4,13 @@ import { ImageMediaItemSchema, type ImageMediaItem } from './image-media-item'
 import { LocationItemSchema, type LocationItem } from './location-item'
 import { ProductItemSchema, type ProductItem } from './product-item'
 
+export interface PlaceholderInventoryItem {
+  serialNumber: string
+  size: string | null
+  title: string
+  heroBase64svg: string | null
+}
+
 // Use an interface to allow self-reference in the type.
 export interface InventoryItem {
   heroImage: ImageMediaItem
@@ -25,6 +32,13 @@ export interface InventoryItem {
   designerLink: string | null
   similarItems?: InventoryItem[]
 }
+
+export const PlaceholderInventoryItemSchema: z.ZodType<PlaceholderInventoryItem> = z.object({
+  serialNumber: z.string(),
+  size: z.string().nullable(),
+  title: z.string(),
+  heroBase64svg: z.string().nullable(),
+})
 
 export const InventoryItemSchema: z.ZodType<InventoryItem> = z.lazy(() =>
   z
@@ -51,9 +65,22 @@ export const InventoryItemSchema: z.ZodType<InventoryItem> = z.lazy(() =>
     .strict()
 )
 
+export const isPlaceholderInventoryItem = (x: unknown): x is PlaceholderInventoryItem =>
+  PlaceholderInventoryItemSchema.safeParse(x).success
+
 // Boolean guard (same API name)
 export const isInventoryItem = (x: unknown): x is InventoryItem =>
   InventoryItemSchema.safeParse(x).success
+
+export function assertPlaceholderInventoryItem(x: unknown): asserts x is PlaceholderInventoryItem {
+  const r = PlaceholderInventoryItemSchema.safeParse(x)
+  if (!r.success) {
+    const details = r.error.issues
+      .map(i => `• ${i.path.join('.') || '(root)'}: ${i.message}`)
+      .join('\n')
+    throw new Error(`PlaceholderInventoryItem validation failed:\n${details}`)
+  }
+}
 
 // Optional: assertion with readable errors
 export function assertInventoryItem(x: unknown): asserts x is InventoryItem {
