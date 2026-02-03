@@ -144,7 +144,11 @@ export default defineNuxtConfig({
 
 	nitro: {
 		preset: 'netlify',
-		prerender: { crawlLinks: false },
+		prerender: { 
+			crawlLinks: false,
+			concurrency: Number(process.env.PRERENDER_CONCURRENCY ?? 2),
+			interval: Number(process.env.PRERENDER_INTERVAL ?? 150),
+		},
 	},
 
 	plugins: [
