@@ -9,6 +9,7 @@ defineProps<{
 <template>
     <NuxtLink
         to="/"
+        external
         class="font-title pb-1 pt-2 px-0 flex flex-col cursor-pointer md:text-base shrink-0"
     >
         <div class="h-full">

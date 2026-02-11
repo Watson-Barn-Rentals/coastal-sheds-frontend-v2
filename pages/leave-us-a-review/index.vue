@@ -83,6 +83,7 @@ useHead({
             <NuxtLink
               v-for="(channel, index) in data.channels"
               :key="index"
+              external
               :to="channel.reviewUrl"
               rel="nofollow noopener"
               class="group w-20 h-20 md:w-24 md:h-24 rounded-xl border bg-white shadow-sm ring-1 ring-black/5

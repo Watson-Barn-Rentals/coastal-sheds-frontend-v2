@@ -37,12 +37,14 @@ const ribbonText = computed(() => {
 
 <template>
   <NuxtLink
+    external
     :to="`/inventory/${serialNumber}/`"
     class="group flex h-full flex-col overflow-hidden rounded-2xl bg-background-accent shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:bg-background-accent-dark"
   >
     <div v-if="approxDriveTimeText" class="w-full bg-background-accent dark:bg-background-accent-dark z-[20] flex flex-col gap-2 py-2">
       <p class="text-lg text-center">Approx. {{ approxDriveTimeText }} away</p>
       <NuxtLink 
+        external
         target="_blank"
         :to="getGoogleMapsLinkForAddress(locationAddress, locationCity, locationState, locationZip)"
         class="text-hovered-link underline text-center text-sm mx-auto"

@@ -237,6 +237,7 @@ useSchemaOrg(() => {
                 <span class="font-bold">Address:</span>
                 <NuxtLink
                   target="_blank"
+                  external
                   :to="
                     getGoogleMapsLinkForAddress(
                       data.address,
@@ -254,6 +255,7 @@ useSchemaOrg(() => {
                 <span class="font-bold">Phone Number:</span>
                 <NuxtLink
                   :to="`tel:${data.phone}`"
+                  external
                   class="text-hovered-link underline"
                   >{{ getFormattedPhoneNumber(data.phone) }}</NuxtLink
                 >
@@ -262,6 +264,7 @@ useSchemaOrg(() => {
                 <span class="font-bold">Email:</span>
                 <NuxtLink
                   :to="`mailto:${data.email}`"
+                  external
                   class="text-hovered-link underline"
                   >{{ data.email }}</NuxtLink
                 >
@@ -278,7 +281,7 @@ useSchemaOrg(() => {
                 </div>
               </div>
               <div class="flex justify-center mt-8">
-                <NuxtLink :to="`/inventory?location=${data.slug}`" class="shrink-0 m">
+                <NuxtLink external :to="`/inventory?location=${data.slug}`" class="shrink-0 m">
                   <button
                     class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
                   >

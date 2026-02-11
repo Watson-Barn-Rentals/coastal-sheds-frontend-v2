@@ -284,6 +284,7 @@ const images = computed<ImageMediaItem[]>(() => {
 						<div class="flex justify-center mb-10 gap-10">
 							<NuxtLink
 								v-if="data.designer_link"
+								external
 								:to="data.designer_link"
 								target="_blank"
 								class="shrink-0"
@@ -310,6 +311,7 @@ const images = computed<ImageMediaItem[]>(() => {
 							</NuxtLink>
 							<NuxtLink
 								:to="`/inventory?product=${data.slug}`"
+								external
 								class="shrink-0"
 								@click="
 									submitTrackingEvent(

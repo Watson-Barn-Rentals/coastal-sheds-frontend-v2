@@ -64,6 +64,7 @@ const toTrailing = (url?: string) => {
 							class="text-xs md:text-sm lg:text-base hover:text-hovered-link"
 						/>
 						<NuxtLink
+							external
 							v-if="data.show_phone_call_to_action"
 							:to="`tel:${data.phone_call_to_action_phone_number}`"
 							class="bg-brand rounded-full flex flex-col items-center justify-center px-4 md:px-6 py-1 relative"
@@ -126,6 +127,7 @@ const toTrailing = (url?: string) => {
 						/>
 						<NuxtLink
 							v-if="data.show_phone_call_to_action"
+							external
 							:to="`tel:${data.phone_call_to_action_phone_number}`"
 							class="bg-brand rounded-full flex flex-col items-center justify-center px-4 md:px-6 py-1 relative"
 							@click="handleHeaderPhoneCtaClick"
@@ -167,6 +169,7 @@ const toTrailing = (url?: string) => {
 		<template #content>
 			<div class="flex">
 				<NuxtLink
+					external
 					:to="toTrailing('/')"
 					class="h-24 max-w-1/2 m-4 cursor-pointer"
 					@click="toggleMenu"

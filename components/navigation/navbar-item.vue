@@ -44,6 +44,7 @@ function getGridPositionStyle(subItem: SubMenuItem) {
 <template>
 	<NuxtLink
 		v-if="!menuItem.has_children && menuItem.url"
+		external
 		:to="toTrailing(menuItem.url)"
 	>
 		<li
@@ -82,6 +83,7 @@ function getGridPositionStyle(subItem: SubMenuItem) {
 				<NuxtLink
 					v-for="(subItem, idx) in (menuItem.children ?? [])"
 					:key="`sub-item-${idx}`"
+					external
 					:to="toTrailing(subItem.url)"
 					class="flex gap-1 lg:gap-1.5 cursor-pointer hover:text-hovered-link border-b-2 justify-center pb-1"
 					:class="{ 'border-black hover:border-hovered-link': subItemIsActive(subItem), 'border-transparent': !subItemIsActive(subItem) }"

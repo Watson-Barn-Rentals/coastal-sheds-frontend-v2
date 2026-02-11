@@ -304,6 +304,7 @@ const ribbonTextColor = computed<string | null>(() => {
               </button>
               <NuxtLink
                 v-if="data.designerLink"
+                external
                 :to="data.designerLink"
                 target="_blank"
               >
@@ -358,6 +359,7 @@ const ribbonTextColor = computed<string | null>(() => {
                 <span>Product:</span>
                 <NuxtLink
                   v-if="!data.product.discontinued"
+                  external
                   :to="`/products/${data.product.slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.product.title }}</NuxtLink
@@ -368,6 +370,7 @@ const ribbonTextColor = computed<string | null>(() => {
                 <span>Product Line:</span>
                 <NuxtLink
                   v-if="!data.product.product_line_discontinued"
+                  external
                   :to="`/product-lines/${data.product.product_line_slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.product.product_line_title }}
@@ -379,6 +382,7 @@ const ribbonTextColor = computed<string | null>(() => {
                 <span>Location:</span>
                 <NuxtLink
                   :to="`/locations/${data.location.slug}`"
+                  external
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.location.title }} ({{ data.location.city }},
                   {{ data.location.state }})</NuxtLink

@@ -24,6 +24,7 @@ const handleClick = () => { dropdownState.value = !dropdownState.value }
 <template>
 	<NuxtLink
 		v-if="!menuItem.has_children && menuItem.url"
+		external
 		:to="toTrailing(menuItem.url)"
 		class="mr-auto"
 	>
@@ -55,6 +56,7 @@ const handleClick = () => { dropdownState.value = !dropdownState.value }
 			<NuxtLink
 				v-for="(subItem, subIndex) in menuItem.children"
 				:key="`sub-item-${subIndex}`"
+				external
 				:to="toTrailing(subItem.url)"
 				class="mr-auto"
 			>

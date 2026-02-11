@@ -62,7 +62,7 @@ const handleBrowseInventoryClick = () => {
       <div class="p-4 pt-16 sm:p-8 h-full">
         <div class="h-full flex flex-col justify-end gap-4 sm:gap-8 max-h-[12rem]">
           <div class="flex justify-around sm:justify-start gap-4 sm:gap-8">
-            <NuxtLink to="/products">
+            <NuxtLink to="/products" external>
               <button
                 class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
                 @click="handleExploreStylesClick"
@@ -79,7 +79,7 @@ const handleBrowseInventoryClick = () => {
                 </p>
               </button>
             </NuxtLink>
-            <NuxtLink to="/inventory">
+            <NuxtLink to="/inventory" external>
               <button
                 class="flex gap-2 p-3 rounded-lg bg-accent text-slate-800 shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
                 @click="handleBrowseInventoryClick"
