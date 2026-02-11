@@ -302,10 +302,9 @@ const ribbonTextColor = computed<string | null>(() => {
                   Send to my phone
                 </p>
               </button>
-              <NuxtLink
+              <a
                 v-if="data.designerLink"
-                external
-                :to="data.designerLink"
+                :href="data.designerLink"
                 target="_blank"
               >
                 <button
@@ -322,7 +321,7 @@ const ribbonTextColor = computed<string | null>(() => {
                     Customize in 3D
                   </p>
                 </button>
-              </NuxtLink>
+              </a>
             </div>
             <h3 class="font-bold font-title text-lg mb-2">Building Details</h3>
             <div class="flex flex-col gap-1 ml-4">
@@ -357,35 +356,32 @@ const ribbonTextColor = computed<string | null>(() => {
               </div>
               <div class="flex gap-2">
                 <span>Product:</span>
-                <NuxtLink
+                <a
                   v-if="!data.product.discontinued"
-                  external
-                  :to="`/products/${data.product.slug}`"
+                  :href="`/products/${data.product.slug}`"
                   class="text-hovered-link hover:underline font-bold"
-                  >{{ data.product.title }}</NuxtLink
+                  >{{ data.product.title }}</a
                 >
                 <span v-else class="font-bold">{{ data.product.title }} (Discontinued)</span>
               </div>
               <div class="flex gap-2">
                 <span>Product Line:</span>
-                <NuxtLink
+                <a
                   v-if="!data.product.product_line_discontinued"
-                  external
-                  :to="`/product-lines/${data.product.product_line_slug}`"
+                  :href="`/product-lines/${data.product.product_line_slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.product.product_line_title }}
-                  {{ data.product.product_category_title }}</NuxtLink
+                  {{ data.product.product_category_title }}</a
                 >
                 <span v-else class="font-bold">{{ data.product.product_line_title }} (Discontinued)</span>
               </div>
               <div class="flex gap-2">
                 <span>Location:</span>
-                <NuxtLink
-                  :to="`/locations/${data.location.slug}`"
-                  external
+                <a
+                  :href="`/locations/${data.location.slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.location.title }} ({{ data.location.city }},
-                  {{ data.location.state }})</NuxtLink
+                  {{ data.location.state }})</a
                 >
               </div>
               <div class="flex gap-2">

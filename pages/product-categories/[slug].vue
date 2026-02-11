@@ -201,7 +201,7 @@ const images = computed<ImageMediaItem[]>(() => {
       </MaxWidthContentWrapper>
       <div class="flex justify-center flex-col sm:flex-row gap-10 mx-10 my-20">
         <div class="flex justify-center">
-          <NuxtLink external to="/products" class="shrink-0">
+          <a href="/products" class="shrink-0">
             <button
               class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
             >
@@ -216,7 +216,7 @@ const images = computed<ImageMediaItem[]>(() => {
                 Back to All Products
               </p>
             </button>
-          </NuxtLink>
+          </a>
         </div>
         <div class="flex flex-col">
           <p class="font-semibold text-center">

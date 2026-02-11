@@ -92,11 +92,10 @@ const handleChannelClick = (channel: ReviewRequestChannelItem) => {
           <div
             class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 md:gap-6 place-items-center"
           >
-            <NuxtLink
+            <a
               v-for="(channel, index) in data.template.channels"
               :key="index"
-              external
-              :to="channel.reviewUrl"
+              :href="channel.reviewUrl"
               rel="nofollow noopener"
               class="group w-20 h-20 md:w-24 md:h-24 rounded-xl border bg-white shadow-sm ring-1 ring-black/5
                      flex items-center justify-center transition hover:-translate-y-0.5 hover:shadow-md
@@ -110,7 +109,7 @@ const handleChannelClick = (channel: ReviewRequestChannelItem) => {
                 loading="lazy"
                 decoding="async"
               />
-            </NuxtLink>
+            </a>
           </div>
         </div>
 

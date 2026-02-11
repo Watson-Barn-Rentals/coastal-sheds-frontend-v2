@@ -302,8 +302,8 @@ onMounted(() => {
 							{{ slideOne.subtitle }}
 						</div>
 						<div class="mt-4 relative transition-transform duration-150 hover:bottom-1">
-							<NuxtLink
-								to="#highlighted-products"
+							<a
+								href="#highlighted-products"
 								class="font-title cursor-pointer flex flex-row gap-2 justify-center "
 							>
 								<div class="flex flex-col justify-center">
@@ -315,7 +315,7 @@ onMounted(() => {
 									name="tabler:arrow-down-dashed"
 									class="inline-block w-6 h-6"
 								/>
-							</NuxtLink>
+							</a>
 						</div>
 					</div>
 				</div>
@@ -345,8 +345,8 @@ onMounted(() => {
 							{{ slideTwo.subtitle }}
 						</div>
 						<div class="mt-4 relative transition-transform duration-150 hover:bottom-1">
-							<NuxtLink
-								to="#highlighted-products"
+							<a
+								href="#highlighted-products"
 								class="font-title cursor-pointer flex flex-row gap-2 justify-center "
 							>
 								<div class="flex flex-col justify-center">
@@ -358,7 +358,7 @@ onMounted(() => {
 									name="tabler:arrow-down-dashed"
 									class="inline-block w-6 h-6"
 								/>
-							</NuxtLink>
+							</a>
 						</div>
 					</div>
 				</div>

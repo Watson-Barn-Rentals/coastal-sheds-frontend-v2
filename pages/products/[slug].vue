@@ -282,10 +282,9 @@ const images = computed<ImageMediaItem[]>(() => {
 					/>
 					<div class="w-full md:w-1/2 flex flex-col">
 						<div class="flex justify-center mb-10 gap-10">
-							<NuxtLink
+							<a
 								v-if="data.designer_link"
-								external
-								:to="data.designer_link"
+								:href="data.designer_link"
 								target="_blank"
 								class="shrink-0"
 							>
@@ -308,10 +307,9 @@ const images = computed<ImageMediaItem[]>(() => {
 										Design in 3D
 									</p>
 								</button>
-							</NuxtLink>
-							<NuxtLink
-								:to="`/inventory?product=${data.slug}`"
-								external
+							</a>
+							<a
+								:href="`/inventory?product=${data.slug}`"
 								class="shrink-0"
 								@click="
 									submitTrackingEvent(
@@ -333,7 +331,7 @@ const images = computed<ImageMediaItem[]>(() => {
 										View Inventory
 									</p>
 								</button>
-							</NuxtLink>
+							</a>
 						</div>
 						<WysiwygRenderer :content="data.long_description" />
 					</div>

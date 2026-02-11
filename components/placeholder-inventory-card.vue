@@ -12,9 +12,8 @@ const props = defineProps<{
 </script>
 
 <template>
-	<NuxtLink
-		external
-		:to="`/inventory/${serialNumber}/`"
+	<a
+		:href="`/inventory/${serialNumber}/`"
 		class="group flex h-full flex-col overflow-hidden rounded-2xl bg-background-accent shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:bg-background-accent-dark"
 	>
 		<div class="relative w-full aspect-[4/3]">
@@ -61,5 +60,5 @@ const props = defineProps<{
 
 			<div class="mt-auto"></div>
 		</div>
-	</NuxtLink>
+	</a>
 </template>

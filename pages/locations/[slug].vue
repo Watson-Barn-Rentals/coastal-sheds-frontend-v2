@@ -235,10 +235,9 @@ useSchemaOrg(() => {
             <div class="w-full md:w-1/2 flex flex-col gap-4 text-lg">
               <div class="flex gap-2">
                 <span class="font-bold">Address:</span>
-                <NuxtLink
+                <a
                   target="_blank"
-                  external
-                  :to="
+                  :href="
                     getGoogleMapsLinkForAddress(
                       data.address,
                       data.city,
@@ -248,25 +247,23 @@ useSchemaOrg(() => {
                   "
                   class="text-hovered-link underline"
                   >{{ data.address }}, {{ data.city }}, {{ data.state }},
-                  {{ data.zip }}</NuxtLink
+                  {{ data.zip }}</a
                 >
               </div>
               <div class="flex gap-2" v-if="data.phone">
                 <span class="font-bold">Phone Number:</span>
-                <NuxtLink
-                  :to="`tel:${data.phone}`"
-                  external
+                <a
+                  :href="`tel:${data.phone}`"
                   class="text-hovered-link underline"
-                  >{{ getFormattedPhoneNumber(data.phone) }}</NuxtLink
+                  >{{ getFormattedPhoneNumber(data.phone) }}</a
                 >
               </div>
               <div class="flex gap-2" v-if="data.email">
                 <span class="font-bold">Email:</span>
-                <NuxtLink
-                  :to="`mailto:${data.email}`"
-                  external
+                <a
+                  :href="`mailto:${data.email}`"
                   class="text-hovered-link underline"
-                  >{{ data.email }}</NuxtLink
+                  >{{ data.email }}</a
                 >
               </div>
               <span class="font-bold underline" v-if="Object.keys(data.hours).length > 0">Hours</span>
@@ -281,7 +278,7 @@ useSchemaOrg(() => {
                 </div>
               </div>
               <div class="flex justify-center mt-8">
-                <NuxtLink external :to="`/inventory?location=${data.slug}`" class="shrink-0 m">
+                <a :href="`/inventory?location=${data.slug}`" class="shrink-0 m">
                   <button
                     class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
                   >
@@ -296,7 +293,7 @@ useSchemaOrg(() => {
                       View Inventory at this Location
                     </p>
                   </button>
-                </NuxtLink>
+                </a>
               </div>
             </div>
             <div v-if="data.salesReps.length > 0" class="w-full md:w-1/2 flex flex-col gap-4">
