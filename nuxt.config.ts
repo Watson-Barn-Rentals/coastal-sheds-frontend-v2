@@ -70,6 +70,23 @@ export default defineNuxtConfig({
 	],
 
 	hooks: {
+		"prerender:routes": async (ctx) => {
+		  if (isPreviewMode) return
+	
+		  const apiRoot = process.env.API_ROOT_URL
+		  if (!apiRoot) throw new Error("Missing API_ROOT_URL")
+		
+		  const res = await fetch(`${apiRoot}/api/get-prerender-page-list`, {
+		    headers: { Accept: "application/json" },
+		  })
+		  if (!res.ok) {
+		    throw new Error(`get-prerender-page-list ${res.status} ${res.statusText}`)
+		  }
+	
+		  const { data } = (await res.json()) as { data?: string[] }
+		  for (const route of data ?? []) ctx.routes.add(route)
+		},
+
 		/**
 		 * Runs after Nitro builds public assets (typed hook).
 		 * Safe place to write _redirects and _netlify-forms.html.
