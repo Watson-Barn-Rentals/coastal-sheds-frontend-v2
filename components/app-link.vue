@@ -1,10 +1,12 @@
 <script setup lang="ts">
 import { computed } from "vue"
 
-// Generated at build time into `.nuxt/prerender-routes.generated.ts`
+// Generated at build time into `.nuxt/prerender-routes.generated.mjs`
 let PRERENDERED: readonly string[] = []
+
 try {
-  PRERENDERED = (await import("#build/prerender-routes.generated")).default ?? []
+  PRERENDERED =
+    ((await import("#build/prerender-routes.generated.mjs")).default as readonly string[]) ?? []
 } catch {
   PRERENDERED = []
 }
@@ -34,8 +36,6 @@ const isExternal = (s: string) =>
 const normalizeForLookup = (input: string): string => {
   if (!input) return "/"
 
-  // If someone passed an absolute URL, only use pathname for normalization
-  // (but we still treat absolute as external for rendering unless it's your own domain)
   let p = input
   try {
     if (/^https?:\/\//i.test(input)) p = new URL(input).pathname
@@ -59,21 +59,18 @@ const raw = computed(() => {
 
 const normalized = computed(() => normalizeForLookup(raw.value))
 
-const isPrerendered = computed(() => {
-  // If the list contains normalized routes already, this should match exactly.
-  return PRERENDER_SET.has(normalized.value)
-})
+const isPrerendered = computed(() => PRERENDER_SET.has(normalized.value))
 
 const useAnchor = computed(() => {
   // External always anchor
   if (raw.value && isExternal(raw.value)) return true
 
-  // If it’s internal but NOT prerendered -> hard nav anchor
-  // If internal and prerendered -> AppLink
+  // Internal but NOT prerendered -> hard navigation
   return !isPrerendered.value
 })
 
-const AppLinkTo = computed(() => props.to ?? props.href)
+const nuxtLinkTo = computed(() => props.to ?? props.href)
+
 const anchorHref = computed(() => {
   if (props.href) return props.href
   if (typeof props.to === "string") return props.to
@@ -81,7 +78,7 @@ const anchorHref = computed(() => {
   return raw.value || "#"
 })
 
-const rel = computed(() => {
+const relAttr = computed(() => {
   if (props.rel) return props.rel
   if (props.target === "_blank") return "noopener noreferrer"
   return undefined
@@ -91,20 +88,11 @@ const shouldPrefetch = computed(() => props.prefetch ?? true)
 </script>
 
 <template>
-  <AppLink
-    v-if="!useAnchor"
-    :to="AppLinkTo"
-    :prefetch="shouldPrefetch"
-  >
+  <NuxtLink v-if="!useAnchor" :to="nuxtLinkTo" :prefetch="shouldPrefetch">
     <slot />
-  </AppLink>
+  </NuxtLink>
 
-  <a
-    v-else
-    :href="anchorHref"
-    :target="target"
-    :rel="rel"
-  >
+  <a v-else :href="anchorHref" :target="target" :rel="relAttr">
     <slot />
   </a>
 </template>
