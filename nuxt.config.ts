@@ -26,6 +26,7 @@ export default defineNuxtConfig({
   	      'Cache-Control': 'public, max-age=0, must-revalidate',
   	      'Netlify-CDN-Cache-Control': `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
 		  'Cache-Tag': 'inventory inventory-list',
+		  'Netlify-Vary': 'header=x-cache-bucket',
   	    },
   	  },
 
@@ -35,6 +36,7 @@ export default defineNuxtConfig({
   	    headers: {
   	      'Cache-Control': 'public, max-age=0, must-revalidate',
   	      'Netlify-CDN-Cache-Control': `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
+		  'Netlify-Vary': 'header=x-cache-bucket',
 		  //inventory inventory-item inventory-item:{serial} cache tags are added dynamically in server/plugins/cache-tags.ts
   	    },
   	  },
