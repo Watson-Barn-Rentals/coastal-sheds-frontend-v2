@@ -53,8 +53,7 @@ function stateToQuery(state: InventoryFiltersState): UrlQuery {
     size: state.size || undefined,
     minPrice: state.minPrice == null ? undefined : String(state.minPrice),
     maxPrice: state.maxPrice == null ? undefined : String(state.maxPrice),
-    discounted:
-      state.discounted === null ? undefined : state.discounted ? "1" : "0",
+    discounted: state.discounted === null ? undefined : state.discounted ? "1" : "0",
     condition: state.condition ?? undefined,
     location: state.locationSlug || undefined,
     region: state.regionSlug || undefined,
@@ -71,12 +70,9 @@ function queryToState(query: UrlQuery): InventoryFiltersState {
     size: query.size ?? null,
     minPrice: query.minPrice != null ? Number(query.minPrice) : null,
     maxPrice: query.maxPrice != null ? Number(query.maxPrice) : null,
-    discounted:
-      query.discounted == null ? null : query.discounted === "1",
+    discounted: query.discounted == null ? null : query.discounted === "1",
     condition:
-      query.condition === "new" || query.condition === "used"
-        ? (query.condition as "new" | "used")
-        : null,
+      query.condition === "new" || query.condition === "used" ? (query.condition as any) : null,
     locationSlug: query.location ?? null,
     regionSlug: query.region ?? null,
     highlightedLabel: query.tag ?? null,
@@ -87,8 +83,8 @@ function parseSizeToArea(size: string | null | undefined): number {
   if (!size) return NaN
   const m = size.match(/(\d+(?:\.\d+)?)\s*[xX]\s*(\d+(?:\.\d+)?)/)
   if (!m) return NaN
-  const w = Number(m[1]),
-    l = Number(m[2])
+  const w = Number(m[1])
+  const l = Number(m[2])
   return Number.isFinite(w) && Number.isFinite(l) ? w * l : NaN
 }
 
@@ -102,62 +98,35 @@ function parseSortMode(q: string | undefined): InventorySortMode {
     "size-descending",
     "distance-from-user",
   ]
-  return allowed.includes(q as InventorySortMode)
-    ? (q as InventorySortMode)
-    : "default"
+  return allowed.includes(q as InventorySortMode) ? (q as InventorySortMode) : "default"
+}
+
+function readBrowserQuery(): UrlQuery {
+  if (!import.meta.client) return {}
+  const params = new URLSearchParams(window.location.search)
+  const out: UrlQuery = {}
+  for (const [k, v] of params.entries()) {
+    // match how Nuxt route.query behaves (single values)
+    out[k] = v
+  }
+  return out
 }
 
 export function useInventoryFilters(
   source: Ref<InventoryItem[] | null>,
   opts?: { distanceMetersByLocationSlug?: Ref<Record<string, number | null>> }
-): {
-  state: InventoryFiltersState
-  filtered: ComputedRef<InventoryItem[]>
-  sorted: ComputedRef<InventoryItem[]>
-  sortMode: Ref<InventorySortMode>
-  productCategoryOptions: ComputedRef<Option[]>
-  productLineOptions: ComputedRef<Option[]>
-  productOptions: ComputedRef<Option[]>
-  sizeOptions: ComputedRef<Option[]>
-  locationOptions: ComputedRef<Option[]>
-  regionOptions: ComputedRef<Option[]>
-  tagOptions: ComputedRef<Option[]>
-  chips: ComputedRef<
-    Array<{ key: keyof InventoryFiltersState | "minPrice" | "maxPrice"; label: string }>
-  >
-  clearChip: (key: keyof InventoryFiltersState | "minPrice" | "maxPrice") => void
-  reset: () => void
-} {
+) {
   const route = useRoute()
   const router = useRouter()
 
   /**
-   * OPTION A:
-   * - On SSR, DO NOT initialize from route.query (prevents cached HTML baking in filters).
-   * - On client mount, sync state from the real browser URL exactly once.
-   * - Only after that, allow watchers to push query updates to the URL.
+   * CRITICAL: Do not read route.query during hydration.
+   * Cached SSR payload can carry an old query, and you'll “snap back” to it.
    */
-  const initialQuery: UrlQuery = import.meta.server
-    ? {}
-    : (route.query as any as UrlQuery)
-
-  const state = reactive<InventoryFiltersState>(queryToState(initialQuery))
-  const sortMode = ref<InventorySortMode>(
-    parseSortMode((initialQuery as any).sort)
-  )
+  const state = reactive<InventoryFiltersState>(queryToState({}))
+  const sortMode = ref<InventorySortMode>("default")
 
   const readyToWriteUrl = ref(false)
-
-  // Keep state synced when the URL query changes (client only)
-  watch(
-    () => route.query,
-    (query) => {
-      if (!import.meta.client) return
-      Object.assign(state, queryToState(query as UrlQuery))
-      sortMode.value = parseSortMode((query as UrlQuery).sort)
-    },
-    { immediate: false }
-  )
 
   const pushQueryToUrl = useDebounceFn(() => {
     if (!readyToWriteUrl.value) return
@@ -176,11 +145,24 @@ export function useInventoryFilters(
   watch(sortMode, pushQueryToUrl)
 
   onMounted(() => {
-    // Sync from the real browser URL after hydration
-    Object.assign(state, queryToState(route.query as any as UrlQuery))
-    sortMode.value = parseSortMode((route.query as any as UrlQuery).sort)
+    // Sync from the *actual URL* (not SSR payload / route.query during hydration)
+    const q = readBrowserQuery()
+    Object.assign(state, queryToState(q))
+    sortMode.value = parseSortMode(q.sort)
+
+    // Now allow writing URL changes caused by UI interactions
     readyToWriteUrl.value = true
   })
+
+  // After we are ready, keep state synced if user navigates back/forward
+  watch(
+    () => route.query,
+    (q) => {
+      if (!readyToWriteUrl.value) return
+      Object.assign(state, queryToState(q as any as UrlQuery))
+      sortMode.value = parseSortMode((q as any as UrlQuery).sort)
+    }
+  )
 
   // ---------- Option builders ----------
   const productCategoryOptions = computed<Option[]>(() => {
@@ -248,9 +230,7 @@ export function useInventoryFilters(
       const tag = item.highlightedLabel?.trim()
       if (tag) set.add(tag)
     }
-    const list = [...set]
-      .sort((a, b) => a.localeCompare(b))
-      .map((v) => ({ value: v, label: v }))
+    const list = [...set].sort((a, b) => a.localeCompare(b)).map((v) => ({ value: v, label: v }))
     return withSelected(list, state.highlightedLabel)
   })
 
@@ -270,13 +250,11 @@ export function useInventoryFilters(
     return withSelected(list, state.regionSlug)
   })
 
-  // Auto-pick region if only one option exists
+  // auto-pick region if only one option exists
   watch(
     () => regionOptions.value,
     (optsList) => {
-      if (!state.regionSlug && optsList.length === 1) {
-        state.regionSlug = optsList[0].value
-      }
+      if (!state.regionSlug && optsList.length === 1) state.regionSlug = optsList[0].value
     },
     { immediate: true }
   )
@@ -291,18 +269,6 @@ export function useInventoryFilters(
       if (isPlaceholderInventoryItem(item)) return true
 
       if (hasSearch) {
-        const colorsText =
-          Array.isArray(item.colors) && item.colors.length
-            ? item.colors
-                .map((c) => {
-                  const type = (c?.colorType ?? "").trim()
-                  const name = (c?.colorName ?? "").trim()
-                  // include both so searches like "roof black" or just "black" work
-                  return [type, name].filter(Boolean).join(" ")
-                })
-                .join(" ")
-            : ""
-              
         const haystack = [
           item.serialNumber,
           item.lotNumber ?? "",
@@ -310,26 +276,18 @@ export function useInventoryFilters(
           item.product?.title ?? "",
           item.product?.product_line_title ?? "",
           item.size ?? "",
-          colorsText,
           item.description ?? "",
           item.highlightedLabel ?? "",
         ]
           .join(" ")
           .toLowerCase()
-      
         if (!haystack.includes(query)) return false
       }
 
-      if (
-        state.productCategorySlug &&
-        ((item as any)?.product?.product_category_slug ?? "") !==
-          state.productCategorySlug
-      )
+      if (state.productCategorySlug && ((item as any)?.product?.product_category_slug ?? "") !== state.productCategorySlug)
         return false
-      if (state.productLineSlug && (item.product?.product_line_slug ?? "") !== state.productLineSlug)
-        return false
-      if (state.productSlug && (item.product?.slug ?? "") !== state.productSlug)
-        return false
+      if (state.productLineSlug && (item.product?.product_line_slug ?? "") !== state.productLineSlug) return false
+      if (state.productSlug && (item.product?.slug ?? "") !== state.productSlug) return false
       if (state.size && (item.size ?? "") !== state.size) return false
 
       const price = Number(item.cashPrice ?? 0)
@@ -347,8 +305,7 @@ export function useInventoryFilters(
         if (isUsed !== expectUsed) return false
       }
 
-      if (state.locationSlug && (item.location?.slug ?? "") !== state.locationSlug)
-        return false
+      if (state.locationSlug && (item.location?.slug ?? "") !== state.locationSlug) return false
 
       if (state.regionSlug) {
         const regions = item.location?.regions ?? []
@@ -356,8 +313,7 @@ export function useInventoryFilters(
         if (!inRegion) return false
       }
 
-      if (state.highlightedLabel && (item.highlightedLabel ?? "") !== state.highlightedLabel)
-        return false
+      if (state.highlightedLabel && (item.highlightedLabel ?? "") !== state.highlightedLabel) return false
 
       return true
     })
@@ -381,20 +337,18 @@ export function useInventoryFilters(
         )
       case "size-ascending":
         return base.sort((a, b) => {
-          const aa = parseSizeToArea(a.size),
-            bb = parseSizeToArea(b.size)
-          if (Number.isNaN(aa) && Number.isNaN(bb))
-            return (a.size ?? "").localeCompare(b.size ?? "")
+          const aa = parseSizeToArea(a.size)
+          const bb = parseSizeToArea(b.size)
+          if (Number.isNaN(aa) && Number.isNaN(bb)) return (a.size ?? "").localeCompare(b.size ?? "")
           if (Number.isNaN(aa)) return 1
           if (Number.isNaN(bb)) return -1
           return aa - bb
         })
       case "size-descending":
         return base.sort((a, b) => {
-          const aa = parseSizeToArea(a.size),
-            bb = parseSizeToArea(b.size)
-          if (Number.isNaN(aa) && Number.isNaN(bb))
-            return (b.size ?? "").localeCompare(a.size ?? "")
+          const aa = parseSizeToArea(a.size)
+          const bb = parseSizeToArea(b.size)
+          if (Number.isNaN(aa) && Number.isNaN(bb)) return (b.size ?? "").localeCompare(a.size ?? "")
           if (Number.isNaN(aa)) return 1
           if (Number.isNaN(bb)) return -1
           return bb - aa
@@ -430,53 +384,16 @@ export function useInventoryFilters(
     const labels = labelMaps.value
     const out: Array<{ key: any; label: string }> = []
     if (state.searchQuery) out.push({ key: "searchQuery", label: `Search: "${state.searchQuery}"` })
-    if (state.productCategorySlug)
-      out.push({
-        key: "productCategorySlug",
-        label: `Category: ${
-          labels.productCategory[state.productCategorySlug] ?? toLabelFromSlug(state.productCategorySlug)
-        }`,
-      })
-    if (state.productLineSlug)
-      out.push({
-        key: "productLineSlug",
-        label: `Product Line: ${
-          labels.productLine[state.productLineSlug] ?? toLabelFromSlug(state.productLineSlug)
-        }`,
-      })
-    if (state.productSlug)
-      out.push({
-        key: "productSlug",
-        label: `Product: ${labels.product[state.productSlug] ?? toLabelFromSlug(state.productSlug)}`,
-      })
-    if (state.size)
-      out.push({
-        key: "size",
-        label: `Size: ${labels.size[state.size] ?? state.size}`,
-      })
+    if (state.productCategorySlug) out.push({ key: "productCategorySlug", label: `Category: ${labels.productCategory[state.productCategorySlug] ?? toLabelFromSlug(state.productCategorySlug)}` })
+    if (state.productLineSlug) out.push({ key: "productLineSlug", label: `Product Line: ${labels.productLine[state.productLineSlug] ?? toLabelFromSlug(state.productLineSlug)}` })
+    if (state.productSlug) out.push({ key: "productSlug", label: `Product: ${labels.product[state.productSlug] ?? toLabelFromSlug(state.productSlug)}` })
+    if (state.size) out.push({ key: "size", label: `Size: ${labels.size[state.size] ?? state.size}` })
     if (state.minPrice != null) out.push({ key: "minPrice", label: `Min: $${state.minPrice}` })
     if (state.maxPrice != null) out.push({ key: "maxPrice", label: `Max: $${state.maxPrice}` })
-    if (state.discounted !== null)
-      out.push({
-        key: "discounted",
-        label: state.discounted ? "Discounted: Yes" : "Discounted: No",
-      })
-    if (state.condition)
-      out.push({
-        key: "condition",
-        label: `Condition: ${state.condition === "used" ? "Used" : "New"}`,
-      })
-    if (state.locationSlug)
-      out.push({
-        key: "locationSlug",
-        label: `Location: ${labels.location[state.locationSlug] ?? toLabelFromSlug(state.locationSlug)}`,
-      })
-    if (state.highlightedLabel)
-      out.push({
-        key: "highlightedLabel",
-        label: `Tag: ${labels.tag[state.highlightedLabel] ?? state.highlightedLabel}`,
-      })
-    // Region intentionally omitted from chips
+    if (state.discounted !== null) out.push({ key: "discounted", label: state.discounted ? "Discounted: Yes" : "Discounted: No" })
+    if (state.condition) out.push({ key: "condition", label: `Condition: ${state.condition === "used" ? "Used" : "New"}` })
+    if (state.locationSlug) out.push({ key: "locationSlug", label: `Location: ${labels.location[state.locationSlug] ?? toLabelFromSlug(state.locationSlug)}` })
+    if (state.highlightedLabel) out.push({ key: "highlightedLabel", label: `Tag: ${labels.tag[state.highlightedLabel] ?? state.highlightedLabel}` })
     return out
   })
 
@@ -502,7 +419,6 @@ export function useInventoryFilters(
       discounted: null,
       condition: null,
       locationSlug: null,
-      // Preserve region (required)
       regionSlug: state.regionSlug,
       highlightedLabel: null,
     } satisfies InventoryFiltersState)
