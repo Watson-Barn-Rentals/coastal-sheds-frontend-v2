@@ -1,0 +1,10 @@
+[build]
+  edge_functions = "netlify/edge-functions"
+
+[[edge_functions]]
+  function = "inventory-normalize"
+  path = "/inventory"
+  
+[[edge_functions]]
+  function = "inventory-normalize"
+  path = "/inventory/"
