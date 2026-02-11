@@ -5,131 +5,9 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 const isPreviewMode = process.env.PREVIEW_MODE === 'true'
-type SitemapEntryMeta = { lastmod?: string }
 
-const escapeXml = (value: string): string =>
-	value
-		.replace(/&/g, '&amp;')
-		.replace(/</g, '&lt;')
-		.replace(/>/g, '&gt;')
-		.replace(/"/g, '&quot;')
-		.replace(/'/g, '&apos;')
-
-const toIsoDate = (value?: string | null): string | undefined => {
-	if (!value) return undefined
-	const date = new Date(value)
-	return Number.isNaN(date.getTime()) ? undefined : date.toISOString()
-}
-
-const ensureTrailingSlash = (pathname: string): string => {
-	if (!pathname) return '/'
-	let p = pathname.startsWith('/') ? pathname : `/${pathname}`
-	// Collapse any accidental duplicate slashes
-	p = p.replace(/\/+/g, '/')
-	// Add trailing slash if not root and missing
-	if (p !== '/' && !p.endsWith('/')) p += '/'
-	return p
-}
-
-async function buildSitemap({
-	apiRoot,
-	siteRoot,
-	publishDir,
-}: {
-	apiRoot: string
-	siteRoot: string | undefined
-	publishDir: string
-}) {
-	if (!siteRoot) {
-		console.warn('Missing SITE_ROOT_URL; skipping sitemap generation.')
-		return
-	}
-
-	let siteRootUrl: URL
-	try {
-		siteRootUrl = new URL(siteRoot)
-	} catch (err) {
-		console.warn('Invalid SITE_ROOT_URL; skipping sitemap generation.', err)
-		return
-	}
-
-	const rootOrigin = siteRootUrl.origin
-
-	const urls = new Map<string, SitemapEntryMeta>()
-
-	const addPath = (input: string | undefined, meta: SitemapEntryMeta = {}) => {
-		if (!input) return
-
-		let absolute: string | null = null
-
-		try {
-			if (/^https?:\/\//i.test(input)) {
-				const url = new URL(input)
-				if (url.origin !== rootOrigin) return
-				url.hash = ''
-				url.search = ''
-				url.pathname = ensureTrailingSlash(url.pathname)
-				absolute = url.toString()
-			} else {
-				const normalized = input.startsWith('/') ? input : `/${input}`
-				const url = new URL(normalized, siteRootUrl)
-				url.hash = ''
-				url.search = ''
-				url.pathname = ensureTrailingSlash(url.pathname)
-				absolute = url.toString()
-			}
-		} catch {
-			return
-		}
-
-		const existing = urls.get(absolute) ?? {}
-		const merged: SitemapEntryMeta = { ...existing }
-		if (meta.lastmod) merged.lastmod = meta.lastmod
-		urls.set(absolute, merged)
-	}
-
-	const registerArray = <T>(collection: unknown, handler: (item: T) => void) => {
-		if (!Array.isArray(collection)) return
-		for (const item of collection as T[]) handler(item)
-	}
-
-	try {
-		const res = await fetch(`${apiRoot}/api/get-prerender-page-list`, {
-			headers: { Accept: 'application/json' },
-		})
-		if (!res.ok) throw new Error(`get-prerender-page-list ${res.status} ${res.statusText}`)
-		const json = (await res.json()) as { data?: unknown }
-		registerArray<string>(json.data, route => addPath(route))
-	} catch (err) {
-		console.warn('Unable to extend sitemap with CMS pages:', err)
-	}
-
-	const entries = Array.from(urls.entries()).sort(([a], [b]) => a.localeCompare(b))
-
-	if (!entries.length) {
-		console.warn('Sitemap generation produced no entries; skipping file emit.')
-		return
-	}
-
-	const chunks: string[] = []
-	chunks.push('<?xml version="1.0" encoding="UTF-8"?>')
-	chunks.push('<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">')
-
-	for (const [loc, meta] of entries) {
-		chunks.push('  <url>')
-		chunks.push(`    <loc>${escapeXml(loc)}</loc>`)
-		if (meta.lastmod) {
-			chunks.push(`    <lastmod>${meta.lastmod}</lastmod>`)
-		}
-		chunks.push('  </url>')
-	}
-
-	chunks.push('</urlset>')
-
-	const sitemapPath = path.join(publishDir, 'sitemap.xml')
-	fs.writeFileSync(sitemapPath, chunks.join('\n'), 'utf8')
-	console.log(`Wrote sitemap with ${entries.length} URLs to ${sitemapPath}`)
-}
+const EDGE_TTL = Number(process.env.EDGE_TTL ?? 300)
+const EDGE_SWR = Number(process.env.EDGE_SWR ?? 86400)
 
 export default defineNuxtConfig({
 	compatibilityDate: '2024-11-01',
@@ -140,7 +18,32 @@ export default defineNuxtConfig({
 	},
 	ssr: !isPreviewMode,
 
-	routeRules: {},
+  	routeRules: {
+  	  '/inventory': {
+  	    ssr: true,
+  	    prerender: false,
+  	    headers: {
+  	      'Cache-Control': 'public, max-age=0, must-revalidate',
+  	      'Netlify-CDN-Cache-Control': `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
+
+  	      // Prevent cache key varying by query params (client-side filters)
+  	      // Adjust as needed if you later want certain query params to vary.
+  	      'Netlify-Vary': '',
+		  'Cache-Tag': 'inventory inventory-list',
+  	    },
+  	  },
+
+  	  '/inventory/**': {
+  	    ssr: true,
+  	    prerender: false,
+  	    headers: {
+  	      'Cache-Control': 'public, max-age=0, must-revalidate',
+  	      'Netlify-CDN-Cache-Control': `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
+		  'Netlify-Vary': '',
+		  //inventory inventory-item inventory-item:{serial} cache tags are added dynamically in server/plugins/cache-tags.ts
+  	    },
+  	  },
+  	},
 
 	nitro: {
 		preset: 'netlify',
@@ -176,13 +79,13 @@ hooks: {
 	 */
 	'nitro:build:public-assets': async (nitro) => {
 		if (isPreviewMode) {
-			console.log('Preview mode active; skipping _redirects, forms registration, and sitemap generation.')
+			console.log('Preview mode active; skipping _redirects and forms registration.')
 			return
 		}
 
 		const apiRoot = process.env.API_ROOT_URL
 		if (!apiRoot) {
-			console.warn('Missing API_ROOT_URL; skipping _redirects, forms registration, and sitemap generation.')
+			console.warn('Missing API_ROOT_URL; skipping _redirects and forms registration.')
 			return
 		}
 
@@ -263,13 +166,6 @@ hooks: {
 		} catch (e) {
 			console.warn('Skipping _netlify-forms.html generation:', e)
 		}
-
-		/* 3) Build sitemap.xml from CMS data */
-		try {
-			await buildSitemap({ apiRoot, siteRoot: process.env.SITE_ROOT_URL, publishDir })
-		} catch (err) {
-			console.error('Failed to build sitemap.xml:', err)
-		}
 	},
 },
 
@@ -300,7 +196,11 @@ hooks: {
 
 	devtools: { enabled: true },
 	devServer: { host: '0.0.0.0', port: 3000 },
-	vite: { plugins: [tailwindcss()] },
+	vite: {
+	  plugins: [
+	    ...tailwindcss(),
+	  ],
+	},
 
 	modules: [
 		'@nuxt/ui-pro',

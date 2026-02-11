@@ -1,13 +1,7 @@
-<!-- pages/inventory.vue -->
 <script lang="ts" setup>
 import type { Ref } from "vue";
-import { getInventoryLiteList } from "~/services/api/get-inventory-lite-list";
-import {
-  isInventoryItem,
-  isPlaceholderInventoryItem,
-  type InventoryItem,
-  type PlaceholderInventoryItem,
-} from "~/types/inventory-item";
+import type { InventoryItem } from "~/types/inventory-item";
+import { getFullInventoryList } from "~/services/api/get-full-inventory-list";
 import {
   getDrivingDistances,
   getUserPosition,
@@ -16,8 +10,6 @@ import {
 import type { LocationsMapSettings } from "~/types/locations-map-settings";
 import { getLocationsMapSettings } from "~/services/api/get-locations-map-settings";
 import RegionGateModal from "~/components/region-gate-modal.vue";
-import PlaceholderInventoryCard from "~/components/placeholder-inventory-card.vue";
-import { getInventoryPaginatedList } from "~/services/api/get-inventory-paginated-list";
 
 definePageMeta({ layout: "default", key: "inventory-page" });
 
@@ -25,11 +17,15 @@ const config = useRuntimeConfig();
 const route = useRoute();
 
 /**
- * 1) SSR waits only on the lite list (placeholders)
+ * SSR waits on the full inventory list
  */
-const { data, pending, error, refresh } = await useAsyncData<
-  (PlaceholderInventoryItem | InventoryItem)[]
->("inventory-list", getInventoryLiteList);
+const { data, pending, error, refresh } = await useAsyncData<InventoryItem[]>(
+  "inventory-list-full",
+  async () => {
+    const items = await getFullInventoryList();
+    return items;
+  }
+);
 
 const {
   data: mapSettings,
@@ -41,110 +37,6 @@ const {
   getLocationsMapSettings
 );
 
-/**
- * 2) Client-only background hydration of full records
- */
-const fullHydrationPending = ref(false);
-const fullHydrationError = ref<string | null>(null);
-
-const nextCursor = ref<string | null>(null);
-const hydratedSerials = ref(new Set<string>());
-
-/** Prevent starting hydration more than once */
-const hydrationStarted = ref(false);
-
-function mergeFullItemsIntoData(items: InventoryItem[]) {
-  if (!data.value) return;
-
-  // Build index for fast replacement
-  const indexBySerial = new Map<string, number>();
-  for (let i = 0; i < data.value.length; i++) {
-    indexBySerial.set(data.value[i].serialNumber, i);
-  }
-
-  for (const item of items) {
-    const idx = indexBySerial.get(item.serialNumber);
-    if (idx === undefined) continue;
-
-    // Replace placeholder/old item with full item (reactive)
-    data.value.splice(idx, 1, item);
-    hydratedSerials.value.add(item.serialNumber);
-  }
-}
-
-async function hydrateInventoryInBatches() {
-  if (hydrationStarted.value) return;
-  hydrationStarted.value = true;
-
-  fullHydrationPending.value = true;
-  fullHydrationError.value = null;
-
-  let cancelled = false;
-  onBeforeUnmount(() => {
-    cancelled = true;
-  });
-
-  try {
-    // Make sure lite list exists before starting
-    if (!data.value || data.value.length === 0) return;
-
-    /**
-     * Fetch first 6 full records ASAP
-     */
-    const first = await getInventoryPaginatedList(30, null);
-    if (cancelled) return;
-
-    nextCursor.value = first.nextCursor ?? null;
-    mergeFullItemsIntoData(first.items);
-
-    /**
-     * Continue loading in chunks of 30 until exhausted
-     */
-    while (!cancelled && nextCursor.value) {
-      const page = await getInventoryPaginatedList(30, nextCursor.value);
-      if (cancelled) return;
-
-      nextCursor.value = page.nextCursor ?? null;
-      mergeFullItemsIntoData(page.items);
-
-      // Safety: avoid infinite loop if API misbehaves
-      if (!page.items || page.items.length === 0) break;
-
-      // Yield to keep UI responsive
-      await new Promise((r) => setTimeout(r, 0));
-    }
-  } catch (e: any) {
-    fullHydrationError.value = e?.message ?? "Failed to hydrate inventory.";
-  } finally {
-    fullHydrationPending.value = false;
-  }
-}
-
-/**
- * Fire-and-forget BEFORE mount (client only)
- * (We do not await this; page render is not blocked.)
- */
-if (import.meta.client) {
-  onBeforeMount(() => {
-    // only start once, and only if we have lite list
-    if (data.value?.length) {
-      void hydrateInventoryInBatches();
-    } else {
-      // If for some reason data isn't ready, start once it is
-      const stop = watch(
-        () => data.value?.length ?? 0,
-        (len) => {
-          if (len > 0) {
-            stop();
-            void hydrateInventoryInBatches();
-          }
-        },
-        { immediate: true }
-      );
-    }
-  });
-}
-
 /* ---------------- SEO: canonical, description, OG/Twitter ---------------- */
 
 const canonicalUrl = computed(() => `${config.public.siteRootUrl}/inventory/`);
@@ -152,8 +44,6 @@ const canonicalUrl = computed(() => `${config.public.siteRootUrl}/inventory/`);
 const pageDescription = computed(() => {
   return `Browse in-stock sheds by size, model, price, and location. Real-time availability, delivery options, and financing.`;
 });
-
-const ogImageAlt = computed(() => "Inventory");
 
 useHead(() => {
   const links: any[] = [{ rel: "canonical", href: canonicalUrl.value }];
@@ -225,7 +115,6 @@ const driveTimeTextBySlug = computed<Record<string, string>>(() => {
   return out;
 });
 
-/** Meters map for distance sort */
 const distanceMetersByLocationSlug = computed<Record<string, number | null>>(() =>
   Object.fromEntries(
     Object.entries(locationDistanceBySlug.value).map(([slug, res]) => [
@@ -254,7 +143,6 @@ const {
   distanceMetersByLocationSlug,
 });
 
-/** Region gate: if multiple regions and no selection, block with modal */
 const gate = useRegionGate({
   items: data as Ref<InventoryItem[] | null>,
   regionSlug: computed({
@@ -321,7 +209,6 @@ async function ensureDistances() {
   }
 }
 
-/** Kick off distance calc only when needed */
 watch(sortMode, async (m) => {
   if (m === "distance-from-user") await ensureDistances();
 });
@@ -329,7 +216,6 @@ watch(filtered, async () => {
   if (sortMode.value === "distance-from-user") await ensureDistances();
 });
 
-/** Smooth scroll to filters */
 const scrollToFilters = () => {
   const el = document.getElementById("filters-section");
   if (!el) return;
@@ -342,6 +228,7 @@ const scrollToFilters = () => {
 const totalCount = computed(() => data.value?.length ?? 0);
 const hiddenByFilters = computed(() => Math.max(0, totalCount.value - filtered.value.length));
 </script>
+
 
 <template>
   <PageDataGate
@@ -427,15 +314,7 @@ const hiddenByFilters = computed(() => Math.max(0, totalCount.value - filtered.v
 
           <CardGallery class="my-8">
             <div v-for="inventoryItem in sorted" :key="inventoryItem.serialNumber">
-              <PlaceholderInventoryCard
-                v-if="isPlaceholderInventoryItem(inventoryItem)"
-                :serial-number="inventoryItem.serialNumber"
-                :size="inventoryItem.size"
-                :product-title="inventoryItem.title"
-                :hero-base64svg="inventoryItem.heroBase64svg"
-              />
               <InventoryCard
-                v-else-if="isInventoryItem(inventoryItem)"
                 :hero-image="inventoryItem.heroImage"
                 :serial-number="inventoryItem.serialNumber"
                 :size="inventoryItem.size"

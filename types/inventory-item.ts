@@ -11,6 +11,11 @@ export interface PlaceholderInventoryItem {
   heroBase64svg: string | null
 }
 
+export interface InventoryColorEntry {
+  colorType: string
+  colorName: string
+}
+
 // Use an interface to allow self-reference in the type.
 export interface InventoryItem {
   heroImage: ImageMediaItem
@@ -23,9 +28,7 @@ export interface InventoryItem {
   usedBuilding: boolean
   cashPrice: number
   discountAmount: number | null
-  roofColor: string
-  sidingColor: string
-  trimColor: string
+  colors: InventoryColorEntry[]
   description: string
   highlightedLabel: string | null
   highlightedDescription: string | null
@@ -53,9 +56,12 @@ export const InventoryItemSchema: z.ZodType<InventoryItem> = z.lazy(() =>
       usedBuilding: z.boolean(),
       cashPrice: z.number().finite(),
       discountAmount: z.number().finite().nullable(),
-      roofColor: z.string(),
-      sidingColor: z.string(),
-      trimColor: z.string(),
+      colors: z.array(
+        z.object({
+          colorType: z.string(),
+          colorName: z.string(),
+        })
+      ),
       description: z.string(),
       highlightedLabel: z.string().nullable(),
       highlightedDescription: z.string().nullable(),

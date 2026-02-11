@@ -80,6 +80,13 @@ const seoDescription = computed(() => {
     : text.slice(0, MAX - 1).replace(/\s+\S*$/, "") + "…";
 });
 
+const titleString = computed(() => {
+  if (!data.value) return "";
+  return `${data.value.usedBuilding ? "Used" : "New"}${data.value.size ? ' ' + data.value.size + ' ' : ' '}${
+    data.value.product.override_page_title ?? data.value.product.title
+  }`;
+});
+
 /* ---------- Head/meta ---------- */
 useHead(() => {
   // Preconnect/dns-prefetch to the image CDN/origin + Preload LCP image
@@ -117,9 +124,7 @@ useHead(() => {
 useSeoMeta({
   title: () =>
     data.value
-      ? `${data.value.usedBuilding ? "Used" : "New"} ${data.value.size} ${
-          data.value.product.title
-        } Shed - ${config.public.pageTitleSiteName}`
+      ? `${titleString.value} - ${config.public.pageTitleSiteName}`
       : `Inventory Item Details - ${config.public.pageTitleSiteName}`,
   description: () => seoDescription.value,
 
@@ -127,9 +132,7 @@ useSeoMeta({
   ogType: "website",
   ogTitle: () =>
     data.value
-      ? `${data.value.usedBuilding ? "Used" : "New"} ${data.value.size} ${
-          data.value.product.title
-        } Shed - ${config.public.pageTitleSiteName}`
+      ? `${titleString.value} - ${config.public.pageTitleSiteName}`
       : `Inventory Item Details - ${config.public.pageTitleSiteName}`,
   ogDescription: () => seoDescription.value,
   ogUrl: () => canonicalUrl.value,
@@ -142,10 +145,8 @@ useSeoMeta({
   twitterCard: () => (ogImageUrl.value ? "summary_large_image" : "summary"),
   twitterTitle: () =>
     data.value
-      ? `${data.value.usedBuilding ? "Used" : "New"} ${data.value.size} ${
-          data.value.product.title
-        } Shed`
-      : "Inventory Item Details",
+      ? `${titleString.value} - ${config.public.pageTitleSiteName}`
+      : "Inventory Item Details", 
   twitterDescription: () => seoDescription.value,
   twitterImage: () => ogImageUrl.value,
 });
@@ -171,9 +172,7 @@ useSchemaOrg(() => {
   return [
     defineWebPage({
       "@type": "WebPage",
-      name: `${data.value.usedBuilding ? "Used" : "New"} ${data.value.size} ${
-        data.value.product.title
-      } Shed`,
+      name: `${titleString.value}`,
       description: seoDescription.value,
       url: canonicalUrl.value,
     }),
@@ -182,15 +181,13 @@ useSchemaOrg(() => {
         { name: "Home", item: config.public.siteRootUrl },
         { name: "Inventory", item: `${config.public.siteRootUrl}/inventory` },
         {
-          name: `${data.value.size} ${data.value.product.title}`,
+          name: `${titleString.value}`,
           item: canonicalUrl.value,
         },
       ],
     }),
     defineProduct({
-      name: `${data.value.usedBuilding ? "Used" : "New"} ${data.value.size} ${
-        data.value.product.title
-      } Shed`,
+      name: `${titleString.value}`,
       sku: data.value.serialNumber,
       description: seoDescription.value,
       image: images.length ? images : undefined,
@@ -272,7 +269,7 @@ const ribbonTextColor = computed<string | null>(() => {
     <div v-if="data">
       <Heading
         class="mt-12 md:mt-24"
-        :text="`${data.usedBuilding ? 'Used' : 'New'}${data.size ? ' ' + data.size + ' ' : ' '} ${data.product.title}`"
+        :text="titleString"
         heading-level="h1"
         text-alignment="center"
       />
@@ -394,6 +391,19 @@ const ribbonTextColor = computed<string | null>(() => {
               <div v-if="data.lotNumber" class="flex gap-2">
                 <span>Lot Number:</span>
                 <span class="font-bold">{{ data.lotNumber ?? "N/A" }}</span>
+              </div>
+              <div v-if="data.colors.length > 0" class="flex flex-col gap-2 mt-4">
+                <span>Colors:</span>
+                <div class="flex flex-col ml-4 gap-2">
+                  <div 
+                    v-for="(colorEntry, index) in data.colors"
+                    :key="index"
+                    class="flex gap-2"
+                  >
+                    <span>{{colorEntry.colorType}}:</span>
+                    <span class="font-bold">{{colorEntry.colorName}}</span>
+                  </div>
+                </div>
               </div>
             </div>
             <div>
