@@ -9,33 +9,41 @@ const isPreviewMode = process.env.PREVIEW_MODE === 'true'
 const EDGE_TTL = Number(process.env.EDGE_TTL ?? 300)
 const EDGE_SWR = Number(process.env.EDGE_SWR ?? 86400)
 
-/**
- * BUILD-TIME: fetch prerender list and emit `.nuxt/prerender-routes.generated.ts`
- * (NO normalization here; endpoint already returns normalized routes)
- */
 async function writePrerenderRouteModule(params: { apiRoot: string; outDir: string }) {
-	const { apiRoot, outDir } = params
+  const { apiRoot, outDir } = params
 
-	const res = await fetch(`${apiRoot}/api/get-prerender-page-list`, {
-		headers: { Accept: 'application/json' },
-	})
-	if (!res.ok) throw new Error(`get-prerender-page-list ${res.status} ${res.statusText}`)
+  const res = await fetch(`${apiRoot}/api/get-prerender-page-list`, {
+    headers: { Accept: 'application/json' },
+  })
+  if (!res.ok) throw new Error(`get-prerender-page-list ${res.status} ${res.statusText}`)
 
-	const json = (await res.json()) as { data?: unknown }
-	const raw = Array.isArray(json.data) ? (json.data as string[]) : []
+  const json = (await res.json()) as { data?: unknown }
+  const raw = Array.isArray(json.data) ? (json.data as string[]) : []
 
-	// Store exactly as provided (dedupe + sort only for stability)
-	const routes = Array.from(new Set(raw.map(String))).sort((a, b) => a.localeCompare(b))
+  // Endpoint already returns normalized routes; dedupe + sort only
+  const routes = Array.from(new Set(raw.map(String))).sort((a, b) => a.localeCompare(b))
 
-	const filePath = path.join(outDir, 'prerender-routes.generated.ts')
-	const contents =
-		`// AUTO-GENERATED AT BUILD TIME. DO NOT EDIT.\n` +
-		`export default ${JSON.stringify(routes, null, 2)} as const;\n`
+  fs.mkdirSync(outDir, { recursive: true })
 
-	fs.mkdirSync(outDir, { recursive: true })
-	fs.writeFileSync(filePath, contents, 'utf8')
-	console.log(`[prerender] wrote ${routes.length} routes -> ${filePath}`)
+  // Runtime module (what #build resolves to)
+  const mjsPath = path.join(outDir, 'prerender-routes.generated.mjs')
+  fs.writeFileSync(
+    mjsPath,
+    `// AUTO-GENERATED AT BUILD TIME. DO NOT EDIT.\nexport default ${JSON.stringify(routes, null, 2)};\n`,
+    'utf8'
+  )
+
+  // Types for TS/editor (optional but nice)
+  const dtsPath = path.join(outDir, 'prerender-routes.generated.d.ts')
+  fs.writeFileSync(
+    dtsPath,
+    `// AUTO-GENERATED AT BUILD TIME. DO NOT EDIT.\ndeclare const routes: readonly string[];\nexport default routes;\n`,
+    'utf8'
+  )
+
+  console.log(`[prerender] wrote ${routes.length} routes -> ${mjsPath}`)
 }
+
 
 export default defineNuxtConfig({
 	compatibilityDate: '2024-11-01',
