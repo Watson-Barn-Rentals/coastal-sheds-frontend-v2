@@ -1,17 +1,6 @@
 <script setup lang="ts">
 import { computed } from "vue"
-
-// Generated at build time into `.nuxt/prerender-routes.generated.mjs`
-let PRERENDERED: readonly string[] = []
-
-try {
-  PRERENDERED =
-    ((await import("#build/prerender-routes.generated.mjs")).default as readonly string[]) ?? []
-} catch {
-  PRERENDERED = []
-}
-
-const PRERENDER_SET = new Set<string>(PRERENDERED as string[])
+import prerenderedRoutes from "#build/prerender-routes.generated"
 
 type To =
   | string
@@ -29,6 +18,8 @@ const props = defineProps<{
   target?: string
   rel?: string
 }>()
+
+const PRERENDER_SET = new Set<string>(prerenderedRoutes as readonly string[])
 
 const isExternal = (s: string) =>
   /^https?:\/\//i.test(s) || s.startsWith("mailto:") || s.startsWith("tel:")
@@ -50,32 +41,28 @@ const normalizeForLookup = (input: string): string => {
   return p
 }
 
-const raw = computed(() => {
+const nuxtLinkTo = computed(() => props.to ?? props.href)
+
+const rawForLookup = computed(() => {
   if (props.href) return props.href
   if (typeof props.to === "string") return props.to
   if (props.to && typeof props.to === "object" && props.to.path) return props.to.path
   return ""
 })
 
-const normalized = computed(() => normalizeForLookup(raw.value))
-
+const normalized = computed(() => normalizeForLookup(rawForLookup.value))
 const isPrerendered = computed(() => PRERENDER_SET.has(normalized.value))
 
 const useAnchor = computed(() => {
-  // External always anchor
-  if (raw.value && isExternal(raw.value)) return true
-
-  // Internal but NOT prerendered -> hard navigation
-  return !isPrerendered.value
+  if (rawForLookup.value && isExternal(rawForLookup.value)) return true
+  return !isPrerendered.value // internal but not prerendered => hard nav
 })
-
-const nuxtLinkTo = computed(() => props.to ?? props.href)
 
 const anchorHref = computed(() => {
   if (props.href) return props.href
   if (typeof props.to === "string") return props.to
   if (props.to && typeof props.to === "object" && props.to.path) return props.to.path
-  return raw.value || "#"
+  return rawForLookup.value || "#"
 })
 
 const relAttr = computed(() => {
