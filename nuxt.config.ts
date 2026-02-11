@@ -25,10 +25,6 @@ export default defineNuxtConfig({
   	    headers: {
   	      'Cache-Control': 'public, max-age=0, must-revalidate',
   	      'Netlify-CDN-Cache-Control': `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
-
-  	      // Prevent cache key varying by query params (client-side filters)
-  	      // Adjust as needed if you later want certain query params to vary.
-  	      'Netlify-Vary': '',
 		  'Cache-Tag': 'inventory inventory-list',
   	    },
   	  },
@@ -39,7 +35,6 @@ export default defineNuxtConfig({
   	    headers: {
   	      'Cache-Control': 'public, max-age=0, must-revalidate',
   	      'Netlify-CDN-Cache-Control': `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
-		  'Netlify-Vary': '',
 		  //inventory inventory-item inventory-item:{serial} cache tags are added dynamically in server/plugins/cache-tags.ts
   	    },
   	  },
