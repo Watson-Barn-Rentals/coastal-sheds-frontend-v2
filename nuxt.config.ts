@@ -249,7 +249,6 @@ export default defineNuxtConfig({
 	},
 
 	modules: [
-		"~/modules/prerender-routes",
 		"@nuxt/ui-pro",
 		"@nuxtjs/color-mode",
 		"@vueuse/nuxt",
