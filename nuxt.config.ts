@@ -19,7 +19,7 @@ export default defineNuxtConfig({
 	ssr: !isPreviewMode,
 
   	routeRules: {
-  	  '/inventory': {
+  	  '/inventory/': {
   	    ssr: true,
   	    prerender: false,
   	    headers: {
