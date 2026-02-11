@@ -63,7 +63,7 @@ const toTrailing = (url?: string) => {
 							:menu-item="item"
 							class="text-xs md:text-sm lg:text-base hover:text-hovered-link"
 						/>
-						<AppLink
+						<NuxtLink
 							v-if="data.show_phone_call_to_action"
 							:to="`tel:${data.phone_call_to_action_phone_number}`"
 							class="bg-brand rounded-full flex flex-col items-center justify-center px-4 md:px-6 py-1 relative"
@@ -73,7 +73,7 @@ const toTrailing = (url?: string) => {
 							<span class="text-nowrap font-bold text-white text-xs lg:text-sm">
 								{{ data.phone_call_to_action_phone_number.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') }}
 							</span>
-						</AppLink>
+						</NuxtLink>
 						<ColorModeToggleButton v-if="data.show_display_mode_toggle" class="my-auto w-4 m-1" />
 					</nav>
 				</div>
@@ -124,7 +124,7 @@ const toTrailing = (url?: string) => {
 							:menu-item="item"
 							class="text-xs md:text-sm lg:text-base hover:text-hovered-link"
 						/>
-						<AppLink
+						<NuxtLink
 							v-if="data.show_phone_call_to_action"
 							:to="`tel:${data.phone_call_to_action_phone_number}`"
 							class="bg-brand rounded-full flex flex-col items-center justify-center px-4 md:px-6 py-1 relative"
@@ -134,7 +134,7 @@ const toTrailing = (url?: string) => {
 							<span class="text-nowrap font-bold text-white text-xs lg:text-sm">
 								{{ data.phone_call_to_action_phone_number.replace(/(\d{3})(\d{3})(\d{4})/, '($1) $2-$3') }}
 							</span>
-						</AppLink>
+						</NuxtLink>
 						<ColorModeToggleButton v-if="data.show_display_mode_toggle" class="my-auto w-4 m-1" />
 					</nav>
 				</div>
@@ -166,7 +166,7 @@ const toTrailing = (url?: string) => {
 	>
 		<template #content>
 			<div class="flex">
-				<AppLink
+				<NuxtLink
 					:to="toTrailing('/')"
 					class="h-24 max-w-1/2 m-4 cursor-pointer"
 					@click="toggleMenu"
@@ -174,7 +174,7 @@ const toTrailing = (url?: string) => {
 					<div class="w-full h-full flex items-center justify-center">
 						<img :src="data?.logo_url" alt="Logo" class="max-w-full max-h-full object-contain" />
 					</div>
-				</AppLink>
+				</NuxtLink>
 				<UIcon name="material-symbols:close-rounded" class="absolute top-4 right-4 h-12 w-12 text-black dark:text-white cursor-pointer" @click="toggleMenu" />
 			</div>
 

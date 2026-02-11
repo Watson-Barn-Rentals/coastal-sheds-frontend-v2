@@ -27,10 +27,10 @@ defineProps<{
         <p class="text-lg font-bold text-center">{{ title }}</p>
         <p v-if="description" class="text-sm">{{ description }}</p>
         <div class="mt-auto"></div>
-        <AppLink v-if="designer_link" :to="designer_link" class="flex justify-end text-hovered-link font-bold hover:right-2 cursor-pointer">
+        <NuxtLink v-if="designer_link" :to="designer_link" class="flex justify-end text-hovered-link font-bold hover:right-2 cursor-pointer">
           <span class="my-auto leading-none">Customize in 3D</span>
           <UIcon name="si:arrow-right-fill"  class="w-6 h-6 my-auto"/>
-        </AppLink>
+        </NuxtLink>
       </div>
     </div>
 </template>

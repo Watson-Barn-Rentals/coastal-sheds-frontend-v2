@@ -211,7 +211,7 @@ const onSubmit = async (e: Event) => {
           <span>By checking this box and submitting this form, you agree to receive text messages, phone calls, and/or emails on the contact methods you provide. </span>
           <span>Message and data rates may apply. </span>
           <span>You may opt out at any time. </span>
-          <span>See our <AppLink to="/privacy-policy" class="text-hovered-link hover:underline">privacy policy</AppLink>.</span>
+          <span>See our <NuxtLink to="/privacy-policy" class="text-hovered-link hover:underline">privacy policy</NuxtLink>.</span>
         </label>
       </div>
     </div>

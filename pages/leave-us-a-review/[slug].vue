@@ -92,7 +92,7 @@ const handleChannelClick = (channel: ReviewRequestChannelItem) => {
           <div
             class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 md:gap-6 place-items-center"
           >
-            <AppLink
+            <NuxtLink
               v-for="(channel, index) in data.template.channels"
               :key="index"
               :to="channel.reviewUrl"
@@ -109,7 +109,7 @@ const handleChannelClick = (channel: ReviewRequestChannelItem) => {
                 loading="lazy"
                 decoding="async"
               />
-            </AppLink>
+            </NuxtLink>
           </div>
         </div>
 

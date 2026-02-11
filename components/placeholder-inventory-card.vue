@@ -12,7 +12,7 @@ const props = defineProps<{
 </script>
 
 <template>
-	<AppLink
+	<NuxtLink
 		:to="`/inventory/${serialNumber}/`"
 		class="group flex h-full flex-col overflow-hidden rounded-2xl bg-background-accent shadow-lg transition-all duration-200 hover:scale-105 hover:shadow-xl dark:bg-background-accent-dark"
 	>
@@ -60,5 +60,5 @@ const props = defineProps<{
 
 			<div class="mt-auto"></div>
 		</div>
-	</AppLink>
+	</NuxtLink>
 </template>

@@ -32,7 +32,7 @@ const isDark = computed(() => colorMode.value === 'dark')
       v-for="(button, index) in props.data.buttons"
       :key="index"
     >
-      <AppLink :to="button.destination">
+      <NuxtLink :to="button.destination">
         <button 
           class="flex gap-2 p-3 rounded-lg shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
           :style="{
@@ -57,7 +57,7 @@ const isDark = computed(() => colorMode.value === 'dark')
             class="group-hover:animate-arrow-loop h-6 w-6 my-auto sm:h-8 sm:w-8"
           />
         </button>
-      </AppLink>
+      </NuxtLink>
     </div>
   </div>
 </template>

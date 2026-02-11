@@ -235,7 +235,7 @@ useSchemaOrg(() => {
             <div class="w-full md:w-1/2 flex flex-col gap-4 text-lg">
               <div class="flex gap-2">
                 <span class="font-bold">Address:</span>
-                <AppLink
+                <NuxtLink
                   target="_blank"
                   :to="
                     getGoogleMapsLinkForAddress(
@@ -247,23 +247,23 @@ useSchemaOrg(() => {
                   "
                   class="text-hovered-link underline"
                   >{{ data.address }}, {{ data.city }}, {{ data.state }},
-                  {{ data.zip }}</AppLink
+                  {{ data.zip }}</NuxtLink
                 >
               </div>
               <div class="flex gap-2" v-if="data.phone">
                 <span class="font-bold">Phone Number:</span>
-                <AppLink
+                <NuxtLink
                   :to="`tel:${data.phone}`"
                   class="text-hovered-link underline"
-                  >{{ getFormattedPhoneNumber(data.phone) }}</AppLink
+                  >{{ getFormattedPhoneNumber(data.phone) }}</NuxtLink
                 >
               </div>
               <div class="flex gap-2" v-if="data.email">
                 <span class="font-bold">Email:</span>
-                <AppLink
+                <NuxtLink
                   :to="`mailto:${data.email}`"
                   class="text-hovered-link underline"
-                  >{{ data.email }}</AppLink
+                  >{{ data.email }}</NuxtLink
                 >
               </div>
               <span class="font-bold underline" v-if="Object.keys(data.hours).length > 0">Hours</span>
@@ -278,7 +278,7 @@ useSchemaOrg(() => {
                 </div>
               </div>
               <div class="flex justify-center mt-8">
-                <AppLink :to="`/inventory?location=${data.slug}`" class="shrink-0 m">
+                <NuxtLink :to="`/inventory?location=${data.slug}`" class="shrink-0 m">
                   <button
                     class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
                   >
@@ -293,7 +293,7 @@ useSchemaOrg(() => {
                       View Inventory at this Location
                     </p>
                   </button>
-                </AppLink>
+                </NuxtLink>
               </div>
             </div>
             <div v-if="data.salesReps.length > 0" class="w-full md:w-1/2 flex flex-col gap-4">
