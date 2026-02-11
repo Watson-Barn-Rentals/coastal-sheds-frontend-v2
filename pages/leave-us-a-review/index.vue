@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { NuxtLink } from '#components'
+import { AppLink } from '#components'
 import { getFallbackReviewRequest } from '~/services/api/get-fallback-review-request'
 import type { ReviewRequestTemplateItem } from '~/types/review-request-template-item'
 
@@ -80,7 +80,7 @@ useHead({
           <div
             class="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-4 md:gap-6 place-items-center"
           >
-            <NuxtLink
+            <AppLink
               v-for="(channel, index) in data.channels"
               :key="index"
               :to="channel.reviewUrl"
@@ -96,7 +96,7 @@ useHead({
                 loading="lazy"
                 decoding="async"
               />
-            </NuxtLink>
+            </AppLink>
           </div>
         </div>
 

@@ -22,7 +22,7 @@ const handleClick = () => { dropdownState.value = !dropdownState.value }
 </script>
 
 <template>
-	<NuxtLink
+	<AppLink
 		v-if="!menuItem.has_children && menuItem.url"
 		:to="toTrailing(menuItem.url)"
 		class="mr-auto"
@@ -40,7 +40,7 @@ const handleClick = () => { dropdownState.value = !dropdownState.value }
 				<span class="select-none text-nowrap my-auto">{{ menuItem.text }}</span>
 			</div>
 		</li>
-	</NuxtLink>
+	</AppLink>
 
 	<div v-else class="flex flex-col gap-2">
 		<li class="relative font-title flex gap-2 text-xl cursor-pointer border-b-2 border-transparent pb-1 mr-auto" @click="handleClick">
@@ -52,7 +52,7 @@ const handleClick = () => { dropdownState.value = !dropdownState.value }
 		</li>
 
 		<div v-if="dropdownState" class="flex flex-col gap-4 pl-8 pb-4">
-			<NuxtLink
+			<AppLink
 				v-for="(subItem, subIndex) in menuItem.children"
 				:key="`sub-item-${subIndex}`"
 				:to="toTrailing(subItem.url)"
@@ -71,7 +71,7 @@ const handleClick = () => { dropdownState.value = !dropdownState.value }
 						<span class="select-none text-nowrap my-auto">{{ subItem.text }}</span>
 					</div>
 				</li>
-			</NuxtLink>
+			</AppLink>
 		</div>
 	</div>
 </template>

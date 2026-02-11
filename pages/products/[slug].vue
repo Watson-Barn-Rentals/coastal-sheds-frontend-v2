@@ -282,7 +282,7 @@ const images = computed<ImageMediaItem[]>(() => {
 					/>
 					<div class="w-full md:w-1/2 flex flex-col">
 						<div class="flex justify-center mb-10 gap-10">
-							<NuxtLink
+							<AppLink
 								v-if="data.designer_link"
 								:to="data.designer_link"
 								target="_blank"
@@ -307,8 +307,8 @@ const images = computed<ImageMediaItem[]>(() => {
 										Design in 3D
 									</p>
 								</button>
-							</NuxtLink>
-							<NuxtLink
+							</AppLink>
+							<AppLink
 								:to="`/inventory?product=${data.slug}`"
 								class="shrink-0"
 								@click="
@@ -331,7 +331,7 @@ const images = computed<ImageMediaItem[]>(() => {
 										View Inventory
 									</p>
 								</button>
-							</NuxtLink>
+							</AppLink>
 						</div>
 						<WysiwygRenderer :content="data.long_description" />
 					</div>

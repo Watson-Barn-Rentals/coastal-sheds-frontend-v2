@@ -66,7 +66,7 @@ useHead({
         <p class="mt-2">
           We use cookies for essential functions and analytics. Google Analytics is connected and may be used for remarketing.
           We also use Meta Pixel and Hotjar. See our
-          <NuxtLink class="text-blue-600 hover:underline" to="/cookies">Cookies Notice</NuxtLink> for details and choices.
+          <AppLink class="text-blue-600 hover:underline" to="/cookies">Cookies Notice</AppLink> for details and choices.
         </p>
       </div>
 
@@ -86,7 +86,7 @@ useHead({
         <h2 class="text-xl font-semibold text-gray-900 dark:text-gray-100">Your Choices</h2>
         <ul class="mt-2 list-disc pl-6 space-y-1">
           <li><strong>Communications:</strong> If you receive marketing, you can opt out using the links provided or by contacting us.</li>
-          <li><strong>Cookies:</strong> Manage cookies in your browser and see our <NuxtLink class="text-blue-600 hover:underline" to="/cookies">Cookies Notice</NuxtLink>.</li>
+          <li><strong>Cookies:</strong> Manage cookies in your browser and see our <AppLink class="text-blue-600 hover:underline" to="/cookies">Cookies Notice</AppLink>.</li>
           <li><strong>Access/Deletion:</strong> Request access to or deletion of your personal information at
             <a class="text-blue-600 hover:underline" :href="`mailto:${legal.legalContactEmail}`">{{ legal.legalContactEmail }}</a>.
           </li>

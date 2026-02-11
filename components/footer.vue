@@ -7,9 +7,9 @@
         </div>
         <div class="flex justify-center gap-5 my-2">
             <span class="text-xs">© 2025 Watson Barn Rentals. All rights reserved.</span>
-            <NuxtLink to="/privacy-policy" class="text-xs text-blue-600 hover:underline">Privacy Policy</NuxtLink>
-            <NuxtLink to="/terms-of-use" class="text-xs text-blue-600 hover:underline">Terms of Use</NuxtLink>
-            <NuxtLink to="/cookies" class="text-xs text-blue-600 hover:underline">Cookies Notice</NuxtLink>
+            <AppLink to="/privacy-policy" class="text-xs text-blue-600 hover:underline">Privacy Policy</AppLink>
+            <AppLink to="/terms-of-use" class="text-xs text-blue-600 hover:underline">Terms of Use</AppLink>
+            <AppLink to="/cookies" class="text-xs text-blue-600 hover:underline">Cookies Notice</AppLink>
         </div>
     </footer>
 </template>

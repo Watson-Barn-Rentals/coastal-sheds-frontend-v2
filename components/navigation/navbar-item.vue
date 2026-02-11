@@ -42,7 +42,7 @@ function getGridPositionStyle(subItem: SubMenuItem) {
 </script>
 
 <template>
-	<NuxtLink
+	<AppLink
 		v-if="!menuItem.has_children && menuItem.url"
 		:to="toTrailing(menuItem.url)"
 	>
@@ -58,7 +58,7 @@ function getGridPositionStyle(subItem: SubMenuItem) {
 				<span class="select-none text-nowrap my-auto">{{ menuItem.text }}</span>
 			</div>
 		</li>
-	</NuxtLink>
+	</AppLink>
 
 	<UPopover v-else v-model:open="dropdownState" :content="{ side: 'bottom', sideOffset: 20 }" :ui="{ content: 'bg-background dark:bg-background-dark border-2 border-background-accent dark:border-background-accent-dark rounded-lg shadow-xl p-8' }">
 		<li
@@ -79,7 +79,7 @@ function getGridPositionStyle(subItem: SubMenuItem) {
 
 		<template #content>
 			<div class="grid gap-4" :style="{ gridTemplateColumns: `repeat(${gridColumnCount || 1}, minmax(0, 1fr))` }">
-				<NuxtLink
+				<AppLink
 					v-for="(subItem, idx) in (menuItem.children ?? [])"
 					:key="`sub-item-${idx}`"
 					:to="toTrailing(subItem.url)"
@@ -90,7 +90,7 @@ function getGridPositionStyle(subItem: SubMenuItem) {
 				>
 					<UIcon v-if="subItem.icon" :name="subItem.icon" class="my-auto h-4 w-4 md:h-5 md:w-5 lg:h-6 lg:w-6" />
 					<span class="select-none text-nowrap my-auto">{{ subItem.text }}</span>
-				</NuxtLink>
+				</AppLink>
 			</div>
 		</template>
 	</UPopover>

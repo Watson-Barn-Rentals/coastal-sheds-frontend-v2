@@ -302,7 +302,7 @@ const ribbonTextColor = computed<string | null>(() => {
                   Send to my phone
                 </p>
               </button>
-              <NuxtLink
+              <AppLink
                 v-if="data.designerLink"
                 :to="data.designerLink"
                 target="_blank"
@@ -321,7 +321,7 @@ const ribbonTextColor = computed<string | null>(() => {
                     Customize in 3D
                   </p>
                 </button>
-              </NuxtLink>
+              </AppLink>
             </div>
             <h3 class="font-bold font-title text-lg mb-2">Building Details</h3>
             <div class="flex flex-col gap-1 ml-4">
@@ -356,32 +356,32 @@ const ribbonTextColor = computed<string | null>(() => {
               </div>
               <div class="flex gap-2">
                 <span>Product:</span>
-                <NuxtLink
+                <AppLink
                   v-if="!data.product.discontinued"
                   :to="`/products/${data.product.slug}`"
                   class="text-hovered-link hover:underline font-bold"
-                  >{{ data.product.title }}</NuxtLink
+                  >{{ data.product.title }}</AppLink
                 >
                 <span v-else class="font-bold">{{ data.product.title }} (Discontinued)</span>
               </div>
               <div class="flex gap-2">
                 <span>Product Line:</span>
-                <NuxtLink
+                <AppLink
                   v-if="!data.product.product_line_discontinued"
                   :to="`/product-lines/${data.product.product_line_slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.product.product_line_title }}
-                  {{ data.product.product_category_title }}</NuxtLink
+                  {{ data.product.product_category_title }}</AppLink
                 >
                 <span v-else class="font-bold">{{ data.product.product_line_title }} (Discontinued)</span>
               </div>
               <div class="flex gap-2">
                 <span>Location:</span>
-                <NuxtLink
+                <AppLink
                   :to="`/locations/${data.location.slug}`"
                   class="text-hovered-link hover:underline font-bold"
                   >{{ data.location.title }} ({{ data.location.city }},
-                  {{ data.location.state }})</NuxtLink
+                  {{ data.location.state }})</AppLink
                 >
               </div>
               <div class="flex gap-2">

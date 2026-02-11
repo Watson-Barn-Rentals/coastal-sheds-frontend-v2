@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-    <NuxtLink
+    <AppLink
         to="/"
         class="font-title pb-1 pt-2 px-0 flex flex-col cursor-pointer md:text-base shrink-0"
     >
@@ -20,5 +20,5 @@ defineProps<{
               />
             </div>
         </div>
-    </NuxtLink>
+    </AppLink>
 </template>
