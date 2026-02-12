@@ -20,19 +20,10 @@ const pageKey = `page:${normalizedPath}`
 
 const { data, pending, error, refresh } = await useAsyncData(
   pageKey,
-  () => getPageData(normalizedPath),
-  {
-    server: true,
-    default: () => null,
-  }
+  () => getPageData(normalizedPath)
 )
 
-if (process.client) {
-  console.log('CLIENT route.path', route.path, 'normalizedPath', normalizedPath)
-}
-if (process.server) {
-  console.log('SERVER route.path', route.path, 'normalizedPath', normalizedPath)
-}
+console.log("payload has key?", Object.prototype.hasOwnProperty.call(useNuxtApp().payload.data, pageKey))
 
 /** Prefer the CMS path (avoids duplicate URLs if someone hits /about?ref=…) */
 const canonicalUrl = computed(() => {
