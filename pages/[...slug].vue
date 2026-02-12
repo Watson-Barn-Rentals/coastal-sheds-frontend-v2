@@ -15,12 +15,14 @@ const normalizePath = (input?: string | null): string => {
   return p
 }
 
-const pagePath = computed(() => normalizePath(route.path))
+const normalizedPath = normalizePath(route.path)
+const pageKey = `page:${normalizedPath}`
 
 const { data, pending, error, refresh } = await useAsyncData(
-  () => `page:${pagePath.value}`,
-  () => getPageData(pagePath.value)
+  pageKey,
+  () => getPageData(normalizedPath)
 )
+
 
 /** Prefer the CMS path (avoids duplicate URLs if someone hits /about?ref=…) */
 const canonicalUrl = computed(() => {
