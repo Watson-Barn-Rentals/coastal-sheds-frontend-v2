@@ -19,7 +19,7 @@ const dataKey = computed(() => `page-${normalizePath(route.path)}`)
 
 const { data, pending, error, refresh } = await useAsyncData(
   dataKey,
-  () => getPageData(dataKey.value)
+  () => getPageData(normalizePath(route.path))
 )
 
 console.log("payload has key?", Object.prototype.hasOwnProperty.call(useNuxtApp().payload.data, dataKey.value))
