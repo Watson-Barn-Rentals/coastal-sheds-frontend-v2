@@ -20,7 +20,11 @@ const pageKey = `page:${normalizedPath}`
 
 const { data, pending, error, refresh } = await useAsyncData(
   pageKey,
-  () => getPageData(normalizedPath)
+  () => getPageData(normalizedPath),
+  {
+    server: true,
+    default: () => null,
+  }
 )
 
 
