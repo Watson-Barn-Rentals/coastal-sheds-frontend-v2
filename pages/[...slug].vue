@@ -27,6 +27,12 @@ const { data, pending, error, refresh } = await useAsyncData(
   }
 )
 
+if (process.client) {
+  console.log('CLIENT route.path', route.path, 'pagePath', pagePath.value)
+}
+if (process.server) {
+  console.log('SERVER route.path', route.path, 'pagePath', pagePath.value)
+}
 
 /** Prefer the CMS path (avoids duplicate URLs if someone hits /about?ref=…) */
 const canonicalUrl = computed(() => {
