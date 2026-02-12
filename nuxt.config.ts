@@ -272,6 +272,10 @@ export default defineNuxtConfig({
     	},
 	},
 
+	experimental: {
+		payloadExtraction: false,
+	},
+
 	modules: [
 		"@nuxt/ui-pro",
 		"@nuxtjs/color-mode",

@@ -22,8 +22,6 @@ const { data, pending, error, refresh } = await useAsyncData(
   () => getPageData(normalizePath(route.path))
 )
 
-console.log("payload has key?", Object.prototype.hasOwnProperty.call(useNuxtApp().payload.data, dataKey.value))
-
 /** Prefer the CMS path (avoids duplicate URLs if someone hits /about?ref=…) */
 const canonicalUrl = computed(() => {
 	const siteRoot = config.public.siteRootUrl
