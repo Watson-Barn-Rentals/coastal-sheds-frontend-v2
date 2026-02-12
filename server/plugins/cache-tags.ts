@@ -11,6 +11,6 @@ export default defineNitroPlugin((nitroApp) => {
 
     response.headers = response.headers || {}
 
-    response.headers['Cache-Tag'] = `inventory inventory-item inventory-item:${serial}`
+    response.headers['Cache-Tag'] = `inventory,inventory-item,inventory-item:${serial}`
   })
 })

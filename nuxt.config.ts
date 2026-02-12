@@ -27,8 +27,8 @@ export default defineNuxtConfig({
 			headers: {
 				"Cache-Control": "public, max-age=0, must-revalidate",
 				"Netlify-CDN-Cache-Control": `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
-				"Cache-Tag": "inventory inventory-list",
-				"Netlify-Vary": "header=x-cache-bucket",
+				"Cache-Tag": "inventory,inventory-list",
+				"Netlify-Vary": "country=us",
 			},
 		},
 
@@ -38,19 +38,10 @@ export default defineNuxtConfig({
 			headers: {
 				"Cache-Control": "public, max-age=0, must-revalidate",
 				"Netlify-CDN-Cache-Control": `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
-				"Netlify-Vary": "header=x-cache-bucket",
+				"Netlify-Vary": "country=us",
 				// inventory inventory-item inventory-item:{serial} tags added dynamically in server/plugins/cache-tags.ts
 			},
 		},
-
-		  // Catch-all: everything else
-  		"/**": {
-  		  // Let Nuxt decide per-route SSR/prerender, but apply caching headers.
-  		  headers: {
-  		    "Cache-Control": "public, max-age=0, must-revalidate",
-  		    "Netlify-CDN-Cache-Control": `public, s-maxage=${EDGE_TTL}, stale-while-revalidate=${EDGE_SWR}`,
-  		  },
-  		},
 	},
 
 	nitro: {
