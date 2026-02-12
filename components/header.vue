@@ -51,7 +51,7 @@ const toTrailing = (url?: string) => {
 			>
 				<div class="hidden sm:flex mx-2 h-full items-center justify-between">
 					<nav class="flex gap-x-2 md:gap-x-4 lg:gap-x-6 gap-y-24 flex-wrap justify-center items-center my-auto h-full overflow-hidden">
-						<HomeNavbarItem
+						<NavigationHomeNavbarItem
 							:logo-url="headerSettings.logo_url"
 							class="h-full mx-1"
 						/>
