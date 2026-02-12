@@ -7,10 +7,19 @@ definePageMeta({ layout: 'default', key: r => r.fullPath })
 const config = useRuntimeConfig()
 const route = useRoute()
 
+const normalizePath = (input?: string | null): string => {
+  let p = (input || "/").split("?")[0]?.split("#")[0] ?? "/"
+  if (!p.startsWith("/")) p = `/${p}`
+  p = p.replace(/\/+/g, "/")
+  if (p !== "/" && !p.endsWith("/")) p += "/"
+  return p
+}
+
+const pagePath = computed(() => normalizePath(route.path))
+
 const { data, pending, error, refresh } = await useAsyncData(
-  () => `page:${route.fullPath}`,
-  () => getPageData(route.fullPath),
-  { watch: [() => route.fullPath] }
+  () => `page:${pagePath.value}`,
+  () => getPageData(pagePath.value)
 )
 
 /** Prefer the CMS path (avoids duplicate URLs if someone hits /about?ref=…) */
