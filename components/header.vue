@@ -79,7 +79,7 @@ const toTrailing = (url?: string) => {
 		</div>
 
 		<div class="flex sm:hidden justify-between h-[58px] bg-background dark:bg-background-dark border-b-2 border-background-accent dark:border-background-accent-dark p-0.5">
-			<HomeNavbarItem
+			<NavigationHomeNavbarItem
 				:logo-url="headerSettings.logo_url"
 				class="h-full"
 			/>
@@ -112,7 +112,7 @@ const toTrailing = (url?: string) => {
 			>
 				<div class="hidden sm:flex mx-2 h-full items-center justify-between">
 					<nav class="flex gap-x-2 md:gap-x-4 lg:gap-x-6 gap-y-24 flex-wrap justify-center items-center my-auto h-full overflow-hidden w-full">
-						<HomeNavbarItem
+						<NavigationHomeNavbarItem
 							:logo-url="headerSettings.logo_url"
 							class="h-full mx-1"
 						/>
@@ -140,7 +140,7 @@ const toTrailing = (url?: string) => {
 		</div>
 
 		<div class="flex sm:hidden justify-between h-[58px] bg-background dark:bg-background-dark border-b-2 border-background-accent dark:border-background-accent-dark p-0.5">
-			<HomeNavbarItem
+			<NavigationHomeNavbarItem
 				:logo-url="headerSettings.logo_url"
 				class="h-full"
 			/>

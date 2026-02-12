@@ -27,7 +27,7 @@ defineProps<{
 
     <div class="flex min-h-0 flex-1 flex-col gap-2 px-4 py-4">
       <p class="text-xl font-bold text-center">{{ title }}</p>
-      <p class="text-sm text-center">{{ datePublished.toLocaleDateString() }}</p>
+      <p class="text-sm text-center">{{ datePublished.toDateString() }}</p>
       <p class="text-sm">{{ description }}</p>
       <div class="mt-auto"></div>
     </div>
