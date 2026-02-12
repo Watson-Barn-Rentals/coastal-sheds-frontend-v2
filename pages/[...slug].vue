@@ -15,15 +15,14 @@ const normalizePath = (input?: string | null): string => {
   return p
 }
 
-const normalizedPath = normalizePath(route.path)
-const pageKey = `page:${normalizedPath}`
+const dataKey = computed(() => `page-${normalizePath(route.path)}`)
 
 const { data, pending, error, refresh } = await useAsyncData(
-  pageKey,
-  () => getPageData(normalizedPath)
+  dataKey,
+  () => getPageData(dataKey.value)
 )
 
-console.log("payload has key?", Object.prototype.hasOwnProperty.call(useNuxtApp().payload.data, pageKey))
+console.log("payload has key?", Object.prototype.hasOwnProperty.call(useNuxtApp().payload.data, dataKey.value))
 
 /** Prefer the CMS path (avoids duplicate URLs if someone hits /about?ref=…) */
 const canonicalUrl = computed(() => {
