@@ -263,13 +263,6 @@ export default defineNuxtConfig({
 
 	vite: {
 		plugins: [tailwindcss()],
-    	define: {
-    	  // shows *which* nodes/attrs mismatched in production console
-    	  __VUE_PROD_HYDRATION_MISMATCH_DETAILS__: true,
-		
-    	  // optional: helps sometimes when debugging prod-only behavior
-    	  __VUE_PROD_DEVTOOLS__: true,
-    	},
 	},
 
 	modules: [
