@@ -340,7 +340,7 @@ const ribbonTextColor = computed<string | null>(() => {
                       >{{ formatPrice(data.cashPrice - data.discountAmount) }}</span
                     >
                   </div>
-                  <span>({{ formatPrice((data.cashPrice - (data.discountAmount ?? 0)) / config.public.rtoFactor)}} + tax / month on a {{ config.public.rtoTermMonths }} month term)</span>
+                  <span v-if="data.product.financing_available">({{ formatPrice((data.cashPrice - (data.discountAmount ?? 0)) / config.public.rtoFactor)}} + tax / month on a {{ config.public.rtoTermMonths }} month term)</span>
                 </div>
               </div>
               <div class="flex gap-2">
@@ -446,6 +446,7 @@ const ribbonTextColor = computed<string | null>(() => {
               :discount-amount="inventoryItem.discountAmount"
               :location-name="inventoryItem.location?.title"
               :lot-number="inventoryItem.lotNumber"
+              :financing-available="inventoryItem.product.financing_available"
               :highlighted-label="inventoryItem.highlightedLabel"
               :used-building="inventoryItem.usedBuilding"
               :location-address="inventoryItem.location.address"

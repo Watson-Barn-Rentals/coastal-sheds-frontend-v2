@@ -326,6 +326,7 @@ const hiddenByFilters = computed(() => Math.max(0, totalCount.value - filtered.v
                 :discount-amount="inventoryItem.discountAmount"
                 :location-name="inventoryItem.location?.title"
                 :lot-number="inventoryItem.lotNumber"
+                :financing-available="inventoryItem.product.financing_available"
                 :highlighted-label="inventoryItem.highlightedLabel"
                 :used-building="inventoryItem.usedBuilding"
                 :approx-drive-time-text="driveTimeTextBySlug[inventoryItem.location?.slug ?? ''] ?? null"

@@ -17,6 +17,7 @@ export const ProductItemSchema = z.object({
   product_line_title: z.string(),
   product_line_discontinued: z.boolean(),
   product_line_override_page_title: z.string().nullable(),
+  financing_available: z.boolean(),
   product_category_slug: z.string(),
   product_category_title: z.string(),
   product_category_discontinued: z.boolean(),

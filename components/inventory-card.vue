@@ -15,6 +15,7 @@ const props = defineProps<{
   discountAmount: number | null
   locationName: string
   lotNumber: string | null
+  financingAvailable: boolean
   highlightedLabel: string | null
   usedBuilding: boolean
   approxDriveTimeText?: string | null
@@ -116,7 +117,7 @@ const ribbonText = computed(() => {
             <span :class="{ 'line-through': discountAmount }">{{ formatPrice(cashPrice) }}</span>
             <span v-if="discountAmount" class="ml-2 text-red-500">{{ formatPrice(cashPrice - discountAmount) }}</span>
           </div>
-          <span>({{ formatPrice((cashPrice - (discountAmount ?? 0)) / config.public.rtoFactor)}} + tax / month on a {{ config.public.rtoTermMonths }} month term)</span>
+          <span v-if="financingAvailable">({{ formatPrice((cashPrice - (discountAmount ?? 0)) / config.public.rtoFactor)}} + tax / month on a {{ config.public.rtoTermMonths }} month term)</span>
         </div>
       </div>
 
