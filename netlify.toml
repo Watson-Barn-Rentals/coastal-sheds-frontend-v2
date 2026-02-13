@@ -8,3 +8,6 @@
 [[edge_functions]]
   function = "inventory-normalize"
   path = "/inventory/"
+
+[[plugins]]
+  package = "./netlify/plugins/warm-cache"
