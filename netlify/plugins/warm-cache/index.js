@@ -6,12 +6,12 @@ export const onSuccess = async ({ utils }) => {
 		.filter(Boolean)
 		.map((path) => (path.startsWith("http") ? path : `${baseUrl}${path}`))
 
-	const timeoutMs = Number(process.env.WARM_TIMEOUT_MS || 30000)
+	const timeoutMs = Number(process.env.WARM_TIMEOUT_MS || 15000)
 	const concurrency = Number(process.env.WARM_CONCURRENCY || 4)
 
 	utils.status.show({
 		title: "Warming endpoints",
-		summary: warmUrls.join("\n"),
+		summary: warmUrls.length ? warmUrls.join("\n") : "(no urls)",
 	})
 
 	const fetchWithTimeout = async (url) => {
@@ -34,7 +34,6 @@ export const onSuccess = async ({ utils }) => {
 				throw new Error(`Warm failed ${res.status} ${res.statusText}`)
 			}
 
-			// Drain the body (more reliable caching) without buffering into memory
 			if (res.body) {
 				for await (const _ of res.body) {}
 			}
@@ -57,10 +56,12 @@ export const onSuccess = async ({ utils }) => {
 	}
 
 	const failures = []
+	let successCount = 0
 
 	await runWithConcurrency(warmUrls, concurrency, async (url) => {
 		try {
 			await fetchWithTimeout(url)
+			successCount++
 			console.log(`[warm-cache] ok: ${url}`)
 		} catch (error) {
 			const message = error?.message || String(error)
@@ -72,13 +73,17 @@ export const onSuccess = async ({ utils }) => {
 	if (failures.length) {
 		utils.status.show({
 			title: "Warming completed with failures",
-			summary: failures.map((f) => `- ${f.url}: ${f.message}`).join("\n"),
+			summary: [
+				`Succeeded: ${successCount}/${warmUrls.length}`,
+				"",
+				...failures.map((f) => `- ${f.url}: ${f.message}`),
+			].join("\n"),
 		})
-
-		// Fail-soft (deploy stays successful). If you DO want to fail deploys, replace with:
-		// utils.build.failBuild("Cache warming failed", { error: new Error(failures[0].message) })
 		return
 	}
 
-	utils.status.show({ title: "Warming complete" })
+	utils.status.show({
+		title: "Warming complete",
+		summary: `Succeeded: ${successCount}/${warmUrls.length}`,
+	})
 }
