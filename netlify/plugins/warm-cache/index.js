@@ -6,7 +6,8 @@ export const onSuccess = async ({ utils }) => {
 		.filter(Boolean)
 		.map((path) => (path.startsWith("http") ? path : `${baseUrl}${path}`))
 
-	const timeoutMs = Number(process.env.WARM_TIMEOUT_MS || 15000)
+	const timeoutMs = Number(process.env.WARM_TIMEOUT_MS || 30000)
+	const concurrency = Number(process.env.WARM_CONCURRENCY || 4)
 
 	utils.status.show({
 		title: "Warming endpoints",
@@ -29,25 +30,55 @@ export const onSuccess = async ({ utils }) => {
 				signal: controller.signal,
 			})
 
-			const body = await res.text().catch(() => "")
 			if (!res.ok) {
-				throw new Error(`Warm failed ${res.status} ${res.statusText} - ${body.slice(0, 200)}`)
+				throw new Error(`Warm failed ${res.status} ${res.statusText}`)
+			}
+
+			// Drain the body (more reliable caching) without buffering into memory
+			if (res.body) {
+				for await (const _ of res.body) {}
 			}
 		} finally {
 			clearTimeout(timer)
 		}
 	}
 
-	const results = await Promise.allSettled(warmUrls.map(fetchWithTimeout))
+	const runWithConcurrency = async (items, limit, worker) => {
+		const queue = [...items]
+		const workers = Array.from({ length: Math.max(1, limit) }, async () => {
+			while (queue.length) {
+				const next = queue.shift()
+				if (!next) return
+				await worker(next)
+			}
+		})
 
-	const failed = results
-		.map((r, i) => ({ r, url: warmUrls[i] }))
-		.filter(({ r }) => r.status === "rejected")
-
-	if (failed.length) {
-		// Fail-soft: don’t fail the deploy, but surface it loudly
-		failed.forEach(({ url, r }) => utils.build.warn(`Warm failed: ${url} - ${r.reason?.message || r.reason}`))
-	} else {
-		utils.status.show({ title: "Warming complete" })
+		await Promise.all(workers)
 	}
+
+	const failures = []
+
+	await runWithConcurrency(warmUrls, concurrency, async (url) => {
+		try {
+			await fetchWithTimeout(url)
+			console.log(`[warm-cache] ok: ${url}`)
+		} catch (error) {
+			const message = error?.message || String(error)
+			failures.push({ url, message })
+			console.warn(`[warm-cache] failed: ${url} - ${message}`)
+		}
+	})
+
+	if (failures.length) {
+		utils.status.show({
+			title: "Warming completed with failures",
+			summary: failures.map((f) => `- ${f.url}: ${f.message}`).join("\n"),
+		})
+
+		// Fail-soft (deploy stays successful). If you DO want to fail deploys, replace with:
+		// utils.build.failBuild("Cache warming failed", { error: new Error(failures[0].message) })
+		return
+	}
+
+	utils.status.show({ title: "Warming complete" })
 }
