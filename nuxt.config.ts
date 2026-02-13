@@ -229,6 +229,8 @@ export default defineNuxtConfig({
 			fallbackDescription: "",
 			pageTitleSiteName: process.env.PAGE_TITLE_SITE_NAME || "",
 			siteRootUrl: process.env.SITE_ROOT_URL || "",
+			rtoFactor: Number(process.env.RTO_FACTOR) || 21.6,
+			rtoTermMonths: Number(process.env.RTO_TERM_MONTHS) || 36,
 			legalOwnerName:
 				process.env.NUXT_PUBLIC_LEGAL_OWNER_NAME || "Your Business",
 			legalEntityType: process.env.NUXT_PUBLIC_LEGAL_ENTITY_TYPE || "LLC",

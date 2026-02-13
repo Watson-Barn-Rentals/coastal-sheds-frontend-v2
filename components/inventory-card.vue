@@ -24,6 +24,8 @@ const props = defineProps<{
   locationZip: string
 }>()
 
+const config = useRuntimeConfig();
+
 /**
  * Prefer highlightedLabel; otherwise show a discount ribbon ("$X Off!")
  * Ribbon hides entirely if neither is present.
@@ -109,13 +111,23 @@ const ribbonText = computed(() => {
 
       <div class="flex gap-2 text-sm">
         <span class="font-bold shrink-0">Price:</span>
-        <span :class="{ 'line-through': discountAmount }">{{ formatPrice(cashPrice) }}</span>
-        <span v-if="discountAmount" class="ml-2 text-red-500">{{ formatPrice(cashPrice - discountAmount) }}</span>
+        <div class="flex flex-col">
+          <div class="flex gap-2">
+            <span :class="{ 'line-through': discountAmount }">{{ formatPrice(cashPrice) }}</span>
+            <span v-if="discountAmount" class="ml-2 text-red-500">{{ formatPrice(cashPrice - discountAmount) }}</span>
+          </div>
+          <span>({{ formatPrice((cashPrice - (discountAmount ?? 0)) / config.public.rtoFactor)}} + tax / month on a {{ config.public.rtoTermMonths }} month term)</span>
+        </div>
       </div>
 
       <div class="flex gap-2 text-sm">
         <span class="font-bold shrink-0">Location:</span>
         <span>{{ locationName }} ({{ locationCity }}, {{ locationState }})</span>
+      </div>
+
+      <div v-if="lotNumber" class="flex gap-2 text-sm">
+        <span class="font-bold shrink-0">Lot Number:</span>
+        <span>{{ lotNumber?.toUpperCase() }}</span>
       </div>
 
       <div class="mt-auto"></div>

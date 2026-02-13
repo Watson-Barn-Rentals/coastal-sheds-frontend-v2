@@ -327,16 +327,21 @@ const ribbonTextColor = computed<string | null>(() => {
             <div class="flex flex-col gap-1 ml-4">
               <div class="flex gap-2">
                 <span>Price:</span>
-                <span
-                  class="font-bold"
-                  :class="{ 'line-through': data.discountAmount }"
-                  >{{ formatPrice(data.cashPrice) }}</span
-                >
-                <span
-                  v-if="data.discountAmount"
-                  class="text-red-500 font-bold"
-                  >{{ formatPrice(data.cashPrice - data.discountAmount) }}</span
-                >
+                <div class="flex flex-col">
+                  <div class="flex gap-2">
+                    <span
+                      class="font-bold"
+                      :class="{ 'line-through': data.discountAmount }"
+                      >{{ formatPrice(data.cashPrice) }}</span
+                    >
+                    <span
+                      v-if="data.discountAmount"
+                      class="text-red-500 font-bold"
+                      >{{ formatPrice(data.cashPrice - data.discountAmount) }}</span
+                    >
+                  </div>
+                  <span>({{ formatPrice((data.cashPrice - (data.discountAmount ?? 0)) / config.public.rtoFactor)}} + tax / month on a {{ config.public.rtoTermMonths }} month term)</span>
+                </div>
               </div>
               <div class="flex gap-2">
                 <span>Status:</span>
@@ -360,7 +365,7 @@ const ribbonTextColor = computed<string | null>(() => {
                   v-if="!data.product.discontinued"
                   :href="`/products/${data.product.slug}`"
                   class="text-hovered-link hover:underline font-bold"
-                  >{{ data.product.title }}</a
+                  >{{ data.product.override_page_title ?? data.product.title }}</a
                 >
                 <span v-else class="font-bold">{{ data.product.title }} (Discontinued)</span>
               </div>
@@ -370,9 +375,8 @@ const ribbonTextColor = computed<string | null>(() => {
                   v-if="!data.product.product_line_discontinued"
                   :href="`/product-lines/${data.product.product_line_slug}`"
                   class="text-hovered-link hover:underline font-bold"
-                  >{{ data.product.product_line_title }}
-                  {{ data.product.product_category_title }}</a
-                >
+                  >{{ data.product.product_line_override_page_title ?? data.product.product_line_title + ' ' + data.product.product_category_title }}
+                </a>
                 <span v-else class="font-bold">{{ data.product.product_line_title }} (Discontinued)</span>
               </div>
               <div class="flex gap-2">
