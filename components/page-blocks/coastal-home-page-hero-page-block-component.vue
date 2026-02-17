@@ -6,8 +6,8 @@ const props = defineProps<{
   data: CoastalHomePageHeroBlockData;
 }>();
 
-const handleExploreStylesClick = () => {
-  submitTrackingEvent('coastal-home-hero-explore-styles-click');
+const handle3dDesignerClick = () => {
+  submitTrackingEvent('coastal-home-hero-3d-designer-click');
 };
 
 const handleBrowseInventoryClick = () => {
@@ -62,20 +62,20 @@ const handleBrowseInventoryClick = () => {
       <div class="p-4 pt-16 sm:p-8 h-full">
         <div class="h-full flex flex-col justify-end gap-4 sm:gap-8 max-h-[12rem]">
           <div class="flex justify-around sm:justify-start gap-4 sm:gap-8">
-            <a href="/products">
+            <a href="https://shedview.coastalbuildings.com/" target="_blank" rel="noopener">
               <button
                 class="flex gap-2 p-3 rounded-lg text-white bg-brand shadow-lg hover:-translate-y-1 hover:shadow-xl transition-all duration-300 ease-in-out group cursor-pointer"
-                @click="handleExploreStylesClick"
+                @click="handle3dDesignerClick"
               >
                 <UIcon
-                  name="f7:hammer-fill"
+                  name="streamline-cyber:3d-sync"
                   dynamic
-                  class="group-hover:animate-hammer h-6 w-6 my-auto sm:h-8 sm:w-8 text-white"
+                  class="h-6 w-6 my-auto sm:h-8 sm:w-8 text-white"
                 />
                 <p
                   class="font-title select-none text-white font-semibold text-sm sm:text-base my-auto"
                 >
-                  Explore Styles
+                  Design in 3D
                 </p>
               </button>
             </a>
