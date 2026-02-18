@@ -20,7 +20,7 @@ const { data, pending, error, refresh } = await useAsyncData<LocationItem>(
 );
 
 const canonicalUrl = computed(
-  () => `${config.public.siteRootUrl}/locations/${slug.value}`
+  () => `${config.public.siteRootUrl}/locations/${slug.value}/`
 );
 const hero = computed(() => data.value?.heroImage ?? null);
 
